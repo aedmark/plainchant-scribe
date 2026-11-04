@@ -71,12 +71,10 @@ function switchInspectorTab(tab) {
     inspTabs.forEach((b) => b.setAttribute('aria-selected', String(b.dataset.insp === tab)));
     inspPropsPane.hidden = tab !== 'props';
     inspCssPane.hidden = tab !== 'css';
-    inspConsolePane.hidden = tab !== 'console';
     inspPartsPane.hidden = tab !== 'parts';
     if (tab === 'parts') refreshPartsUi();
     inspProblemsPane.hidden = tab !== 'problems';
     if (tab === 'problems') runProblemsCheck();
-    if (tab === 'console') markConsoleRead();
 }
 
 function defaultSelectorFor(node) {

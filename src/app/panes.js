@@ -2,7 +2,6 @@ const panesSwitch = document.getElementById('panesSwitch');
 const panesButtons = Array.from(panesSwitch.querySelectorAll('button[data-panes]'));
 const canvasTools = document.querySelector('.canvas-tools');
 const voidButtons = document.querySelector('.pane-void .button-group');
-const modeButtons = Array.from(document.querySelectorAll('.mode-btn'));
 const viewportButtons = Array.from(document.querySelectorAll('.vp-btn'));
 const inspectorToggleBtn = document.getElementById('inspectorToggleBtn');
 const inspectorPanel = document.getElementById('inspectorPanel');
@@ -42,14 +41,6 @@ function setPanes(panes, toEditor) {
     setSetting('panes', panes);
     showPanes();
     if (toEditor && panesShown() !== 'preview') editor.focus({ preventScroll: true });
-}
-
-function setStageMode(mode) {
-    if (mode !== 'design' && mode !== 'live') return;
-    stageMode = mode;
-    modeButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
-    scheduleStageRender(false);
-    showNotice(mode === 'live' ? 'Live JS Mode active: scripts are running.' : 'Design Mode active: click elements to inspect or double-click to edit.');
 }
 
 function setStageViewport(vp) {
@@ -96,7 +87,6 @@ function setInspectorDock(dock, remember) {
 }
 
 panesButtons.forEach((b) => b.addEventListener('click', () => setPanes(b.dataset.panes)));
-modeButtons.forEach((b) => b.addEventListener('click', () => setStageMode(b.dataset.mode)));
 viewportButtons.forEach((b) => b.addEventListener('click', () => setStageViewport(b.dataset.vp)));
 inspectorToggleBtn.addEventListener('click', () => toggleInspector());
 

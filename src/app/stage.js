@@ -14,8 +14,7 @@ const BRIDGE_CSS = [
     '#pc-stage-badge .pc-b-act:hover { background: rgba(255,255,255,0.32); }'
 ].join('\n');
 
-function buildBridgeScript(designMode, initialSelectedId) {
-    if (!designMode) return buildLiveBridgeScript();
+function buildBridgeScript(initialSelectedId) {
     return [
         '(function() {',
         '  var selectedId = ' + JSON.stringify(initialSelectedId || null) + ';',
@@ -382,16 +381,13 @@ let stageTimer = null;
 function drawStageNow() {
     clearTimeout(stageTimer);
     stageTimer = null;
-    const isDesign = stageMode === 'design';
-    clearConsole();
     const doc = Project.assemblePreview(projectFiles, {
         ast: currentHtmlAst,
         activeHtml: activeHtmlFile,
         baseUrl: projectBaseUrl,
         assetUrls: projectAssetUrls,
-        liveJs: !isDesign,
-        bridgeCss: isDesign ? BRIDGE_CSS : '',
-        bridgeScript: buildBridgeScript(isDesign, selectedPcId)
+        bridgeCss: BRIDGE_CSS,
+        bridgeScript: buildBridgeScript(selectedPcId)
     });
     stageFrame.srcdoc = doc;
 }
@@ -461,7 +457,5 @@ window.addEventListener('message', (e) => {
         followProjectLink(data.href);
     } else if (data.type === 'pc-follow-link' && data.id) {
         followSelectedLink(data.id);
-    } else if (data.type === 'pc-console') {
-        addConsoleEntry(data);
     }
 });

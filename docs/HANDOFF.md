@@ -14,42 +14,45 @@ Changes: [CHANGELOG.md](CHANGELOG.md). Older sessions and the Plainchant Web his
 
 ## Current state
 
-_Last updated: 2026-11-03, session 3, on `master` (commits `318b048` copy, then the rename): the inherited Plainchant Web code is in the repository, renamed, and green._
+_Last updated: 2026-11-03, session 4, on `master`: the web-only features are removed (`P0-04`) and the app is green._
 
-**Where things stand, in one paragraph:** Plainchant Scribe has its plan, decisions, and documentation schemes (phase 0 items `P0-01` to `P0-03` are done) and a working, renamed copy of Plainchant Web's code. The app still behaves as a web-page editor: its Stage, Inspector, Live JS mode, and Insert palette are all still there. No EPUB feature exists. The next work is removing what Scribe will not use (`P0-04`), then the home page copy and manuscript look (`P0-05`, `P0-06`), then the XML parser (`P1-01`).
+**Where things stand, in one paragraph:** Phase 0 items `P0-01` to `P0-04` are done. The repository holds the plan, decisions, documentation schemes, and the inherited Plainchant Web code, renamed and trimmed: Live JS mode, the Console, the Insert palette, breakpoints, flex and grid handles, and the pseudo-state bar are gone. The app is now a Design-mode HTML and CSS editor with an Inspector (Properties, CSS Designer, Parts, Problems), Explorer, Assets, Prism colours, File and Edit menus, folder links, and the send-to-reader preview. No EPUB feature exists yet. Next: the home page copy and the manuscript look (`P0-05`, `P0-06`), then the XML parser (`P1-01`).
 
 **Verified** (2026-11-03, Linux, Node, Python 3, Rust/Cargo; browser pane for the load check)
 
 | Suite | Result |
 | --- | --- |
-| `npm test` | **104/104** |
-| `cargo test --manifest-path src-tauri/Cargo.toml` | **7/7** |
+| `npm test` | **89/89** |
 | `cargo build --manifest-path src-tauri/Cargo.toml` | passes |
 | `python3 tools/check_docs.py` | `0 error(s), 0 warning(s)` |
 | `python3 tools/manual.py check docs/plainchant-scribe.manual.json`, `python3 -m unittest tools/test_manual.py` | 2 sections, 4 entries; 6/6 OK |
 
+`cargo test` (7 tests) last ran at the rename (`P0-03`); no Rust file changed since.
+
 **What works**
-- **The inherited studio** (`P0-02`, D-001, D-003): everything in Plainchant Web at `4c30d7b`, including Prism colours, the File and Edit menus, folder links, and the preview server. Not rewritten here; see the lineage digest.
+- **The trimmed studio** (`P0-02`, `P0-04`, D-001, D-003): Design-mode editing, Inspector, Explorer, Assets, Problems, Parts, Format, find and replace, undo across files, versions, library, folder links, Prism colours, File and Edit menus, shortcut sheet, and the preview server. Not rewritten; see the lineage digest.
 - **Renamed shell** (`P0-03`): name, bundle id `io.plainchant.scribe`, `0.1.0`, separate storage names. A structure test fails if the old name returns.
-- **Documentation schemes** (`P0-01`, D-007): `tools/check_docs.py` and the 3x manual.
+- **Removal guard** (`P0-04`): a structure test fails if a removed file, element, or identifier returns.
+- **Documentation schemes** (`P0-01`, D-007).
 
 **Not verified**
-- The desktop window was not opened (`cargo build` and tests only); the maintainer tested desktop paths by hand in Plainchant Web.
+- The desktop window was not opened; the maintainer tested desktop paths by hand in Plainchant Web only.
 - EPUB rules in the plan come from memory of EPUB 3.3, not a re-read of the specification (D-004).
-- Nothing has run against EPUBCheck, Calibre, or the Kindle yet (D-010, Q-004).
+- Nothing has run against EPUBCheck or Calibre yet (D-010).
 
 **Gotchas for the next session**
-- Read [archive/plainchant-web-lineage.md](archive/plainchant-web-lineage.md) first: it names what to keep, what to drop, and the traps (cache-first service worker, the 500-line limit per app script, the HTML parser being too forgiving for XML).
-- In the agent's browser pane the service worker did not register for either app (an "unknown error occurred when fetching the script" console message), including the unchanged Plainchant Web; this is the pane, not the rename.
+- Read [archive/plainchant-web-lineage.md](archive/plainchant-web-lineage.md) first: what to keep, what to drop, and the traps (cache-first service worker, 500-line limit per app script, the HTML parser being too forgiving for XML).
+- Previews now always drop `<script>` (D-004), so the Stage cannot run book scripts.
+- `.console-row`, `.console-level`, `.console-msg`, `.console-src`, `.console-badge`, and `.css-state-bar` are CSS class names the Problems and Parts tabs still use; they are named for the removed Console and state bar. Rename them when those tabs are reworked (`P5-04`).
+- `inspector-ui.js` is still close to the 500-line limit; new Inspector behaviour needs a new file.
+- In the agent's browser pane the service worker does not register for either app (an "unknown error occurred when fetching the script" console message); this is the pane, not the app.
 - `tools/check_docs.py` and `tools/manual.py` are the shared schemes' own files; replace them from their source repositories instead of editing (D-007).
-- IDs in the lineage digest are written so the checker ignores them on purpose.
-- `icons/` and `fonts/` are still Plainchant Web's until `P0-06`.
+- IDs in the lineage digest are written so the checker ignores them on purpose. `icons/` and `fonts/` are still Plainchant Web's until `P0-06`.
 
 ## Next steps (in order)
 
-1. `P0-04`: remove the web-only features (Live JS mode and Console, Insert palette, breakpoints, flex and grid handles, pseudo-state bar); keep the preview and shared parts (D-009). Each removal needs its tests, structure checks, and docs rows removed with it.
-2. `P0-05` and `P0-06`: Scribe copy and the manuscript look with light and dark modes (D-008).
-3. Start `P1-01`, the XML parser, which every later phase depends on.
+1. `P0-05` and `P0-06`: Scribe copy and the manuscript look with light and dark modes (D-008).
+2. Start `P1-01`, the XML parser, which every later phase depends on.
 
 ## Open questions for maintainers
 
@@ -68,6 +71,15 @@ oldest to `docs/archive/` and leave a pointer here.
 **Done:** P0-01
 **Changed:** new repository `plainchant-scribe`: `AGENTS.md`, `CLAUDE.md`, `README.md`, `ROADMAP.md`, `LICENSE`, `docs/*`, the lineage digest in `docs/archive/`, the shared tools in `tools/`, and the 3x manual source and build.
 **Decisions:** D-001 to D-007; questions Q-001 to Q-003.
+
+### Session 4: 2026-11-03: remove the web-only features
+
+**Contributor:** Claude (Sonnet 5.5), with the maintainer
+**Goal:** `P0-04`.
+**Done:** P0-04
+**Changed:** deleted `src/layout.js`, `src/app/{stage-layout,layout-ui,css-media,css-states,insert-drag,console-ui}.js`, `test/layout.test.js`; renamed `stage-live.js` to `stage-links.js` (link following only); removed `CssAst` state helpers and `MEDIA_PRESETS`, `DomOutline.dropPlacement`, `Editing.SNIPPETS`, `Project.consoleBridge` and the `liveJs` and `forceStates` options; trimmed `app.html`, `inspector-ui.js`, `typing.js`, `stage.js`, `panes.js`, `menus.js`, `styles.css`, `sw.js`; added the removal guard test; updated tests and docs.
+**Decisions:** none new (D-004 covers dropping scripts).
+**Verified:** the table in Current state.
 
 ### Session 3: 2026-11-03: the port and the rename
 

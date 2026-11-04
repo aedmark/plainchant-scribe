@@ -32,7 +32,6 @@ let activeCssFile = 'styles.css';
 let activeTab = 'html';
 let projectBaseUrl = '';
 let selectedPcId = null;
-let stageMode = 'design';
 let stageViewport = 'full';
 let currentHtmlAst = HtmlAst.parse(projectFiles.html);
 let currentCssAst = CssAst.parse(projectFiles.css);

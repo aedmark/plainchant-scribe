@@ -1,6 +1,6 @@
 # Architecture
 
-**Status: mixed.** The inherited Plainchant Web code is in the repository (`P0-02`) and renamed (`P0-03`); the rows marked New or Adapted are planned, and each says which roadmap item delivers it. When an item ships, rewrite its row as current fact. The inherited parts are not re-documented here; their structure is described in the lineage digest and Plainchant Web's own architecture document.
+**Status: mixed.** The inherited Plainchant Web code is in the repository (`P0-02`), renamed (`P0-03`), and trimmed of its web-only features (`P0-04`: Live JS and the Console, the Insert palette, breakpoints, flex and grid handles, the pseudo-state bar); the rows marked New or Adapted are planned, and each says which roadmap item delivers it. When an item ships, rewrite its row as current fact. The inherited parts are not re-documented here; their structure is described in the lineage digest and Plainchant Web's own architecture document.
 
 ## The shape, in one paragraph
 

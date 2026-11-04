@@ -1,6 +1,6 @@
 # Testing
 
-**Status:** the inherited Plainchant Web suites run unchanged (`npm test`, 104 tests, and 7 Rust tests); there are no EPUB-specific tests yet. Those are planned below and arrive with their roadmap items.
+**Status:** the inherited Plainchant Web suites run unchanged (`npm test`, 89 tests, and 7 Rust tests), minus the tests of the features removed in `P0-04`; there are no EPUB-specific tests yet. Those are planned below and arrive with their roadmap items.
 
 ## Commands
 

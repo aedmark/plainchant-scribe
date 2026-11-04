@@ -134,18 +134,10 @@
     </div>
 </div>
 
-<div class="pane-canvas" role="region" aria-label="Design and Live Stage">
+<div class="pane-canvas" role="region" aria-label="Stage">
     <div class="header">
         <div class="stage-header-left">
             <h2>Stage</h2>
-            <div class="mode-switch" role="group" aria-label="Stage Mode">
-                <button type="button" id="modeDesignBtn" class="mode-btn" data-mode="design" aria-pressed="true"
-                        title="Design Mode: click elements to inspect, double-click text to edit inline">Design
-                </button>
-                <button type="button" id="modeLiveBtn" class="mode-btn" data-mode="live" aria-pressed="false"
-                        title="Live Mode: run interactive JavaScript and test links">Live JS
-                </button>
-            </div>
             <div class="viewport-switch" role="group" aria-label="Viewport size">
                 <button type="button" class="vp-btn" data-vp="full" aria-pressed="true" title="Full responsive width">100%</button>
                 <button type="button" class="vp-btn" data-vp="tablet" aria-pressed="false" title="Tablet (768px)">768px</button>
@@ -161,7 +153,7 @@
                         title="Split view (Ctrl/Cmd+Shift+2)">Split
                 </button>
                 <button type="button" data-panes="preview" aria-pressed="false" aria-label="Stage only"
-                        title="Design/Live Stage only (Ctrl/Cmd+Shift+3)">Design
+                        title="Stage only (Ctrl/Cmd+Shift+3)">Design
                 </button>
             </div>
             <button type="button" id="inspectorToggleBtn" class="canvas-btn" aria-pressed="true"
@@ -176,11 +168,11 @@
     <div id="canvasBody" class="canvas-body" data-dock="bottom">
     <div id="render-target" class="stage-viewport">
         <div id="stage-frame-wrap" class="stage-frame-wrap">
-            <iframe id="stageFrame" title="Live WYSIWYG Stage" sandbox="allow-scripts allow-same-origin"></iframe>
+            <iframe id="stageFrame" title="WYSIWYG Stage" sandbox="allow-scripts allow-same-origin"></iframe>
         </div>
     </div>
 
-    <section id="inspectorPanel" class="inspector-panel dock-bottom" aria-label="Properties, CSS Designer, and Console">
+    <section id="inspectorPanel" class="inspector-panel dock-bottom" aria-label="Properties, CSS Designer, Parts, and Problems">
         <div id="inspectorResizer" class="inspector-resizer" role="separator" aria-orientation="vertical" aria-label="Resize Inspector width" tabindex="0" hidden></div>
         <div id="inspectorHeader" class="inspector-header">
             <div class="inspector-tabs" role="tablist" aria-label="Inspector sections">
@@ -188,7 +180,6 @@
                 <button type="button" class="insp-tab" data-insp="css" aria-selected="false">CSS Designer</button>
                 <button type="button" class="insp-tab" data-insp="parts" aria-selected="false">Parts <span id="partsCountBadge" class="console-badge" hidden>0</span></button>
                 <button type="button" class="insp-tab" data-insp="problems" aria-selected="false">Problems <span id="problemsCountBadge" class="console-badge" hidden>0</span></button>
-                <button type="button" class="insp-tab" data-insp="console" aria-selected="false">Console <span id="consoleCountBadge" class="console-badge" hidden>0</span></button>
             </div>
             <div class="inspector-selection-badge">
                 <span id="inspSelectedTag">No element selected</span>
@@ -329,23 +320,11 @@
                 <button type="button" class="mini css-state-btn problems-filter-btn" data-filter="accessibility" aria-pressed="false" title="Missing alt text, heading order, labels, and page language">Accessibility</button>
                 <button type="button" class="mini css-state-btn problems-filter-btn" data-filter="markup" aria-pressed="false" title="Duplicate ids, unclosed or stray tags, and obsolete elements">Markup</button>
             </div>
-            <div class="console-bar">
+            <div class="panel-bar">
                 <span id="problemsSummary" class="parts-help" aria-live="polite"></span>
                 <button type="button" class="mini" id="problemsRecheckBtn" title="Check every page and stylesheet for broken links, accessibility, and markup problems">Re-check</button>
             </div>
             <div id="problemsList" class="parts-list"></div>
-        </div>
-        <div id="inspConsolePane" class="inspector-body console-pane" hidden>
-            <div class="console-bar">
-                <div class="console-filters" role="group" aria-label="Console filter">
-                    <button type="button" class="mini console-filter" data-console-filter="all" aria-pressed="true">All</button>
-                    <button type="button" class="mini console-filter" data-console-filter="error" aria-pressed="false">Errors</button>
-                    <button type="button" class="mini console-filter" data-console-filter="warn" aria-pressed="false">Warnings</button>
-                    <button type="button" class="mini console-filter" data-console-filter="log" aria-pressed="false">Logs</button>
-                </div>
-                <button type="button" class="mini" id="consoleClearBtn" title="Clear console output">Clear</button>
-            </div>
-            <div id="consoleList" class="console-list" role="log" aria-live="polite"></div>
         </div>
     </section>
     </div>
@@ -554,7 +533,7 @@
                 <li><strong>Select, Highlight &amp; Edit Text in Place:</strong> In <strong>Design Mode</strong>, click any element on the Stage to highlight its code block in the Code editor and view its live margin/padding box model. Clicking a text element places a live text cursor right where you clicked so you can type and edit copy directly on the Stage while the HTML updates in real time.</li>
                 <li><strong>Direct Stage Reordering:</strong> Drag elements on the Stage (or grab the <code>&#10287;</code> badge handle) to reorder them, or use the floating badge buttons (<code>&uarr;</code>, <code>&darr;</code>, <code>&#10697;</code>, <code>&#10005;</code>) and <kbd>Alt+&uarr;/&darr;</kbd>.</li>
                 <li><strong>Dockable &amp; Floating Inspector:</strong> Edit HTML attributes or use the <strong>CSS Designer</strong> to inspect computed styles, modify rules, or click <strong>Go to CSS &#8599;</strong> to jump straight to the rule in your stylesheet. Toggle, collapse, or move the Inspector (bottom, top, left, right, or floating, from its <strong>Dock</strong> menu) (<kbd>Ctrl/Cmd+Shift+I</kbd>).</li>
-                <li><strong>Insert Menu &amp; Right-Click Context Menu:</strong> Use the top <strong>Insert &#9662;</strong> menu, right-click on the Stage or HTML editor, or type shorthand like <code>section.hero</code> or <code>ul*3</code> and press <kbd>Tab</kbd>.</li>
+                <li><strong>Right-Click Context Menu &amp; Tab Shorthand:</strong> Right-click on the Stage or HTML editor for element actions, or type shorthand like <code>section.hero</code> or <code>ul*3</code> and press <kbd>Tab</kbd>.</li>
                 <li><strong>Multi-File Undo &amp; Redo:</strong> Use <strong>Edit &#9662; Undo</strong> / <strong>Redo</strong> or <kbd>Ctrl/Cmd+Z</kbd> and <kbd>Ctrl/Cmd+Shift+Z</kbd> (<kbd>Ctrl+Y</kbd>) across all files and visual actions.</li>
                 <li><strong>Format:</strong> <strong>Edit &#9662; Format file</strong> (<kbd>Alt+Shift+F</kbd>) re-indents and tidies the open HTML, CSS, or JS file in one undo step. HTML and CSS are rebuilt line by line; JavaScript is only re-indented.</li>
                 <li><strong>Line Numbers &amp; Find/Replace:</strong> The code editor shows line numbers. Press <kbd>Ctrl/Cmd+F</kbd> to find in the current file or <kbd>Ctrl/Cmd+H</kbd> to find and replace, or <kbd>Ctrl/Cmd+Shift+F</kbd> (the <strong>Project</strong> button) to search and replace in every file; <kbd>Enter</kbd> / <kbd>Shift+Enter</kbd> step through matches and <kbd>Esc</kbd> closes the bar.</li>
@@ -642,9 +621,8 @@
 <script src="src/app/panes.js"></script>
 <script src="src/app/dock-ui.js"></script>
 <script src="src/app/stage.js"></script>
-<script src="src/app/stage-live.js"></script>
+<script src="src/app/stage-links.js"></script>
 <script src="src/app/inspector-ui.js"></script>
-<script src="src/app/console-ui.js"></script>
 <script src="src/app/parts-ui.js"></script>
 <script src="src/app/problems-ui.js"></script>
 <script src="src/app/outline-ui.js"></script>

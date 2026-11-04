@@ -687,91 +687,6 @@
         return isStr ? pack(files) : files;
     }
 
-    function consoleBridge(srcMap) {
-        var w = window, MAX = 2000;
-        function fmt(v, depth, seen) {
-            var t = typeof v;
-            if (v === null) return 'null';
-            if (t === 'undefined') return 'undefined';
-            if (t === 'string') return depth ? JSON.stringify(v) : v;
-            if (t === 'function') return '[Function' + (v.name ? ': ' + v.name : '') + ']';
-            if (t === 'bigint') return String(v) + 'n';
-            if (t !== 'object') return String(v);
-            if (v instanceof Error) return v.stack || (v.name + ': ' + v.message);
-            if (v.nodeType === 1) return '<' + v.tagName.toLowerCase() + (v.id ? '#' + v.id : '') + '>';
-            if (seen.indexOf(v) !== -1) return '[Circular]';
-            if (depth >= 3) return Array.isArray(v) ? '[Array]' : '[Object]';
-            seen.push(v);
-            var out;
-            if (Array.isArray(v)) {
-                out = '[' + v.map(function (x) { return fmt(x, depth + 1, seen); }).join(', ') + ']';
-            } else {
-                out = '{' + Object.keys(v).map(function (k) { return k + ': ' + fmt(v[k], depth + 1, seen); }).join(', ') + '}';
-            }
-            seen.pop();
-            return out;
-        }
-        function text(v) {
-            var s;
-            try { s = fmt(v, 0, []); } catch (e) { s = '[Unprintable]'; }
-            return s.length > MAX ? s.slice(0, MAX) + '…' : s;
-        }
-        function send(level, args, line, source) {
-            try {
-                w.parent.postMessage({ type: 'pc-console', level: level, args: args, line: line, source: source, time: Date.now() }, '*');
-            } catch (e) {}
-        }
-        function locate(docLine) {
-            var best = null;
-            for (var i = 0; i < srcMap.length; i++) {
-                var e = srcMap[i];
-                if (docLine >= e.first && docLine < e.first + e.lines && (!best || e.first > best.first)) best = e;
-            }
-            return best ? { source: best.file, line: docLine - best.first + 1 } : { source: null, line: null };
-        }
-        ['log', 'info', 'warn', 'error'].forEach(function (level) {
-            var orig = w.console[level];
-            w.console[level] = function () {
-                send(level, Array.prototype.map.call(arguments, text), null, null);
-                return orig.apply(w.console, arguments);
-            };
-        });
-        var prevOnError = w.onerror;
-        w.onerror = function (message, src, line, col, err) {
-            var at = typeof line === 'number' ? locate(line) : { source: null, line: null };
-            send('error', [err && err.message ? (err.name || 'Error') + ': ' + err.message : String(message)], at.line, at.source);
-            return typeof prevOnError === 'function' ? prevOnError.apply(this, arguments) : false;
-        };
-        w.addEventListener('unhandledrejection', function (e) {
-            send('error', ['Unhandled promise rejection: ' + text(e.reason)], null, null);
-        });
-    }
-
-    function consoleBridgeBlock() {
-        return '<script id="pc-console-bridge">\n(' + consoleBridge.toString() + ')(/*PC_SRC_MAP*/[]);\n<\/script>';
-    }
-
-    function userScriptBlock(srcPath, code) {
-        return '<script id="pc-project-js" data-pc-src="' + srcPath + '">\n' + code + '\n<\/script>';
-    }
-
-    function sourceMapOf(html) {
-        const map = [];
-        const re = /<script id="pc-project-js" data-pc-src="([^"]*)">\n/g;
-        let m;
-        while ((m = re.exec(html)) !== null) {
-            const codeStart = m.index + m[0].length;
-            const codeEnd = html.indexOf('\n</script>', codeStart);
-            const code = html.slice(codeStart, codeEnd === -1 ? html.length : codeEnd);
-            map.push({
-                file: m[1],
-                first: html.slice(0, codeStart).split('\n').length,
-                lines: code.split('\n').length
-            });
-        }
-        return map;
-    }
-
     function assemblePreview(files, options) {
         const f = typeof files === 'string' ? unpack(files) : (files || {});
         const opts = options || {};
@@ -805,22 +720,12 @@
             ? '<style id="pc-project-css">\n' + (assetUrls ? rewriteCssUrls(fallbackCss, primaryCssFile(f, activeHtmlPath), assetUrls) : String(fallbackCss)) + '\n</style>'
             : '';
 
-        html = html.replace(/<script\b([^>]*)\bsrc\s*=\s*(?:"([^"]+)"|'([^']+)')([^>]*)>\s*<\/script>/gi, (full, pre, s1, s2) => {
-            const srcPath = resolveRelPath(activeHtmlPath, s1 || s2);
-            if (!opts.liveJs) return '';
-            if (srcPath && entries[srcPath] != null) {
-                return userScriptBlock(srcPath, entries[srcPath]);
-            }
-            return full;
-        });
-
-        if (!opts.liveJs) {
-            html = html.replace(/<script\b[\s\S]*?<\/script>/gi, '');
-        }
+        // Scripts are never run in the Studio (D-004): every <script> is dropped from the preview.
+        html = html.replace(/<script\b[\s\S]*?<\/script>/gi, '');
 
         const baseTag = opts.baseUrl ? '<base href="' + opts.baseUrl + '">' : '';
         const bridgeBlock = opts.bridgeCss ? '<style id="pc-bridge-css">\n' + opts.bridgeCss + '\n</style>' : '';
-        const headTop = [baseTag, opts.liveJs ? consoleBridgeBlock() : ''].filter(Boolean).join('\n');
+        const headTop = baseTag;
         const headTopText = headTop ? headTop + '\n' : '';
         const headBottom = [styleBlock, bridgeBlock].filter(Boolean).join('\n');
 
@@ -840,16 +745,10 @@
             }
         }
 
-        const hasInjectedJs = html.indexOf('id="pc-project-js"') !== -1;
-        const fallbackJs = f.js != null ? f.js : (entries['script.js'] || '');
-        const userJsBlock = (opts.liveJs && !hasInjectedJs && String(fallbackJs).trim())
-            ? userScriptBlock('script.js', String(fallbackJs))
-            : '';
-
         const bridgeJsBlock = opts.bridgeScript
             ? '<script id="pc-bridge-script">\n' + opts.bridgeScript + '\n<\/script>'
             : '';
-        const tailInsert = [userJsBlock, bridgeJsBlock].filter(Boolean).join('\n');
+        const tailInsert = bridgeJsBlock;
 
         if (tailInsert) {
             if (/<\/body>/i.test(html)) {
@@ -858,7 +757,6 @@
                 html = html + '\n' + tailInsert;
             }
         }
-        if (opts.liveJs) html = html.replace('/*PC_SRC_MAP*/[]', () => JSON.stringify(sourceMapOf(html)));
         return html;
     }
 
@@ -933,7 +831,6 @@
         mimeFor: mimeFor,
         rewriteAssetUrls: rewriteAssetUrls,
         rewriteCssUrls: rewriteCssUrls,
-        consoleBridge: consoleBridge,
         normalizeEntries: normalizeEntries,
         linkedStylesheets: linkedStylesheets,
         primaryCssFile: primaryCssFile,

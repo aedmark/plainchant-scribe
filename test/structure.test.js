@@ -81,16 +81,11 @@ test('offline: the service worker keeps a copy of exactly the files the app uses
     swListed.filter((f) => f !== './').forEach((f) => assert.ok(fs.existsSync(path.join(root, f)), f + ' is listed but missing'));
 });
 
-test('structure: the Console inspector tab, its pane, and its script are wired into app.html (P5-01)', () => {
-    ['data-insp="console"', 'id="consoleCountBadge"', 'id="inspConsolePane"', 'id="consoleList"', 'id="consoleClearBtn"'].forEach((needle) => {
-        assert.includes(html, needle);
-    });
-    assert.ok(listed.indexOf('console-ui.js') > listed.indexOf('inspector-ui.js'), 'console-ui.js loads after inspector-ui.js');
-});
-
-test('structure: the Live JS link bridge and Follow Link controls are wired in (P5-02)', () => {
+test('structure: link following (Ctrl/Cmd+Click and the Follow Link button) is wired in, and Live JS mode and the Console are gone (P0-04)', () => {
     assert.includes(html, 'id="propFollowBtn"');
-    assert.ok(listed.indexOf('stage-live.js') > listed.indexOf('stage.js'), 'stage-live.js loads after stage.js');
+    assert.ok(listed.indexOf('stage-links.js') > listed.indexOf('stage.js'), 'stage-links.js loads after stage.js');
+    ['id="modeLiveBtn"', 'data-insp="console"', 'id="inspConsolePane"', 'src/app/console-ui.js', 'src/app/stage-live.js'].forEach((needle) => assert.excludes(html, needle));
+    assert.ok(!fs.existsSync(path.join(appDir, 'console-ui.js')) && !fs.existsSync(path.join(appDir, 'stage-live.js')), 'the removed scripts are not on disk');
     const stage = fs.readFileSync(path.join(appDir, 'stage.js'), 'utf8');
     ['pc-navigate', 'pc-follow-link'].forEach((type) => assert.includes(stage, type));
 });
@@ -108,40 +103,6 @@ test('structure: the line-number gutter and find bar are wired in (P6-01)', () =
     const order = Array.from(html.matchAll(/<script src="([^"]+)"><\/script>/g)).map((m) => m[1]);
     assert.ok(order.indexOf('src/finding.js') !== -1 && order.indexOf('src/finding.js') < order.indexOf('src/app/core.js'), 'finding.js loads before the app scripts');
     assert.ok(listed.indexOf('find.js') > listed.indexOf('shade.js'), 'find.js loads after shade.js');
-});
-
-test('structure: the Live JS bridge keeps anchors, empty links, and forms from navigating the Stage to the app page', () => {
-    const source = fs.readFileSync(path.join(appDir, 'stage-live.js'), 'utf8');
-    const build = new vm.Script(source + '\nbuildLiveBridgeScript();');
-    const bridge = build.runInNewContext({});
-    const handlers = {};
-    const posted = [];
-    const scrolled = [];
-    const el = (id) => ({ scrollIntoView: () => scrolled.push(id) });
-    const doc = {
-        documentElement: el('<top>'),
-        getElementById: (id) => (id === 'about' ? el('about') : null),
-        getElementsByName: () => [],
-        addEventListener: (type, fn) => { handlers[type] = fn; }
-    };
-    new vm.Script(bridge).runInNewContext({ document: doc, window: { parent: { postMessage: (m) => posted.push(m) } }, decodeURIComponent: decodeURIComponent });
-    const click = (href) => {
-        const event = { defaultPrevented: false, button: 0, prevented: false, preventDefault() { this.prevented = true; }, target: { closest: () => ({ getAttribute: () => href }) } };
-        handlers.click(event);
-        return event.prevented;
-    };
-    assert.ok(click('#about'), '#anchor is cancelled so the frame never loads the base URL');
-    assert.ok(click('#'));
-    assert.ok(click(''));
-    assert.ok(click('?page=2'));
-    assert.deepEqual(scrolled, ['about', '<top>']);
-    assert.equal(posted.length, 0, 'anchors and empty links do not ask the Studio to open a page');
-    assert.ok(click('resume.html'));
-    assert.deepEqual(posted, [{ type: 'pc-navigate', href: 'resume.html' }]);
-    assert.ok(!click('https://example.com'), 'external links are left alone');
-    const submit = { defaultPrevented: false, prevented: false, preventDefault() { this.prevented = true; } };
-    handlers.submit(submit);
-    assert.ok(submit.prevented, 'forms do not navigate the Stage');
 });
 
 test('structure: the floating Inspector wraps its header and clips overflow so controls stay inside the window', () => {
@@ -340,4 +301,12 @@ test('structure: the product is named Plainchant Scribe everywhere the app, its 
     assert.includes(readRoot('sw.js'), "'plainchant-scribe-v1'");
     assert.includes(readRoot('src/app/settings.js'), "'plainchant_scribe_settings'");
     assert.includes(readRoot('src/app/persistence.js'), "'plainchant_scribe_emergency'");
+});
+
+test('structure: the features Scribe does not use are gone: flex/grid handles, breakpoints, pseudo-state bar, Insert palette, Live JS, Console (P0-04)', () => {
+    ['src/layout.js', 'src/app/stage-layout.js', 'src/app/layout-ui.js', 'src/app/css-media.js', 'src/app/css-states.js', 'src/app/insert-drag.js', 'src/app/console-ui.js', 'src/app/stage-live.js'].forEach((f) => assert.ok(!fs.existsSync(path.join(root, f)), f + ' should have been removed'));
+    ['id="cssLayoutGroup"', 'id="cssMediaBar"', 'id="cssStateBar"', 'id="insertMenuBtn"', 'id="ctxInsertTrigger"', 'id="modeLiveBtn"', 'id="consoleList"'].forEach((needle) => assert.excludes(html, needle));
+    const code = ['src/app/stage.js', 'src/app/typing.js', 'src/app/inspector-ui.js', 'src/project.js', 'src/editing.js', 'src/css-ast.js', 'src/dom-outline.js'].map(readRoot).join('\n');
+    ['buildLayoutBridgeScript', 'insertSnippet', 'setInsertMenuOpen', 'buildLiveBridgeScript', 'consoleBridge', 'forceStates', 'withState', 'MEDIA_PRESETS', 'dropPlacement', 'SNIPPETS', 'liveJs'].forEach((needle) => assert.excludes(code, needle));
+    assert.ok(html.includes('id="previewBtn"') && html.includes('data-insp="parts"'), 'the preview (send to reader) and shared parts are kept (D-009)');
 });

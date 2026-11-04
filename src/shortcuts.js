@@ -17,7 +17,7 @@
                 { keys: ['Esc'], action: 'Close the open dialog or menu', file: 'src/app/dialogs.js', needle: "e.key === 'Escape'" },
                 { keys: ['Ctrl/Cmd+Shift+1'], action: 'Code view', file: 'src/app/panes.js', needle: 'Digit1' },
                 { keys: ['Ctrl/Cmd+Shift+2'], action: 'Split view', file: 'src/app/panes.js', needle: 'Digit2' },
-                { keys: ['Ctrl/Cmd+Shift+3'], action: 'Design / Live Stage only', file: 'src/app/panes.js', needle: 'Digit3' },
+                { keys: ['Ctrl/Cmd+Shift+3'], action: 'Stage only', file: 'src/app/panes.js', needle: 'Digit3' },
                 { keys: ['Ctrl/Cmd+Shift+I'], action: 'Show or hide the Inspector', file: 'src/app/panes.js', needle: "e.code === 'KeyI'" }
             ]
         },

@@ -91,7 +91,7 @@ function schedulePreviewPush() {
 function openPreviewTab() {
     const payload = previewPayload();
     if (!payload.entry) { showNotice('Add an HTML page to preview.', true); return; }
-    const doc = Project.assemblePreview(projectFiles, { activeHtml: payload.entry, assetUrls: projectAssetUrls, baseUrl: projectBaseUrl, liveJs: true });
+    const doc = Project.assemblePreview(projectFiles, { activeHtml: payload.entry, assetUrls: projectAssetUrls, baseUrl: projectBaseUrl });
     if (previewTabUrl) URL.revokeObjectURL(previewTabUrl);
     previewTabUrl = URL.createObjectURL(new Blob([doc], { type: 'text/html' }));
     if (!window.open(previewTabUrl, '_blank')) showNotice('The browser blocked the new tab. Allow pop-ups for this page and try again.', true);
