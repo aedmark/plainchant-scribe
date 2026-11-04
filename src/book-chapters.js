@@ -201,5 +201,156 @@
         return { entries: next, path: path, removed: [] };
     }
 
-    return { list: list, titleOf: titleOf, add: add, rename: rename, remove: remove, move: move, incomingLinks: incomingLinks, slug: slug };
+    /* ---------- split and merge (P3-03, D-027) ---------- */
+
+    const ID_REFS = ['aria-labelledby', 'aria-describedby', 'for', 'headers'];
+    const indentOf = (text, offset) => { const m = /[ \t]*$/.exec(text.slice(text.lastIndexOf('\n', offset - 1) + 1, offset)); return m ? m[0] : ''; };
+
+    function freePath(entries, model, dir, title) {
+        const base = slug(title);
+        let file = base, n = 2;
+        const taken = (p) => Object.prototype.hasOwnProperty.call(entries, p) || model.manifest.items.some((i) => i.path === p);
+        while (taken(dir + file + '.xhtml')) file = base + '-' + n++;
+        return { path: dir + file + '.xhtml', file: file };
+    }
+
+    function freeItemId(model, file) {
+        const ids = new Set(model.ast.elements.map((el) => XmlAst.getAttr(el, 'id')).filter((v) => v != null));
+        const stem = /^[a-z]/.test(file) ? file : 'c-' + file;
+        let id = stem;
+        for (let k = 2; ids.has(id); k++) id = stem + '-' + k;
+        return id;
+    }
+
+    // Rewrites every href in the book's XHTML files whose target moves. map(target) gets { path, fragment } as the
+    // link resolved before the change (from `before(file)`, the file's old path) and returns the new target or null.
+    function retarget(entries, before, map) {
+        const next = Object.assign({}, entries);
+        Object.keys(entries).filter((p) => /\.xhtml?$/i.test(p)).forEach((file) => {
+            const ast = XmlAst.parse(entries[file]);
+            if (!ast.wellFormed) return;
+            let edits = [];
+            ast.elements.forEach((el) => {
+                if (el.local === 'link') return;
+                el.attrs.forEach((a) => {
+                    if (a.local !== 'href' || (a.ns && a.ns !== 'http://www.w3.org/1999/xlink')) return;
+                    const r = Book.resolveHref(before(file), a.value);
+                    if (r.remote || !r.path) return;
+                    let fragment = r.fragment;
+                    try { fragment = fragment == null ? null : decodeURIComponent(fragment); } catch (e) { /* as written */ }
+                    const to = map({ path: r.path, fragment: fragment }, file);
+                    if (!to) return;
+                    const href = (to.path === file ? '' : Book.hrefFor(file, to.path)) + (to.fragment ? '#' + encodeURIComponent(to.fragment) : '');
+                    if (href && href !== a.value) edits = edits.concat(XmlAst.setAttr(ast, el, a.name, href));
+                });
+            });
+            if (edits.length) next[file] = XmlAst.applyEdits(entries[file], edits);
+        });
+        return next;
+    }
+
+    // Splits a chapter at the heading starting at offset `start`: the heading (or the wrapper it opens) and everything
+    // after it in the body move to a new chapter right after, named from the heading, with matching wrappers.
+    function split(entries, path, start) {
+        const model = readBook(entries);
+        const text = entries[path];
+        const ast = XmlAst.parse(text || '');
+        if (!ast.wellFormed) throw fail('not-well-formed', path + ' is not well-formed; fix it in the code editor first.');
+        const heading = ast.elements.find((e) => e.start === start && e.ns === XHTML && /^h[1-6]$/.test(e.local));
+        if (!heading) throw fail('not-a-heading', 'Select a heading in the chapter to split at.');
+        const body = ast.elements.find((e) => e.local === 'body' && e.ns === XHTML);
+        if (!body || heading.start < body.openEnd || heading.end > body.closeStart) throw fail('not-a-heading', 'The heading is not in the chapter\'s body.');
+        // Climb while the element is the first thing in its parent, so a <section> it opens moves whole.
+        let cut = heading;
+        for (let up = ast.byId[cut.parentId]; up && up !== body && up.type === 'element'; up = ast.byId[cut.parentId]) {
+            if (/\S/.test(text.slice(up.openEnd, cut.start).replace(/<!--[\s\S]*?-->/g, ''))) break;
+            cut = up;
+        }
+        if (!/\S/.test(text.slice(body.openEnd, cut.start).replace(/<!--[\s\S]*?-->/g, ''))) throw fail('nothing-before', 'The heading is at the very start of the chapter, so there is nothing to split off.');
+        const wrappers = [];
+        for (let up = ast.byId[cut.parentId]; up && up !== body; up = ast.byId[up.parentId]) wrappers.unshift(up);
+        const title = XmlAst.textContent(heading).replace(/\s+/g, ' ').trim() || 'Untitled';
+        const dir = path.slice(0, path.lastIndexOf('/') + 1);
+        const target = freePath(entries, model, dir, title);
+        // Wrappers are copied without the attributes that name or point at ids, so no id is duplicated.
+        const open = (el) => indentOf(text, el.start) + '<' + el.name + el.attrs.filter((a) => a.local !== 'id' && ID_REFS.indexOf(a.local) === -1).map((a) => ' ' + text.slice(a.start, a.end)).join('') + '>';
+        const moved = text.slice(cut.start, body.closeStart);
+        let fresh = text.slice(0, body.openEnd) + '\n' + wrappers.map((w) => open(w) + '\n').join('') + indentOf(text, cut.start) + moved + text.slice(body.closeStart);
+        const freshAst = XmlAst.parse(fresh);
+        const titleEl = freshAst.elements.find((e) => e.local === 'title' && e.ns === XHTML);
+        if (titleEl) fresh = XmlAst.applyEdits(fresh, XmlAst.setText(freshAst, titleEl, title));
+        const kept = text.slice(0, cut.start).replace(/[ \t]+$/, '') + wrappers.slice().reverse().map((w) => indentOf(text, w.start) + '</' + w.name + '>\n').join('') + text.slice(body.closeStart);
+        const movedIds = new Set(ast.elements.filter((e) => e.start >= cut.start && e.end <= body.closeStart).map((e) => XmlAst.getAttr(e, 'id')).filter((v) => v != null));
+        let next = Object.assign({}, entries, { [path]: kept, [target.path]: fresh });
+        // Links resolve as they did before: the new file's links were written for the old file.
+        next = retarget(next, (file) => (file === target.path ? path : file), (t) => {
+            if (t.path !== path || !t.fragment) return null;
+            return { path: movedIds.has(t.fragment) ? target.path : path, fragment: t.fragment };
+        });
+        const id = freeItemId(model, target.file);
+        const spineIndex = model.spine.itemrefs.findIndex((r) => r.item && r.item.path === path) + 1;
+        next = withOpf(next, (m) => OpfEdit.addItem(m, { id: id, path: target.path, mediaType: 'application/xhtml+xml' }));
+        next = withOpf(next, (m) => OpfEdit.addItemref(m, id, { index: spineIndex }));
+        next = withNav(next, (nav) => {
+            if (nav.toc.entries.some((e) => e.target && e.target.path === target.path)) return [];
+            const anchor = tocEntriesFor(nav, path).slice(-1)[0];
+            const item = { label: title, path: target.path };
+            return anchor ? Nav.addEntry(nav, anchor, 'after', item) : (nav.toc.list ? Nav.addEntry(nav, nav.toc, 'append', item) : []);
+        });
+        return { entries: next, path: target.path, removed: [] };
+    }
+
+    // Merges the next chapter in the spine into this one: its body is appended, clashing ids are renamed, links that
+    // pointed at it point into this chapter, and it is deleted. This chapter's <head> is kept.
+    function merge(entries, path) {
+        const chapters = list(entries);
+        const at = chapters.findIndex((c) => c.path === path);
+        if (at === -1) throw fail('not-a-chapter', path + ' is not in the spine.');
+        const other = chapters[at + 1];
+        if (!other) throw fail('no-next', 'This is the last chapter, so there is nothing to merge into it.');
+        const a = XmlAst.parse(entries[path] || ''), b = XmlAst.parse(entries[other.path] || '');
+        if (!a.wellFormed || !b.wellFormed) throw fail('not-well-formed', 'Both chapters must be well-formed; fix them in the code editor first.');
+        const bodyA = a.elements.find((e) => e.local === 'body' && e.ns === XHTML), bodyB = b.elements.find((e) => e.local === 'body' && e.ns === XHTML);
+        if (!bodyA || !bodyB || bodyA.selfClosing || bodyB.selfClosing) throw fail('not-well-formed', 'Both chapters need a <body>.');
+        const idsA = new Set(a.elements.map((e) => XmlAst.getAttr(e, 'id')).filter((v) => v != null));
+        const rename = new Map();
+        const inB = b.elements.filter((e) => e.start >= bodyB.openEnd && e.end <= bodyB.closeStart);
+        inB.forEach((e) => {
+            const id = XmlAst.getAttr(e, 'id');
+            if (id == null || !idsA.has(id)) return;
+            let n = 2, fresh = id + '-' + n;
+            while (idsA.has(fresh) || rename.has(fresh)) fresh = id + '-' + (++n);
+            rename.set(id, fresh);
+        });
+        let edits = [];
+        inB.forEach((e) => e.attrs.forEach((attr) => {
+            if (attr.local === 'id' && rename.has(attr.value)) edits = edits.concat(XmlAst.setAttr(b, e, attr.name, rename.get(attr.value)));
+            else if (ID_REFS.indexOf(attr.local) !== -1 && attr.value.split(/\s+/).some((v) => rename.has(v))) edits = edits.concat(XmlAst.setAttr(b, e, attr.name, attr.value.split(/\s+/).map((v) => rename.get(v) || v).join(' ')));
+            // A fragment-only link in the next chapter meant its own element, which may now have a new id.
+            else if (attr.local === 'href' && attr.value.charAt(0) === '#' && rename.has(decodeURIComponent(attr.value.slice(1)))) edits = edits.concat(XmlAst.setAttr(b, e, attr.name, '#' + rename.get(decodeURIComponent(attr.value.slice(1)))));
+        }));
+        const textB = XmlAst.applyEdits(entries[other.path], edits);
+        const bodyB2 = XmlAst.parse(textB).elements.find((e) => e.local === 'body' && e.ns === XHTML);
+        const firstId = (() => { const el = XmlAst.parse(textB).elements.find((e) => e.start >= bodyB2.openEnd && XmlAst.getAttr(e, 'id') != null); return el ? XmlAst.getAttr(el, 'id') : null; })();
+        const textA = entries[path];
+        const merged = textA.slice(0, bodyA.closeStart) + textB.slice(bodyB2.openEnd, bodyB2.closeStart).replace(/^[ \t]*\r?\n/, '') + textA.slice(bodyA.closeStart);
+        let next = Object.assign({}, entries, { [path]: merged });
+        // Links into the removed chapter (including the moved part's own) now point into this one.
+        next = retarget(next, (file) => file, (t) => {
+            if (t.path === other.path) return { path: path, fragment: t.fragment ? (rename.get(t.fragment) || t.fragment) : firstId };
+            return null;
+        });
+        // In the merged chapter, links to itself become fragment-only, and those that pointed at the next chapter's
+        // renamed ids follow them. Other files keep their links as written.
+        next = retarget(next, (file) => file, (t, file) => (file === path && t.path === path && t.fragment ? { path: path, fragment: t.fragment } : null));
+        const model = readBook(next);
+        const item = model.manifest.items.find((i) => i.path === other.path);
+        if (item) next = withOpf(next, (m) => OpfEdit.removeItem(m, item.id));
+        delete next[other.path];
+        const sheetsOf = (ast) => ast.elements.filter((el) => el.local === 'link' && /\bstylesheet\b/i.test(XmlAst.getAttr(el, 'rel') || '')).map((el) => XmlAst.getAttr(el, 'href'));
+        const lost = sheetsOf(b).filter((h) => sheetsOf(a).indexOf(h) === -1);
+        return { entries: next, path: path, removed: [other.path], renamedIds: Array.from(rename.entries()), lostStylesheets: lost };
+    }
+
+    return { list: list, titleOf: titleOf, add: add, rename: rename, remove: remove, move: move, incomingLinks: incomingLinks, slug: slug, split: split, merge: merge };
 });

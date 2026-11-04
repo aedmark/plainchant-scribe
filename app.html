@@ -404,7 +404,10 @@
         <div id="inspChaptersPane" class="inspector-body" hidden>
             <div class="panel-bar chapters-bar">
                 <span class="parts-help">The reading order. Drag a chapter, or use its arrows, to move it; the contents follow.</span>
-                <button type="button" class="mini" id="chapterAddBtn">Add chapter&hellip;</button>
+                <span class="chapters-actions">
+                    <button type="button" class="mini" id="chapterSplitBtn" title="Select a heading on the Stage, then split the chapter there: the heading and everything after it become a new chapter.">Split at heading</button>
+                    <button type="button" class="mini" id="chapterAddBtn">Add chapter&hellip;</button>
+                </span>
             </div>
             <ol id="chaptersList" class="chapters-list"></ol>
             <p id="chaptersUnreadable" class="parts-help" hidden></p>

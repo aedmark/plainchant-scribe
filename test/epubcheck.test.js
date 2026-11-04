@@ -136,12 +136,15 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
-    test('epubcheck: a book reorganised with the chapters organiser passes EPUBCheck with no messages (P3-02)', () => {
+    test('epubcheck: a book reorganised with the chapters organiser, split and merged, passes EPUBCheck with no messages (P3-02, P3-03)', () => {
         let files = ExampleBook.create().files;
         files = BookChapters.add(files, 'The Long Road', 'OEBPS/text/chapter-1.xhtml').entries;
         files = BookChapters.rename(files, 'OEBPS/text/chapter-2.xhtml', 'Spines & Contents').entries;
         files = BookChapters.move(files, 'OEBPS/text/chapter-3.xhtml', 0).entries;
         files = BookChapters.remove(files, 'OEBPS/text/chapter-1.xhtml').entries;
+        const ch3 = 'OEBPS/text/chapter-3.xhtml';
+        files = BookChapters.split(files, ch3, XmlAst.parse(files[ch3]).elements.find((e) => XmlAst.getAttr(e, 'id') === 'lists').start).entries;
+        files = BookChapters.merge(files, ch3).entries;
         const r = epubcheck(oracle.jar, files);
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });

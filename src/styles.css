@@ -996,6 +996,7 @@ body.shaded #editor {
 .ask-content { max-width: 440px; }
 /* Book panel (P3-01) */
 .chapters-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.5rem; }
+.chapters-actions { display: inline-flex; gap: 0.3rem; flex-shrink: 0; }
 .chapters-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
 .chapter-row { display: flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.4rem; border: 1px solid var(--border-void); border-radius: 0.3rem; background: var(--bg-sunken); }
 .chapter-row[aria-current="true"] { border-color: var(--border-strong); }

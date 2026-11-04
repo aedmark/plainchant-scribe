@@ -81,3 +81,68 @@ test('book-chapters: incoming links count other chapters\' links, not the conten
     files[bcCh(2)] = files[bcCh(2)].replace('<blockquote>', '<p><a href="./chapter-3.xhtml">three</a></p>\n    <blockquote>');
     assert.deepEqual(BookChapters.incomingLinks(files, bcCh(3)).map((l) => l.from), [bcCh(1), bcCh(1), bcCh(2)]);
 });
+
+const bcStart = (text, test) => XmlAst.parse(text).elements.find(test).start;
+
+test('book-chapters: split moves a heading and what follows into a new chapter, with wrappers and links following (P3-03)', () => {
+    const files = bcBook();
+    const r = BookChapters.split(files, bcCh(3), bcStart(files[bcCh(3)], (e) => XmlAst.getAttr(e, 'id') === 'notes'));
+    const fresh = r.entries[r.path], kept = r.entries[bcCh(3)];
+    assert.equal(r.path, 'OEBPS/text/notes.xhtml');
+    assert.deepEqual(bcTitles(r.entries), ['A Book Is a Folder of Files', 'Chapters and Contents', 'A Page of Typical Elements', 'Notes']);
+    assert.ok(fresh.indexOf('<title>Notes</title>') !== -1);
+    assert.ok(fresh.indexOf('<section epub:type="chapter">\n    <h2 id="notes">Notes</h2>') !== -1, 'the wrapper is copied without its id or aria-labelledby');
+    assert.equal(kept.indexOf('id="notes"'), -1);
+    assert.ok(kept.indexOf('href="notes.xhtml#note-1"') !== -1, 'a link in the old chapter to a moved note follows it');
+    assert.ok(fresh.indexOf('href="chapter-3.xhtml#ref-1"') !== -1, 'a link in the moved part to an id left behind names the old chapter');
+    assert.deepEqual(bcToc(r.entries).slice(-1)[0], ['Notes', r.path], 'a contents entry is added for the new chapter');
+    assert.deepEqual(bcProblems(r.entries), []);
+    [fresh, kept].forEach((t) => assert.deepEqual(Xhtml.check(t, { path: 'x.xhtml' }).problems, []));
+    // A link from another chapter into the moved part follows too.
+    const linked = bcBook();
+    linked[bcCh(1)] = linked[bcCh(1)].replace('<ul>', '<p><a href="chapter-3.xhtml#notes">notes</a> <a href="chapter-3.xhtml#lists">lists</a></p>\n    <ul>');
+    const r2 = BookChapters.split(linked, bcCh(3), bcStart(linked[bcCh(3)], (e) => XmlAst.getAttr(e, 'id') === 'notes'));
+    assert.ok(r2.entries[bcCh(1)].indexOf('<a href="notes.xhtml#notes">notes</a> <a href="chapter-3.xhtml#lists">lists</a>') !== -1);
+});
+
+test('book-chapters: a heading that opens a section takes the section; one at the very start is refused', () => {
+    const files = bcBook();
+    files[bcCh(2)] = files[bcCh(2)].replace('</section>', '</section>\n  <section id="part-b">\n    <h2 id="b">Part B</h2>\n    <p>B text.</p>\n  </section>');
+    const r = BookChapters.split(files, bcCh(2), bcStart(files[bcCh(2)], (e) => XmlAst.getAttr(e, 'id') === 'b'));
+    assert.ok(r.entries[r.path].indexOf('<body epub:type="bodymatter">\n  <section id="part-b">') !== -1, 'the whole section moves, id and all');
+    assert.equal(r.entries[bcCh(2)].indexOf('part-b'), -1);
+    assert.deepEqual(bcProblems(r.entries), []);
+    bcThrows(() => BookChapters.split(files, bcCh(2), bcStart(files[bcCh(2)], (e) => e.local === 'h1')), 'nothing-before');
+    bcThrows(() => BookChapters.split(files, bcCh(2), bcStart(files[bcCh(2)], (e) => e.local === 'p')), 'not-a-heading');
+});
+
+test('book-chapters: merge appends the next chapter, renames clashing ids, and points its links into the merged chapter', () => {
+    const files = bcBook();
+    files[bcCh(2)] = files[bcCh(2)].replace('<blockquote>', '<p id="chapter-1">clash <a href="#chapter-1">self</a> <a href="chapter-1.xhtml#chapter-1">one</a></p>\n    <blockquote>');
+    files[bcCh(3)] = files[bcCh(3)].replace('<ol>', '<p><a href="chapter-2.xhtml#chapter-1">x</a> <a href="chapter-2.xhtml">y</a></p>\n    <ol>');
+    const r = BookChapters.merge(files, bcCh(1));
+    const merged = r.entries[bcCh(1)];
+    assert.ok(!(bcCh(2) in r.entries));
+    assert.deepEqual(r.removed, [bcCh(2)]);
+    assert.deepEqual(r.renamedIds, [['chapter-1', 'chapter-1-2']]);
+    assert.ok(merged.indexOf('<p id="chapter-1-2">clash <a href="#chapter-1-2">self</a> <a href="#chapter-1">one</a></p>') !== -1, merged);
+    assert.ok(r.entries[bcCh(3)].indexOf('<a href="chapter-1.xhtml#chapter-1-2">x</a> <a href="chapter-1.xhtml#chapter-2">y</a>') !== -1, 'into the renamed id, and the chapter\'s start');
+    assert.deepEqual(bcToc(r.entries).map((x) => x[1]), [bcCh(1), bcCh(1), bcCh(3)], 'its contents entry now points into the merged chapter');
+    assert.equal(merged.indexOf('<title>A Book Is a Folder of Files</title>') !== -1, true, 'the merged chapter keeps its own head');
+    assert.deepEqual(bcProblems(r.entries), []);
+    assert.deepEqual(Xhtml.check(merged, { path: bcCh(1) }).problems, []);
+    bcThrows(() => BookChapters.merge(bcBook(), bcCh(3)), 'no-next');
+    const sheets = bcBook();
+    sheets[bcCh(2)] = sheets[bcCh(2)].replace('</head>', '  <link rel="stylesheet" type="text/css" href="../css/extra.css"/>\n</head>');
+    assert.deepEqual(BookChapters.merge(sheets, bcCh(1)).lostStylesheets, ['../css/extra.css']);
+});
+
+test('book-chapters: splitting then merging gives back the same body and contents targets', () => {
+    const files = bcBook();
+    const s = BookChapters.split(files, bcCh(3), bcStart(files[bcCh(3)], (e) => XmlAst.getAttr(e, 'id') === 'notes'));
+    const m = BookChapters.merge(s.entries, bcCh(3));
+    const text = (t) => XmlAst.textContent(XmlAst.find(XmlAst.parse(t), 'body')).replace(/\s+/g, ' ').trim();
+    assert.equal(text(m.entries[bcCh(3)]), text(files[bcCh(3)]));
+    assert.ok(m.entries[bcCh(3)].indexOf('href="#note-1"') !== -1 && m.entries[bcCh(3)].indexOf('href="#ref-1"') !== -1, 'the note links are fragment-only again');
+    assert.deepEqual(bcProblems(m.entries), []);
+});

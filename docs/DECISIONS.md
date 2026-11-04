@@ -195,6 +195,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** Reordering rewrites the toc's top-level list (D-016), so inline markup in those labels is lost when chapters move. New chapters are placed after the chapter on the Stage.
 **Review trigger:** Authors need to keep chapters out of the toc, or to move chapters without rewriting the toc list.
 
+## D-027 Splitting and merging chapters  (2026-11-04, status: accepted)
+**Context:** `P3-03` needed choices about how a split is made, how merging works, what happens to links to moved content, and what the table of contents does. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. Split at the heading selected on the Stage or in the code. The heading, or the wrapper it opens when it is the first thing in it, and everything after it in the body become a new chapter right after, named from the heading. The new chapter's wrappers are copies of the old ones without `id`, `aria-labelledby`, `aria-describedby`, `for`, or `headers`. 2. Merge with the next chapter, after a confirm: its body is appended, clashing ids are renamed with a suffix, and it is deleted. The merged chapter keeps its own `<head>`. 3. Links are rewritten everywhere: every href in the book's XHTML files that pointed at a moved id names the file it is now in, and nothing is left broken. 4. After a split, toc entries follow their targets through the link rewrite, and a top-level entry is added after the original's when none points at the new chapter. After a merge, entries for the removed chapter point into the merged one (its first id, or the fragment they had).
+**Alternatives:** Picking a heading from a list (rejected: the Stage selection is already there); merging any two chapters (rejected: next-chapter covers the common case and keeps order clear); leaving links for Problems to report (rejected: the Studio knows where everything went); retargeting without adding a toc entry (rejected: the new chapter would be missing from the contents).
+**Consequences:** A split cannot be made at the very start of a chapter. The merged chapter may end up with two sections typed as chapters; that is valid. Link rewriting reads every XHTML file in the book once per split or merge.
+**Review trigger:** Authors split in the middle of a section and want the section kept whole, or need to merge non-adjacent chapters.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

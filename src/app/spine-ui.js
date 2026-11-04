@@ -67,6 +67,7 @@ function chapterRow(c, i, count) {
         mini('↑', 'Move up', () => chapterAction((e) => BookChapters.move(e, c.path, i - 1), 'Moved ' + c.title + ' up.'), i === 0),
         mini('↓', 'Move down', () => chapterAction((e) => BookChapters.move(e, c.path, i + 1), 'Moved ' + c.title + ' down.'), i === count - 1),
         mini('Rename', 'Rename', () => renameChapter(c)),
+        mini('Merge', 'Merge with the next chapter', () => mergeChapter(c, i), i === count - 1),
         mini('Delete', 'Delete', () => deleteChapter(c)));
     li.addEventListener('dragstart', (e) => { chapterDrag = { path: c.path, from: i }; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', c.path); });
     li.addEventListener('dragover', (e) => {
@@ -127,4 +128,32 @@ async function deleteChapter(c) {
     chapterAction((entries) => BookChapters.remove(entries, c.path), 'Deleted ' + c.title + '.');
 }
 
+// Split at the heading selected on the Stage or in the code (P3-03, D-027).
+function splitAtHeading() {
+    const node = selectedPcId ? HtmlAst.findById(currentHtmlAst, selectedPcId) : null;
+    if (!node || !/^h[1-6]$/.test(node.tag) || !/\.xhtml?$/i.test(activeHtmlFile)) {
+        showNotice('Select a heading in the chapter on the Stage first, then split there.', true);
+        return;
+    }
+    const path = activeHtmlFile;
+    chapterAction((entries) => BookChapters.split(entries, path, node.start), 'Split the chapter: the new chapter starts at that heading.');
+}
+
+async function mergeChapter(c, i) {
+    let chapters;
+    try { chapters = BookChapters.list(projectFiles.entries); } catch (e) { showNotice(e.message, true); return; }
+    const next = chapters[i + 1];
+    if (!next) return;
+    const text = 'The text of \u201c' + next.title + '\u201d is added to the end of \u201c' + c.title + '\u201d, links to it are pointed into the merged chapter, and ' + next.path.split('/').pop() + ' is deleted. Undo brings it back.';
+    if (!await askConfirm({ title: 'Merge \u201c' + next.title + '\u201d into \u201c' + c.title + '\u201d?', text: text, confirm: 'Merge' })) return;
+    syncBufferFromEditor();
+    let res;
+    try { res = BookChapters.merge(projectFiles.entries, c.path); } catch (e) { showNotice(e.message, true); return; }
+    const notes = [];
+    if (res.renamedIds.length) notes.push('renamed ' + res.renamedIds.length + (res.renamedIds.length === 1 ? ' id' : ' ids') + ' that clashed (' + res.renamedIds.map((p) => p[0] + ' \u2192 ' + p[1]).join(', ') + ')');
+    if (res.lostStylesheets.length) notes.push('the merged text no longer links ' + res.lostStylesheets.join(', '));
+    commitChapters(res, 'Merged the chapters' + (notes.length ? '; ' + notes.join('; ') : '') + '.');
+}
+
 document.getElementById('chapterAddBtn').addEventListener('click', addChapter);
+document.getElementById('chapterSplitBtn').addEventListener('click', splitAtHeading);
