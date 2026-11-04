@@ -1,0 +1,178 @@
+{
+  "$schema": "./manual.schema.json",
+  "project": {
+    "name": "Plainchant Scribe",
+    "short_name": "Scribe",
+    "version": "0.0.0",
+    "repository": "https://github.com/aedmark/plainchant-scribe"
+  },
+  "manual": {
+    "title": "{{project.name}} Manual",
+    "subtitle": "What this EPUB studio will be, how the repository keeps its memory, and why it is shaped this way",
+    "description": "A 3x What / How / Why manual for {{project.name}}. It describes only what exists today: the repository's documentation system and the plan. Planned features live in [ROADMAP.md](../ROADMAP.md) until they ship. Current state lives in [HANDOFF.md](HANDOFF.md); durable decisions live in [DECISIONS.md](DECISIONS.md).",
+    "badges": [
+      "Planning stage",
+      "EPUB 3.3",
+      "Manifold + 3x documentation"
+    ],
+    "footer": "{{project.name}} {{project.version}} · Built with the 3x Documentation Scheme · Facts cite repository evidence."
+  },
+  "theme": {
+    "accent": "#c9a227",
+    "accent_secondary": "#38bdf8",
+    "icon": "❦"
+  },
+  "sections": [
+    {
+      "id": "foundations",
+      "title": "Foundations",
+      "description": "How the repository is organised so that any session can pick up the work.",
+      "entries": [
+        {
+          "id": "repository-memory",
+          "title": "Repository memory (the Manifold)",
+          "summary": "Each kind of project knowledge has one owning document, and a checker keeps them consistent.",
+          "tags": [
+            "docs",
+            "manifold",
+            "D-007"
+          ],
+          "what": "The project's state, rules, plan, decisions, tests, and security notes live in a small set of Markdown documents, each with one owner and an update trigger. `python3 tools/check_docs.py` fails when they disagree: a missing roadmap or decision ID, a broken link, or a path in the repository map that does not exist.",
+          "how": [
+            "`AGENTS.md` holds the standing rules and the repository map; `CLAUDE.md` only imports it.",
+            "`ROADMAP.md` keeps permanent item IDs, `docs/DECISIONS.md` keeps accepted choices with their alternatives, and `docs/HANDOFF.md` is rewritten each time the current state changes.",
+            "`docs/README.md` lists which document owns which fact and what change should trigger an update."
+          ],
+          "why": "Recorded in D-007: a fresh agent session starts with no memory, so the repository has to carry it, and a checker is the cheapest way to stop the documents from quietly contradicting each other.",
+          "evidence": [
+            {
+              "label": "Agent rules and map",
+              "target": "AGENTS.md"
+            },
+            {
+              "label": "Who owns what",
+              "target": "docs/README.md"
+            },
+            {
+              "label": "The checker",
+              "target": "tools/check_docs.py"
+            }
+          ],
+          "related": [
+            "manual-scheme",
+            "plainchant-web-lineage"
+          ]
+        },
+        {
+          "id": "manual-scheme",
+          "title": "This manual (the 3x scheme)",
+          "summary": "A JSON source builds one standalone HTML manual with a What, a How, and a Why for each topic.",
+          "tags": [
+            "docs",
+            "3x",
+            "D-007"
+          ],
+          "what": "The manual you are reading is generated from `docs/plainchant-scribe.manual.json`. Each entry states what something is, how it works, and why it is that way, and cites repository evidence. The generator refuses invalid or placeholder-filled sources.",
+          "how": [
+            "`tools/manual.py check` validates the source against `docs/manual.schema.json`.",
+            "`tools/manual.py build` writes `docs/manual.html`, which is committed.",
+            "`tools/test_manual.py` tests the generator and checks that this manual builds."
+          ],
+          "why": "Recorded in D-007: the Markdown documents are precise but scattered, and a single explorable synthesis helps a newcomer see the shape before reading the details, at the cost of one more document to keep true.",
+          "evidence": [
+            {
+              "label": "Manual source",
+              "target": "docs/plainchant-scribe.manual.json"
+            },
+            {
+              "label": "Generator",
+              "target": "tools/manual.py"
+            },
+            {
+              "label": "Schema",
+              "target": "docs/manual.schema.json"
+            },
+            {
+              "label": "Generator tests",
+              "target": "tools/test_manual.py"
+            }
+          ],
+          "related": [
+            "repository-memory"
+          ]
+        },
+        {
+          "id": "plainchant-web-lineage",
+          "title": "Where the code comes from",
+          "summary": "Scribe is a spinoff of Plainchant Web; a digest carries the history that still matters.",
+          "tags": [
+            "history",
+            "D-003"
+          ],
+          "what": "Plainchant Scribe starts from a copy of Plainchant Web's source at one named commit, without its git history. A digest records what that project built, which of its decisions still apply to Scribe, and the mistakes that cost it time.",
+          "how": [
+            "The copy happens at roadmap item `P0-02`, from the commit hash recorded in D-003.",
+            "`docs/archive/plainchant-web-lineage.md` lists the decisions as keep, adapt, or drop, and the gotchas, using a numbering form the documentation checker ignores.",
+            "The upstream repository stays the place for full history."
+          ],
+          "why": "Recorded in D-003: a long inherited history would flood a new session's context with features Scribe removes, while a digest keeps the lessons.",
+          "evidence": [
+            {
+              "label": "The digest",
+              "target": "docs/archive/plainchant-web-lineage.md"
+            },
+            {
+              "label": "The decision",
+              "target": "docs/DECISIONS.md"
+            }
+          ],
+          "related": [
+            "repository-memory",
+            "the-plan"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "direction",
+      "title": "Direction",
+      "description": "What the project intends to become, from the plan the maintainer agreed.",
+      "entries": [
+        {
+          "id": "the-plan",
+          "title": "The plan in brief",
+          "summary": "An EPUB studio whose book files stay the source of truth, built in eight phases.",
+          "tags": [
+            "roadmap",
+            "epub",
+            "D-002"
+          ],
+          "what": "Plainchant Scribe will let an author make, lay out, check, and export reflowable EPUB 3.3 books. The book's XHTML, CSS, and package files are authoritative and are edited by exact-range splices, never rewritten. Nothing in this entry is built yet.",
+          "how": [
+            "`ROADMAP.md` orders the work: spinoff and renaming, the XML and book format, the Reading Stage, structure tools, layout, import and export with validation, accessibility, and later extras.",
+            "Validation is a built-in rule set plus an optional EPUBCheck run in the desktop app (D-005).",
+            "Markdown is import only, and Kindle formats are out of scope (D-002, D-006)."
+          ],
+          "why": "Recorded in D-002 and D-004: keeping the author's files untouched is the idea that made Plainchant Web trustworthy, and a reflowable EPUB 3.3 target serves most authors with the least moving parts.",
+          "evidence": [
+            {
+              "label": "The roadmap",
+              "target": "ROADMAP.md"
+            },
+            {
+              "label": "The decisions",
+              "target": "docs/DECISIONS.md"
+            },
+            {
+              "label": "Planned architecture",
+              "target": "docs/ARCHITECTURE.md"
+            }
+          ],
+          "related": [
+            "plainchant-web-lineage"
+          ]
+        }
+      ]
+    }
+  ]
+}

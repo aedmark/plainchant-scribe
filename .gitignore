@@ -1,0 +1,8 @@
+node_modules/
+__pycache__/
+.idea/
+.vscode/
+src-tauri/target/
+src-tauri/dist/
+*.epub
+!test/fixtures/*.epub
