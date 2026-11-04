@@ -7,7 +7,7 @@
     <title>Plainchant Scribe: EPUB studio</title>
     <meta name="description"
           content="Make, lay out, check, and export EPUB books from your own XHTML, CSS, and package files. In development.">
-    <meta name="theme-color" content="#0f1115">
+    <meta name="theme-color" content="#f4efe4">
     <meta name="apple-mobile-web-app-title" content="Plainchant Scribe">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -343,7 +343,7 @@
                 <button type="button" class="chip" id="libViewScripts" aria-pressed="true">Projects</button>
                 <button type="button" class="chip" id="libViewTrash" aria-pressed="false">Recently deleted</button>
             </div>
-            <button type="button" class="chip" id="libStarterBtn">Load Starter Template</button>
+            <button type="button" class="chip" id="libStarterBtn">Load Example Page</button>
             <button type="button" class="chip" id="libImport">Open file&hellip;</button>
             <input type="file" id="importInput" accept=".html,.htm,.css,.js" multiple hidden>
         </div>
@@ -487,10 +487,10 @@
             <fieldset class="settings-group">
                 <legend>Theme</legend>
                 <div class="radio-row">
-                    <label><input type="radio" name="theme" value="dark"> Dark</label>
+                    <label><input type="radio" name="theme" value="system"> Match system</label>
                     <label><input type="radio" name="theme" value="light"> Light</label>
-                    <label><input type="radio" name="theme" value="retro"> Retro</label>
-                    <label><input type="radio" name="theme" value="system"> System</label>
+                    <label><input type="radio" name="theme" value="dark"> Dark</label>
+                    
                 </div>
             </fieldset>
             <fieldset class="settings-group">
@@ -527,8 +527,8 @@
             <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
         </div>
         <div class="modal-body">
-            <h3>Dreamweaver-Style Round-Trip Editing</h3>
-            <p>Your HTML, CSS, and JavaScript files are always the single source of truth. Every visual action on the Stage splices only the exact character range in your source code.</p>
+            <h3>Round-Trip Editing: Your Files Stay Yours</h3>
+            <p>Plainchant Scribe is an EPUB studio in development. Today it edits ordinary HTML and CSS files; book features (the package file, a reading view, structure, layout, import and export) arrive in phases, described in the manual. Your files are always the single source of truth: every visual action on the Stage splices only the exact character range it touches.</p>
             <ul>
                 <li><strong>Select, Highlight &amp; Edit Text in Place:</strong> In <strong>Design Mode</strong>, click any element on the Stage to highlight its code block in the Code editor and view its live margin/padding box model. Clicking a text element places a live text cursor right where you clicked so you can type and edit copy directly on the Stage while the HTML updates in real time.</li>
                 <li><strong>Direct Stage Reordering:</strong> Drag elements on the Stage (or grab the <code>&#10287;</code> badge handle) to reorder them, or use the floating badge buttons (<code>&uarr;</code>, <code>&darr;</code>, <code>&#10697;</code>, <code>&#10005;</code>) and <kbd>Alt+&uarr;/&darr;</kbd>.</li>
@@ -542,7 +542,7 @@
             <h3 id="shortcutsHeading">Keyboard Shortcuts</h3>
             <div id="shortcutList" class="shortcut-list" aria-labelledby="shortcutsHeading"></div>
             <div class="help-actions">
-                <button type="button" class="btn primary" id="helpLoadStarter">Load Starter Template</button>
+                <button type="button" class="btn primary" id="helpLoadStarter">Load Example Page</button>
             </div>
         </div>
         <div class="modal-footer">

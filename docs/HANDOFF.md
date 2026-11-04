@@ -14,15 +14,15 @@ Changes: [CHANGELOG.md](CHANGELOG.md). Older sessions and the Plainchant Web his
 
 ## Current state
 
-_Last updated: 2026-11-03, session 4, on `master`: the web-only features are removed (`P0-04`) and the app is green._
+_Last updated: 2026-11-03, session 5, on `master`: phase 0 is complete (`P0-05`, `P0-06` added the manuscript look and the new home page)._
 
-**Where things stand, in one paragraph:** Phase 0 items `P0-01` to `P0-04` are done. The repository holds the plan, decisions, documentation schemes, and the inherited Plainchant Web code, renamed and trimmed: Live JS mode, the Console, the Insert palette, breakpoints, flex and grid handles, and the pseudo-state bar are gone. The app is now a Design-mode HTML and CSS editor with an Inspector (Properties, CSS Designer, Parts, Problems), Explorer, Assets, Prism colours, File and Edit menus, folder links, and the send-to-reader preview. No EPUB feature exists yet. Next: the home page copy and the manuscript look (`P0-05`, `P0-06`), then the XML parser (`P1-01`).
+**Where things stand, in one paragraph:** Phase 0 is done (`P0-01` to `P0-06`). The repository holds the plan, decisions, documentation schemes, and the inherited Plainchant Web code, renamed and trimmed: Live JS mode, the Console, the Insert palette, breakpoints, flex and grid handles, and the pseudo-state bar are gone. The app is now a Design-mode HTML and CSS editor with an Inspector (Properties, CSS Designer, Parts, Problems), Explorer, Assets, Prism colours, File and Edit menus, folder links, and the send-to-reader preview. No EPUB feature exists yet. The app has the manuscript look in light and dark (D-008) and a new home page. Next: the XML parser (`P1-01`), which everything in phase 1 depends on.
 
 **Verified** (2026-11-03, Linux, Node, Python 3, Rust/Cargo; browser pane for the load check)
 
 | Suite | Result |
 | --- | --- |
-| `npm test` | **89/89** |
+| `npm test` | **93/93** |
 | `cargo test --manifest-path src-tauri/Cargo.toml`, `cargo build` | **7/7**, passes |
 | `python3 tools/check_docs.py` | `0 error(s), 0 warning(s)` |
 | `python3 tools/manual.py check docs/plainchant-scribe.manual.json`, `python3 -m unittest tools/test_manual.py` | 2 sections, 4 entries; 6/6 OK |
@@ -31,6 +31,7 @@ _Last updated: 2026-11-03, session 4, on `master`: the web-only features are rem
 - **The trimmed studio** (`P0-02`, `P0-04`, D-001, D-003): Design-mode editing, Inspector, Explorer, Assets, Problems, Parts, Format, find and replace, undo across files, versions, library, folder links, Prism colours, File and Edit menus, shortcut sheet, and the preview server. Not rewritten; see the lineage digest.
 - **Renamed shell** (`P0-03`): name, bundle id `io.plainchant.scribe`, `0.1.0`, separate storage names. A structure test fails if the old name returns.
 - **Removal guard** (`P0-04`): a structure test fails if a removed file, element, or identifier returns.
+- **Manuscript look** (`P0-06`, D-008): light and dark palettes, EB Garamond headings, Match system / Light / Dark in Settings; contrast and palette-parity tests. New home page (`P0-05`).
 - **Documentation schemes** (`P0-01`, D-007).
 
 **Not verified**
@@ -45,12 +46,12 @@ _Last updated: 2026-11-03, session 4, on `master`: the web-only features are rem
 - `inspector-ui.js` (447 lines) and `stage.js` (461) are the largest app scripts against the 500-line limit; new Inspector or Stage behaviour needs a new file.
 - In the agent's browser pane the service worker does not register for either app (an "unknown error occurred when fetching the script" console message); this is the pane, not the app.
 - `tools/check_docs.py` and `tools/manual.py` are the shared schemes' own files; replace them from their source repositories instead of editing (D-007).
-- IDs in the lineage digest are written so the checker ignores them on purpose. `icons/` and `fonts/` are still Plainchant Web's until `P0-06`.
+- IDs in the lineage digest are written so the checker ignores them on purpose. `icons/` are still Plainchant Web's. The example page behind "Load Example Page" is still a web page until `P1-02`.
 
 ## Next steps (in order)
 
-1. `P0-05` and `P0-06`: Scribe copy and the manuscript look with light and dark modes (D-008).
-2. Start `P1-01`, the XML parser, which every later phase depends on.
+1. Start `P1-01`, the XML parser (`src/xml-ast.js`), which every later phase depends on. Re-read the XML 1.0 well-formedness rules and the EPUB 3.3 XHTML content document rules first (D-004).
+2. Then `P1-02` (the new-book template) and `P1-03` (the book model).
 
 ## Open questions for maintainers
 
@@ -69,6 +70,15 @@ oldest to `docs/archive/` and leave a pointer here.
 **Done:** P0-01
 **Changed:** new repository `plainchant-scribe`: `AGENTS.md`, `CLAUDE.md`, `README.md`, `ROADMAP.md`, `LICENSE`, `docs/*`, the lineage digest in `docs/archive/`, the shared tools in `tools/`, and the 3x manual source and build.
 **Decisions:** D-001 to D-007; questions Q-001 to Q-003.
+
+### Session 5: 2026-11-03: the manuscript look and the home page
+
+**Contributor:** Claude (Sonnet 5.5), with the maintainer
+**Goal:** `P0-05`, `P0-06`.
+**Done:** P0-05, P0-06
+**Changed:** `src/styles.css` (light and dark palettes, variables for every colour, EB Garamond, heading type), `src/home.css` and `index.html` rewritten, `src/app/settings.js` (system default, retro removed), `app.html` (Settings radios, theme colour, Help intro, "Load Example Page"), `sw.js`, `manifest.webmanifest`, six EB Garamond files and its licence in `fonts/`, `test/theme.test.js`, docs.
+**Decisions:** none new (D-008 updated).
+**Verified:** the table in Current state; screenshots of the studio and the home page in both modes.
 
 ### Session 4: 2026-11-03: remove the web-only features
 

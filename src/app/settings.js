@@ -1,6 +1,6 @@
 const SETTINGS_KEY = 'plainchant_scribe_settings';
 const SETTING_DEFAULTS = {
-    theme: 'dark',
+    theme: 'system',
     size: 'normal',
     colours: true,
     indent: true,
@@ -12,7 +12,7 @@ const SETTING_DEFAULTS = {
 };
 const SETTING_CHOICES = {
     panes: ['both', 'write', 'preview'],
-    theme: ['dark', 'light', 'retro', 'system'],
+    theme: ['system', 'light', 'dark'],
     size: ['small', 'normal', 'large', 'larger'],
     inspectorDock: ['bottom', 'top', 'left', 'right', 'float'],
     problemsFilter: ['all', 'links', 'accessibility', 'markup']
@@ -52,7 +52,7 @@ function applyLook() {
     root.dataset.theme = themeShown();
     root.style.setProperty('--editor-scale', String(TEXT_SCALE[settings.size]));
     const bar = document.querySelector('meta[name="theme-color"]');
-    if (bar) bar.setAttribute('content', getComputedStyle(root).getPropertyValue('--bg-void').trim() || '#0f1115');
+    if (bar) bar.setAttribute('content', getComputedStyle(root).getPropertyValue('--bg-void').trim() || '#f4efe4');
 }
 
 function setSetting(name, value) {

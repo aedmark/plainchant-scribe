@@ -83,16 +83,16 @@ Things an agent must not change without explicit permission. Every rule includes
 | Path | Purpose |
 | --- | --- |
 | `README.md` | Purpose, status, and where to start |
-| `index.html`, `src/home.css` | Public landing page (a placeholder until `P0-05`) and its stylesheet |
+| `index.html`, `src/home.css` | Public landing page and its stylesheet (same palette as the studio, a test keeps them equal) |
 | `app.html` | Studio application markup and script/style links (no inline script or style) |
 | `src/*.js` | Pure UMD modules, no DOM: parsers, project model, checkers, zip, formatter, colour mapper, folder links, and the rest inherited from Plainchant Web |
 | `src/app/` | Classic scripts sharing one global scope, loaded in order by `app.html` (`core.js` first, `main.js` last) |
-| `src/styles.css` | Studio stylesheet (the inherited dark theme until `P0-06`) |
+| `src/styles.css` | Studio stylesheet: the manuscript look in a light and a dark palette as CSS variables (D-008) |
 | `src/vendor/prism/` | Vendored, unmodified Prism 1.30.0 with its licence, credited in `LICENSE` |
 | `src-tauri/` | Tauri v2 Rust desktop shell, folder and file access, asset server, and opt-in preview server |
 | `test/` | Node unit and structural test runner (`test/run.js`, `test/*.test.js`) |
 | `sw.js`, `manifest.webmanifest`, `package.json` | Offline cache, web app manifest, and scripts |
-| `fonts/`, `icons/` | Bundled fonts with licences, and app icons (still Plainchant Web's until `P0-06`) |
+| `fonts/`, `icons/` | Bundled fonts (EB Garamond, Courier Prime, Inter) with their licences, and app icons (still Plainchant Web's) |
 | `LICENSE` | Project licence |
 | `.gitignore` | Ignored build output and local files |
 | `AGENTS.md` | Canonical agent instructions |

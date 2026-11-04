@@ -23,7 +23,7 @@ A book is a set of files in the Studio's working copy: `mimetype`, `META-INF/con
 | Accessibility metadata | `src/a11y.js`, `src/app/a11y-ui.js` | New | `P6-01`, `P6-02` |
 | CSS splicing, colours, find, formatter, undo, library, versions, assets, folder links, menus | as in Plainchant Web | Inherited | `P0-02` |
 | Send to reader (preview server) | `src-tauri/src/preview.rs`, `src/app/preview-ui.js` | Inherited, adapted | `P5-07` |
-| Manuscript look (colour and type variables, light and dark) | `src/styles.css`, `fonts/` | Rewritten | `P0-06` |
+| Manuscript look (colour and type variables, light and dark) | `src/styles.css`, `src/home.css`, `fonts/`, `src/app/settings.js` | Rewritten (done, D-008) | `P0-06` |
 | Desktop shell | `src-tauri/` | Inherited, renamed | `P0-02`, `P0-03` |
 
 File names are proposals; the roadmap items own the interfaces.

@@ -28,7 +28,7 @@ class ManualTests(unittest.TestCase):
         output = manual.build_html(self.expanded)
         self.assertIn("Plainchant Scribe Manual", output)
         self.assertIn("What it does", output)
-        self.assertEqual(output.count('<article class="entry"'), 4)
+        self.assertEqual(output.count('<article class="entry"'), 5)
 
     def test_build_command_writes_file(self):
         with tempfile.TemporaryDirectory() as directory:

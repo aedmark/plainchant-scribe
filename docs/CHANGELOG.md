@@ -6,6 +6,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ## [Unreleased]
 
+### Added
+
+- **A manuscript look with light and dark modes**: warm paper and ink in light, lamplight in dark, with serif headings (EB Garamond) and typewriter code. Settings has Match system (the default), Light, and Dark; the old Retro theme is gone. The home page is rewritten to match and says plainly where the project stands (`P0-05`, `P0-06`, `D-008`).
+
 ### Removed
 
 - Features the book tool will not use: the Live JS mode and Console, the Insert menu and drag-to-insert, the breakpoint switcher, flex and grid handles, and the pseudo-state bar. The Stage no longer runs scripts at all (`P0-04`).

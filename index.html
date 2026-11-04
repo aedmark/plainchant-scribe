@@ -3,24 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plainchant Scribe: an EPUB studio, in development</title>
-    <meta name="description" content="Plainchant Scribe will let you make, lay out, check, and export EPUB books from your own XHTML, CSS, and package files. It is in development.">
-    <meta name="theme-color" content="#000000">
+    <title>Plainchant Scribe: make the book, keep the files</title>
+    <meta name="description" content="Plainchant Scribe will let you write, lay out, check, and export EPUB books from your own XHTML, CSS, and package files, without a tool rewriting them. In development.">
+    <meta name="theme-color" content="#f4efe4">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link rel="stylesheet" href="src/home.css">
 </head>
 <body>
-<main id="main" class="desk">
-    <article class="script" aria-label="Plainchant Scribe">
-        <section class="sheet title-sheet" aria-labelledby="title">
-            <p class="title-kicker">EPUB 3.3 · In development</p>
-            <h1 id="title">Plainchant Scribe<span class="cursor" aria-hidden="true">_</span></h1>
-            <p class="title-tagline">Make the book. Keep the files.</p>
-            <p class="title-lede">An EPUB studio that edits your own XHTML, CSS, and package files without rewriting them. This page is a placeholder: the studio below is still the editor it was copied from, and is being turned into a book tool. The plan is in the <a href="docs/manual.html">manual</a>.</p>
-            <p class="title-action"><a class="btn primary" href="app.html">Open the studio <span aria-hidden="true">&gt;</span></a></p>
-        </section>
-    </article>
+<a class="skip" href="#main">Skip to the page</a>
+
+<header class="site-head">
+    <div class="wrap">
+        <a class="brand" href="index.html">Plainchant Scribe <small>an EPUB studio</small></a>
+        <nav class="nav" aria-label="Main navigation">
+            <a href="#idea">The idea</a>
+            <a href="#plan">The plan</a>
+            <a href="#today">Today</a>
+            <a href="docs/manual.html">Manual</a>
+        </nav>
+    </div>
+</header>
+
+<main id="main" class="folio">
+    <header class="title-block" aria-labelledby="title">
+        <p class="kicker">EPUB 3.3 &middot; in development</p>
+        <h1 id="title">Plainchant Scribe</h1>
+        <p class="tagline">Make the book. Keep the files.</p>
+        <p class="lede">An EPUB studio that will let you write, lay out, check, and export a book from your own XHTML, CSS, and package files, without a tool rewriting them behind your back.</p>
+        <p class="actions">
+            <a class="btn primary" href="app.html">Open the studio</a>
+            <a class="btn" href="docs/manual.html">Read the manual</a>
+        </p>
+    </header>
+
+    <section id="idea" class="chapter" aria-labelledby="idea-title">
+        <h2 id="idea-title"><span class="numeral">I.</span>The idea</h2>
+        <p>An EPUB is a zip of ordinary files: chapters in XHTML, a stylesheet, images, fonts, and a package file that lists them and puts them in order. Most book tools keep their own model of your book and write the files out when you save. Scribe will not.</p>
+        <p>In Scribe the files are the book. Every change you make, on the page or in a form, edits only the characters it has to. Your formatting, your comments, and the parts of the file you did not touch stay exactly as you wrote them. Export zips the files into an EPUB.</p>
+        <p class="ornament" aria-hidden="true">&#10086;</p>
+    </section>
+
+    <section id="plan" class="chapter" aria-labelledby="plan-title">
+        <h2 id="plan-title"><span class="numeral">II.</span>The plan</h2>
+        <p>The work arrives in this order. Each step is useful on its own.</p>
+        <ol>
+            <li><strong>The book format.</strong> Start a book, and read and edit its package file without disturbing it.</li>
+            <li><strong>A reading view.</strong> See a chapter as a reader would: paged or scrolled, light or dark, on a phone, an e-ink reader, or a tablet.</li>
+            <li><strong>Structure.</strong> Metadata, cover, reading order, and a contents page built from your headings.</li>
+            <li><strong>Layout.</strong> Typography, chapter openers, scene breaks, footnotes, and embedded fonts, all written as plain CSS you can read.</li>
+            <li><strong>Import, export, and checks.</strong> Open an existing EPUB or Markdown, export a valid book, and find problems before a store does.</li>
+            <li><strong>Accessibility and stores.</strong> Accessibility metadata, and a checklist for each store.</li>
+        </ol>
+        <p>Scribe will not be a Markdown writing app, will not make Kindle-only formats (Amazon takes EPUB), and will not support scripted or interactive books.</p>
+        <p class="ornament" aria-hidden="true">&#10086;</p>
+    </section>
+
+    <section id="today" class="chapter" aria-labelledby="today-title">
+        <h2 id="today-title"><span class="numeral">III.</span>Where it stands today</h2>
+        <p>The studio you can open now is the round-trip HTML and CSS editor that Scribe was copied from, renamed and trimmed. It edits ordinary files without rewriting them, shows a live page beside the code, checks links and accessibility, and works offline. <strong>It cannot make an EPUB yet.</strong></p>
+        <p class="note"><strong>No account, no tracking.</strong> Your work stays on your device. The only network feature is an optional one that you switch on yourself, to send a book to a reader on your own network.</p>
+    </section>
 </main>
+
+<footer class="site-foot">
+    <div class="wrap">
+        <p>Plainchant Scribe &mdash; make the book, keep the files.</p>
+        <div class="foot-links">
+            <a href="docs/manual.html">Manual</a>
+            <a href="LICENSE">Licence</a>
+        </div>
+    </div>
+</footer>
 </body>
 </html>

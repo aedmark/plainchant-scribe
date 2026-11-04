@@ -130,6 +130,48 @@
             "repository-memory",
             "the-plan"
           ]
+        },
+        {
+          "id": "manuscript-look",
+          "title": "The manuscript look",
+          "summary": "One palette of paper and ink in a light and a dark mode, with serif headings and typewriter code.",
+          "tags": [
+            "design",
+            "theme",
+            "D-008"
+          ],
+          "what": "The studio and the home page share a warm paper-and-ink look. Settings offers Match system (the default), Light, and Dark. Headings use EB Garamond, code uses Courier Prime, and dense controls use Inter. The Stage still shows your book on white paper, because the book's own styles decide how it looks.",
+          "how": [
+            "`src/styles.css` defines every colour and shadow as a CSS variable. `:root` is the light palette; the dark palette is written once for the system setting and once for the manual choice, so the page has no flash on load.",
+            "`src/app/settings.js` applies the choice as `data-theme` on the root element and sets the browser's theme colour.",
+            "`test/theme.test.js` checks that every text, button, and syntax-colour pair reaches 4.5:1 contrast in both modes, that the two dark blocks match, that no colour is hard-coded outside the theme blocks, and that the home page uses the same palette."
+          ],
+          "why": "Recorded in D-008: a book tool is about written pages rather than code, so it gets its own look instead of the inherited dark developer chrome, at the cost of keeping two palettes checked.",
+          "evidence": [
+            {
+              "label": "Palettes and type",
+              "target": "src/styles.css"
+            },
+            {
+              "label": "Theme setting",
+              "target": "src/app/settings.js"
+            },
+            {
+              "label": "Home page style",
+              "target": "src/home.css"
+            },
+            {
+              "label": "Contrast and parity tests",
+              "target": "test/theme.test.js"
+            },
+            {
+              "label": "EB Garamond licence",
+              "target": "fonts/OFL-EBGaramond.txt"
+            }
+          ],
+          "related": [
+            "repository-memory"
+          ]
         }
       ]
     },

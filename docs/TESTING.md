@@ -1,6 +1,6 @@
 # Testing
 
-**Status:** the inherited Plainchant Web suites run unchanged (`npm test`, 89 tests, and 7 Rust tests), minus the tests of the features removed in `P0-04`; there are no EPUB-specific tests yet. Those are planned below and arrive with their roadmap items.
+**Status:** the inherited Plainchant Web suites run unchanged (`npm test`, 93 tests, and 7 Rust tests), minus the tests of the features removed in `P0-04`; there are no EPUB-specific tests yet. Those are planned below and arrive with their roadmap items.
 
 ## Commands
 
@@ -31,6 +31,7 @@ The full command is in `AGENTS.md`, Run and verify.
 - **Golden books** in `test/fixtures/`: small hand-written EPUBs, valid and deliberately broken, each with the expected findings.
 - **EPUBCheck as the oracle** where Java is available: every exported fixture must pass, and a deliberately broken one must fail. When EPUBCheck is not available the test report says "not run", never "passed" (D-005).
 - **Real reading systems are manual.** Per release, open the sample books in Calibre and record the result and date in HANDOFF. The legacy Kindle is reached through Calibre's conversion, so its results are labelled as such and trusted only once the model is known (D-010, Q-004). No other reader is available to the project. A passing unit suite says nothing about how a reader paginates.
+- **Theme tests** (`test/theme.test.js`) check contrast (4.5:1) for every text, button, and syntax pair in both modes, identical variable sets across themes, no colour outside the theme blocks, and that the home page palette matches the studio's.
 - **Structure tests** keep the inherited rules (no inline script, 500-line limit, no duplicate globals, offline cache list) and a rename guard that fails if the old product name returns (`P0-03`).
 
 ## Known pitfalls
