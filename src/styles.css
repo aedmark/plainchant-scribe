@@ -995,6 +995,17 @@ body.shaded #editor {
 .modal-content.wide { max-width: 720px; }
 .ask-content { max-width: 440px; }
 /* Book panel (P3-01) */
+.chapters-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.5rem; }
+.chapters-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.chapter-row { display: flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.4rem; border: 1px solid var(--border-void); border-radius: 0.3rem; background: var(--bg-sunken); }
+.chapter-row[aria-current="true"] { border-color: var(--border-strong); }
+.chapter-row.drop-before { box-shadow: 0 -2px 0 var(--btn-primary-bg); }
+.chapter-row.drop-after { box-shadow: 0 2px 0 var(--btn-primary-bg); }
+.chapter-grip { cursor: grab; color: var(--text-void-muted); user-select: none; }
+.chapter-open { flex: 1; min-width: 0; text-align: left; border: none; background: none; color: var(--text-strong); font: inherit; font-size: 0.8rem; cursor: pointer; padding: 0.1rem 0.2rem; }
+.chapter-open:hover, .chapter-open:focus-visible { text-decoration: underline; outline: none; }
+.chapter-open small { display: block; color: var(--text-void-muted); font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chapter-row[aria-current="true"] .chapter-open { font-weight: 700; }
 .insp-field textarea { padding: 0.3rem 0.45rem; background: var(--bg-sunken); color: var(--text-strong); border: 1px solid var(--border-mid); border-radius: 0.25rem; font: inherit; font-size: 0.78rem; resize: vertical; }
 .book-err { font-style: normal; color: var(--danger-soft-text); font-size: 0.72rem; }
 .book-err[hidden] { display: none; }

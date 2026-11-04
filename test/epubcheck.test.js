@@ -136,6 +136,16 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
+    test('epubcheck: a book reorganised with the chapters organiser passes EPUBCheck with no messages (P3-02)', () => {
+        let files = ExampleBook.create().files;
+        files = BookChapters.add(files, 'The Long Road', 'OEBPS/text/chapter-1.xhtml').entries;
+        files = BookChapters.rename(files, 'OEBPS/text/chapter-2.xhtml', 'Spines & Contents').entries;
+        files = BookChapters.move(files, 'OEBPS/text/chapter-3.xhtml', 0).entries;
+        files = BookChapters.remove(files, 'OEBPS/text/chapter-1.xhtml').entries;
+        const r = epubcheck(oracle.jar, files);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+    });
+
     test('epubcheck: a template with the modified date removed fails, so the oracle is really checking', () => {
         const files = BookTemplate.create().files;
         files['OEBPS/content.opf'] = files['OEBPS/content.opf'].replace(/ *<meta property="dcterms:modified">[^<]*<\/meta>\n/, '');

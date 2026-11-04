@@ -76,3 +76,21 @@ function askText(options) {
         input.select();
     });
 }
+
+// Modal replacement for window.confirm, in the same style as askText. Resolves to true, or false when cancelled.
+function askConfirm(options) {
+    const overlay = document.getElementById('confirm-modal');
+    const form = document.getElementById('confirmForm');
+    return new Promise((resolve) => {
+        let answer = false;
+        document.getElementById('confirm-title').textContent = options.title;
+        document.getElementById('confirmText').textContent = options.text || '';
+        document.getElementById('confirmOkBtn').textContent = options.confirm || 'OK';
+        form.onsubmit = (e) => {
+            e.preventDefault();
+            answer = true;
+            closeModal(overlay);
+        };
+        openModal(overlay, { focus: '#confirmCancelBtn', onClose: () => { form.onsubmit = null; resolve(answer); } });
+    });
+}

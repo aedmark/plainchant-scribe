@@ -243,6 +243,7 @@
                 <button type="button" class="insp-tab" data-insp="parts" aria-selected="false">Parts <span id="partsCountBadge" class="console-badge" hidden>0</span></button>
                 <button type="button" class="insp-tab" data-insp="problems" aria-selected="false">Problems <span id="problemsCountBadge" class="console-badge" hidden>0</span></button>
                 <button type="button" class="insp-tab" data-insp="book" aria-selected="false" id="bookTabBtn" hidden>Book</button>
+                <button type="button" class="insp-tab" data-insp="chapters" aria-selected="false" id="chaptersTabBtn" hidden>Chapters</button>
             </div>
             <div class="inspector-selection-badge">
                 <span id="inspSelectedTag">No element selected</span>
@@ -400,6 +401,14 @@
                 <em class="book-err" id="bookErr-creator" hidden></em>
             </form>
         </div>
+        <div id="inspChaptersPane" class="inspector-body" hidden>
+            <div class="panel-bar chapters-bar">
+                <span class="parts-help">The reading order. Drag a chapter, or use its arrows, to move it; the contents follow.</span>
+                <button type="button" class="mini" id="chapterAddBtn">Add chapter&hellip;</button>
+            </div>
+            <ol id="chaptersList" class="chapters-list"></ol>
+            <p id="chaptersUnreadable" class="parts-help" hidden></p>
+        </div>
         <div id="inspProblemsPane" class="inspector-body" hidden>
             <div id="problemsFilterBar" class="css-state-bar" role="group" aria-label="Kinds of problems to show">
                 <span class="insp-inline-label">Show:</span>
@@ -432,6 +441,22 @@
         <div class="modal-footer ask-footer">
             <button type="button" class="btn" data-close>Cancel</button>
             <button type="submit" class="btn primary" id="askOkBtn">Create</button>
+        </div>
+    </form>
+</div>
+
+<div id="confirm-modal" class="modal-overlay">
+    <form class="modal-content ask-content" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirmText" id="confirmForm">
+        <div class="modal-header">
+            <h2 id="confirm-title">Are you sure?</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="confirmText" class="ask-hint"></p>
+        </div>
+        <div class="modal-footer ask-footer">
+            <button type="button" class="btn" data-close id="confirmCancelBtn">Cancel</button>
+            <button type="submit" class="btn primary" id="confirmOkBtn">OK</button>
         </div>
     </form>
 </div>
@@ -719,6 +744,7 @@
 <script src="src/book-stage.js"></script>
 <script src="src/example-book.js"></script>
 <script src="src/book-meta.js"></script>
+<script src="src/book-chapters.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>
 <script src="src/app/layout.js"></script>
@@ -741,6 +767,7 @@
 <script src="src/app/reader-device.js"></script>
 <script src="src/app/stage-nav.js"></script>
 <script src="src/app/book-ui.js"></script>
+<script src="src/app/spine-ui.js"></script>
 <script src="src/app/inspector-ui.js"></script>
 <script src="src/app/parts-ui.js"></script>
 <script src="src/app/problems-ui.js"></script>

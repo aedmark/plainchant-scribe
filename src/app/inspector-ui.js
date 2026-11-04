@@ -77,6 +77,8 @@ function switchInspectorTab(tab) {
     if (tab === 'problems') runProblemsCheck();
     inspBookPane.hidden = tab !== 'book';
     if (tab === 'book') refreshBookPanel(true);
+    inspChaptersPane.hidden = tab !== 'chapters';
+    if (tab === 'chapters') refreshChapters();
 }
 
 function defaultSelectorFor(node) {

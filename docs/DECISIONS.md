@@ -188,6 +188,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** `dcterms:modified` can be older than the last edit until Export or Update now. The first creator stays first: changing who is listed first means removing and adding.
 **Review trigger:** Authors need to reorder creators, or a store needs another identifier scheme.
 
+## D-026 The chapters organiser  (2026-11-04, status: accepted)
+**Context:** `P3-02` needed choices about where the organiser lives, whether the table of contents follows its changes, what Rename changes, and what Delete does. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. A Chapters tab in the Inspector, beside the Book tab, shown only for books. 2. The toc follows: adding a chapter adds a top-level entry at the matching place, deleting removes the entries that point at it, moving reorders the top-level entries to match the spine, and renaming updates the label. Nested entries and the rest of the nav stay as written; `P3-04` can regenerate the toc from headings. Deleting also removes the chapter's landmark and page-list entries, and a landmarks or page-list nav left empty. 3. Rename changes the chapter's title, meaning its `<title>`, first heading, and toc label. The file name stays; renaming files is the Explorer's job. 4. Delete removes the file, its manifest item and itemref, and its nav entries, after an in-app confirm that says how many links from other chapters will break. Undo brings it all back. Each action is one undo step across every file it touches.
+**Alternatives:** A section of the Book tab (rejected: a long scroll); the spine only, with the toc edited separately (rejected: the toc would drift from the reading order and report errors); renaming the file too, or only the file (rejected: file renames belong to the Explorer, and a title is what readers see); separate "remove from reading order" and "delete file" actions (rejected: one clear action, and undo covers mistakes).
+**Consequences:** Reordering rewrites the toc's top-level list (D-016), so inline markup in those labels is lost when chapters move. New chapters are placed after the chapter on the Stage.
+**Review trigger:** Authors need to keep chapters out of the toc, or to move chapters without rewriting the toc list.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

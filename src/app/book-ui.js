@@ -15,7 +15,9 @@ function bookRead() {
 function syncBookTab() {
     const book = isBookProject();
     bookTabBtn.hidden = !book;
-    if (!book && activeInspectorTab === 'book') switchInspectorTab('props');
+    document.getElementById('chaptersTabBtn').hidden = !book;
+    if (!book && (activeInspectorTab === 'book' || activeInspectorTab === 'chapters')) switchInspectorTab('props');
+    if (book && typeof refreshChapters === 'function') refreshChapters();
 }
 
 // Writes a file's new text as one undo step, as applyCssTransform does for the stylesheet.
