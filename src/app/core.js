@@ -15,6 +15,9 @@ function newId() {
     return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
 }
 
+// Pages the Stage can show: HTML pages, and a book's XHTML documents (P2-01).
+const isPagePath = (filePath) => /\.(?:html?|xhtml)$/i.test(String(filePath || ''));
+
 function langForFile(filePath) {
     const lower = String(filePath || '').toLowerCase();
     if (lower.endsWith('.css')) return 'css';
@@ -55,7 +58,9 @@ function ensureEntries() {
 function syncMirrors() {
     ensureEntries();
     if (!(activeHtmlFile in projectFiles.entries)) {
-        const firstHtml = Object.keys(projectFiles.entries).find((k) => /\.html?$/i.test(k));
+        const firstHtml = Project.isBookEntries(projectFiles.entries)
+            ? bookChapterFor(projectFiles.entries, null)
+            : Object.keys(projectFiles.entries).find((k) => /\.html?$/i.test(k));
         activeHtmlFile = firstHtml || 'index.html';
     }
     activeCssFile = Project.primaryCssFile(projectFiles, activeHtmlFile);
@@ -74,6 +79,14 @@ function syncBufferFromEditor() {
 
 function defaultTabsForEntries(entries) {
     const keys = Object.keys(entries || {});
+    if (Project.isBookEntries(entries)) {
+        // A book opens on its first chapter, that chapter's stylesheet, and the package document.
+        const chapter = bookChapterFor(entries, null);
+        const read = Book.read(entries);
+        const bookTabs = [chapter, chapter && Project.primaryCssFile({ entries: entries }, chapter), read.model && read.model.opfPath];
+        const unique = bookTabs.filter((p, i) => p && p in entries && bookTabs.indexOf(p) === i);
+        return unique.length ? unique : keys.slice(0, 3);
+    }
     const htmlKey = keys.includes('index.html') ? 'index.html' : (keys.find((k) => /\.html?$/i.test(k)) || 'index.html');
     const cssKey = Project.primaryCssFile({ entries: entries }, htmlKey);
     const jsKey = keys.includes('script.js') ? 'script.js' : keys.find((k) => /\.m?js$/i.test(k));
@@ -99,9 +112,9 @@ function loadProjectIntoEditor(rawOrFiles, options = {}) {
     projectBaseUrl = options.baseUrl || '';
     openTabs = defaultTabsForEntries(projectFiles.entries);
     activeFile = openTabs[0] || 'index.html';
-    activeHtmlFile = /\.html?$/i.test(activeFile)
+    activeHtmlFile = isPagePath(activeFile)
         ? activeFile
-        : (Object.keys(projectFiles.entries).find((k) => /\.html?$/i.test(k)) || 'index.html');
+        : (Project.isBookEntries(projectFiles.entries) ? bookChapterFor(projectFiles.entries, null) : Object.keys(projectFiles.entries).find((k) => /\.html?$/i.test(k))) || 'index.html';
     activeTab = langForFile(activeFile);
     syncMirrors();
     editor.value = projectFiles.entries[activeFile] != null ? projectFiles.entries[activeFile] : '';
@@ -172,8 +185,8 @@ function openFileInEditor(filePath) {
     expandExplorerTo(filePath);
     activeFile = filePath;
     activeTab = langForFile(filePath);
-    const switchedHtml = /\.html?$/i.test(filePath) && filePath !== activeHtmlFile;
-    if (/\.html?$/i.test(filePath)) {
+    const switchedHtml = isPagePath(filePath) && filePath !== activeHtmlFile;
+    if (isPagePath(filePath)) {
         activeHtmlFile = filePath;
         selectedPcId = null;
     }
@@ -268,7 +281,7 @@ function renderExplorer() {
         const btn = document.createElement('button');
         btn.type = 'button';
         const isCurrent = item.path === activeFile;
-        const isPreviewedHtml = item.path === activeHtmlFile && /\.html?$/i.test(item.path);
+        const isPreviewedHtml = item.path === activeHtmlFile && isPagePath(item.path);
         btn.className = 'explorer-item' + (isCurrent ? ' active' : '') + (isPreviewedHtml ? ' previewed' : '');
         btn.style.paddingLeft = (0.6 + depth * 0.75) + 'rem';
         btn.title = item.path;

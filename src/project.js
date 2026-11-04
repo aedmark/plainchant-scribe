@@ -509,9 +509,13 @@
         return check;
     }
 
+    // A book (P2-01, D-018) is a project with META-INF/container.xml; it never gets the web-page default files.
+    const isBookEntries = (entries) => typeof (entries || {})['META-INF/container.xml'] === 'string';
+
     function normalizeEntries(files) {
         const f = files || {};
         const entries = Object.assign({}, f.entries || {});
+        if (isBookEntries(entries)) return entries;
         if (typeof f.html === 'string' && !('index.html' in entries)) entries['index.html'] = f.html;
         if (typeof f.css === 'string' && !('styles.css' in entries) && !('style.css' in entries)) entries['styles.css'] = f.css;
         if (typeof f.js === 'string' && !('script.js' in entries)) entries['script.js'] = f.js;
@@ -616,6 +620,15 @@
     function pack(files) {
         const f = files || {};
         const entries = normalizeEntries(f);
+        if (isBookEntries(entries)) {
+            // The mirrors of the open page and stylesheet are written back only to files the book has. The tree is kept
+            // so the book's empty folders survive a reload.
+            if (typeof f.html === 'string' && f.activeHtml in entries) entries[f.activeHtml] = f.html;
+            if (typeof f.css === 'string' && f.activeCss in entries) entries[f.activeCss] = f.css;
+            const out = { plainchantScribe: 1, book: 1, entries: entries };
+            if (Array.isArray(f.tree)) out.tree = f.tree;
+            return JSON.stringify(out);
+        }
         if (typeof f.html === 'string') entries[f.activeHtml || 'index.html'] = f.html;
         if (typeof f.css === 'string') entries[f.activeCss || primaryCssFile(f, f.activeHtml)] = f.css;
         if (typeof f.js === 'string') entries[f.activeJs || 'script.js'] = f.js;
@@ -634,6 +647,9 @@
         if (s.trim().startsWith('{')) {
             try {
                 const parsed = JSON.parse(s);
+                if (parsed && typeof parsed === 'object' && isBookEntries(parsed.entries)) {
+                    return { html: '', css: '', js: '', entries: Object.assign({}, parsed.entries), tree: Array.isArray(parsed.tree) ? parsed.tree : null };
+                }
                 if (parsed && typeof parsed === 'object' && ('html' in parsed || 'plainchantScribe' in parsed || 'entries' in parsed)) {
                     const entries = Object.assign({}, parsed.entries || {});
                     const html = String(parsed.html != null ? parsed.html : (entries['index.html'] || ''));
@@ -675,6 +691,14 @@
     function extractTitle(rawOrFiles) {
         const files = typeof rawOrFiles === 'string' ? unpack(rawOrFiles) : (rawOrFiles || {});
         const entries = normalizeEntries(files);
+        // A book's title is its first dc:title; the Book model reads it properly, this is enough for a label.
+        if (isBookEntries(entries)) {
+            const opf = Object.keys(entries).find((k) => /\.opf$/i.test(k));
+            const m = opf ? /<(?:[A-Za-z_][\w.-]*:)?title\b[^>]*>([^<]*)</.exec(entries[opf]) : null;
+            const XML_CHARS = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
+            const title = m ? m[1].replace(/&(amp|lt|gt|quot|apos);/g, (all, n) => XML_CHARS[n]).replace(/\s+/g, ' ').trim().slice(0, 80) : '';
+            return title || 'Untitled Book';
+        }
         const html = files.html || entries['index.html'] || Object.values(entries)[0] || '';
         return HtmlAst.extractTitle(html);
     }
@@ -817,6 +841,7 @@
 
     return {
         DEFAULT_HTML: DEFAULT_HTML,
+        isBookEntries: isBookEntries,
         DEFAULT_CSS: DEFAULT_CSS,
         DEFAULT_JS: DEFAULT_JS,
         resolveRelPath: resolveRelPath,

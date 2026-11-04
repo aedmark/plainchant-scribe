@@ -130,7 +130,7 @@ async function restoreLastScript(factory) {
         currentScriptId = script.id;
         loadProjectIntoEditor(script.content);
     } else {
-        loadProjectIntoEditor(Project.starter());
+        loadProjectIntoEditor(bookProjectFiles(ExampleBook.create()));
     }
     rememberCurrent();
     restoreProjectLink(currentScriptId);
@@ -146,7 +146,7 @@ function startNewScript() {
     currentScriptId = newId();
     selectedPcId = null;
     if (typeof clearLinkedFolder === 'function') clearLinkedFolder();
-    loadProjectIntoEditor(Project.blank());
+    loadProjectIntoEditor(bookProjectFiles(BookTemplate.create()));
     rememberCurrent();
     render(false);
     syncElementState();
@@ -157,7 +157,7 @@ function loadStarterProject() {
     currentScriptId = newId();
     selectedPcId = null;
     if (typeof clearLinkedFolder === 'function') clearLinkedFolder();
-    loadProjectIntoEditor(Project.starter());
+    loadProjectIntoEditor(bookProjectFiles(ExampleBook.create()));
     saveScript(true);
     render(false);
     syncElementState();

@@ -381,6 +381,8 @@ let stageTimer = null;
 function drawStageNow() {
     clearTimeout(stageTimer);
     stageTimer = null;
+    if (isBookProject()) { drawBookStage(); return; }
+    clearBookStage();
     const doc = Project.assemblePreview(projectFiles, {
         ast: currentHtmlAst,
         activeHtml: activeHtmlFile,

@@ -110,7 +110,7 @@ function reloadFolderFromDisk() {
     const tabs = openTabs.filter((p) => p in next);
     const names = Object.keys(next);
     const active = activeFile in next ? activeFile : (tabs[0] || names[0] || 'index.html');
-    const page = activeHtmlFile in next ? activeHtmlFile : (names.find((p) => /\.html?$/i.test(p)) || 'index.html');
+    const page = activeHtmlFile in next ? activeHtmlFile : (names.find((p) => isPagePath(p)) || 'index.html');
     if (!tabs.includes(active)) tabs.push(active);
     const count = pendingDisk.diff.count;
     commitFileChange(next, { tree: pendingDisk.tree, openTabs: tabs, activeFile: active, activeHtmlFile: page });

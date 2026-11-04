@@ -86,7 +86,7 @@ function duplicateProjectFile(path) {
     commitFileChange(res.entries, {
         tree: Project.treeAfter(projectFiles.tree, { type: 'duplicate', from: path, to: res.path }),
         openTabs: openTabs.concat(res.path), activeFile: res.path,
-        activeHtmlFile: /\.html?$/i.test(res.path) ? res.path : activeHtmlFile
+        activeHtmlFile: isPagePath(res.path) ? res.path : activeHtmlFile
     });
     showNotice('Created ' + res.path);
 }
@@ -101,7 +101,7 @@ function deleteProjectFile(path) {
     const active = activeFile === path ? (tabs[Math.max(0, openTabs.indexOf(path) - 1)] || remaining[0]) : activeFile;
     if (!tabs.includes(active)) tabs.push(active);
     const html = activeHtmlFile === path
-        ? (/\.html?$/i.test(active) ? active : remaining.find((p) => /\.html?$/i.test(p)))
+        ? (isPagePath(active) ? active : remaining.find((p) => isPagePath(p)))
         : activeHtmlFile;
     commitFileChange(res.entries, { tree: Project.treeAfter(projectFiles.tree, { type: 'delete', path: path }), openTabs: tabs, activeFile: active, activeHtmlFile: html });
     showNotice('Deleted ' + path + '. Press Ctrl/Cmd+Z to undo.');

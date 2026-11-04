@@ -35,7 +35,7 @@ helpBtn.addEventListener('click', openHelp);
 helpLoadStarter.addEventListener('click', () => {
     loadStarterProject();
     closeModal(helpModal);
-    showNotice('Loaded the example page.');
+    showNotice('Loaded the example book.');
 });
 
 document.addEventListener('keydown', (e) => {
