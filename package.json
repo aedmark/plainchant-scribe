@@ -1,0 +1,14 @@
+{
+  "name": "plainchant-web",
+  "version": "1.0.0",
+  "description": "Dreamweaver-inspired WYSIWYG HTML5, CSS, and JS studio built on Plainchant's zero-dependency architecture with Tauri desktop support.",
+  "main": "index.html",
+  "scripts": {
+    "test": "node test/run.js",
+    "serve": "python3 -m http.server 8080",
+    "tauri:dev": "cargo run --manifest-path src-tauri/Cargo.toml",
+    "tauri:build": "cargo build --release --manifest-path src-tauri/Cargo.toml"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "private": true
+}

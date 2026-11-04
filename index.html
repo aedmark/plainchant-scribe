@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plainchant Web: edit the page, keep the code</title>
+    <meta name="description" content="A free, offline HTML5, CSS and JavaScript studio. Edit visually on the Stage or in code; your .html, .css and .js files stay the single source of truth.">
+    <meta name="theme-color" content="#000000">
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="stylesheet" href="src/home.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the guide</a>
+
+<header class="site-head">
+    <div class="wrap">
+        <a class="brand" href="index.html" aria-label="Plainchant Web home">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span>Plainchant Web</span>
+            <small>/ a studio</small>
+        </a>
+        <nav class="nav" aria-label="Main navigation">
+            <a href="#premise">The idea</a>
+            <a href="#primer">How to</a>
+            <a href="#features">Features</a>
+            <a href="docs/manual.html">Manual</a>
+            <a href="https://github.com/aedmark/plainchant-web">Source</a>
+        </nav>
+        <a class="btn primary" href="app.html">Open the Studio <span aria-hidden="true">&gt;</span></a>
+    </div>
+</header>
+
+<main id="main" class="desk">
+    <article class="script" aria-label="Plainchant Web, a quick guide in five pages">
+
+        <section class="sheet title-sheet" aria-labelledby="title">
+            <p class="title-kicker">HTML5 · CSS · JavaScript</p>
+            <h1 id="title">Plainchant Web<span class="cursor" aria-hidden="true">_</span></h1>
+            <p class="title-tagline">Edit the page. Keep the code.</p>
+            <p class="title-meta"><span>Free</span> · Private · Works offline</p>
+            <p class="title-lede">A lightweight studio where you can click, drag and type on the page, or write the code directly. Either way, your own <code>.html</code>, <code>.css</code> and <code>.js</code> files stay clean, readable and yours.</p>
+            <p class="title-action"><a class="btn primary" href="app.html">Open the Studio <span aria-hidden="true">&gt;</span></a></p>
+            <p class="title-note">No account. No install. A starter page is one click away.</p>
+            <p class="title-turn" aria-hidden="true">Turn the page <span></span></p>
+        </section>
+
+        <section class="sheet" id="premise" aria-labelledby="premise-title">
+            <span class="page-number" aria-hidden="true">1.</span>
+            <p class="page-label"><span>01</span> The idea</p>
+            <h2 class="scene" id="premise-title">One page, two ways to edit it</h2>
+            <p class="action">Most visual editors keep their own copy of your page and rewrite your files when you save. Plainchant Web does not. The Stage is a live view of your code, and every change you make on it edits <b>only the exact characters it touches</b>. Your formatting, comments and the rest of the file stay as you wrote them.</p>
+
+            <figure class="demo">
+                <p class="demo-label">The code</p>
+                <div class="code-view">
+                    <p class="code-bar"><span>index.html</span><span class="code-status"><i aria-hidden="true"></i> Saved</span><span>Code</span></p>
+                    <pre class="code-body"><span class="c-tag">&lt;h1</span> <span class="c-attr">class</span>=<span class="c-str">"hero"</span><span class="c-tag">&gt;</span>Hello, Studio<span class="c-tag">&lt;/h1&gt;</span>
+<span class="c-tag">&lt;p&gt;</span>Click me on the Stage.<span class="c-tag">&lt;/p&gt;</span></pre>
+                </div>
+                <p class="demo-label">The Stage</p>
+                <div class="stage-view" role="img" aria-label="The same two lines drawn as a web page, with the paragraph selected and its tag name shown on a small badge.">
+                    <h3>Hello, Studio</h3>
+                    <p class="selected"><span class="badge">p</span>Click me on the Stage.</p>
+                </div>
+            </figure>
+
+            <p class="action">Click the paragraph and its code is highlighted. Double-click the text and type, and only that text changes in the file. Every page, stylesheet and script in your project is an ordinary file you can open anywhere else.</p>
+        </section>
+
+        <section class="sheet" id="primer" aria-labelledby="primer-title">
+            <span class="page-number" aria-hidden="true">2.</span>
+            <p class="page-label"><span>02</span> How to</p>
+            <h2 class="scene" id="primer-title">Six steps from nothing to a finished page</h2>
+            <p class="action">Open the Studio and follow along. Press <kbd>F1</kbd> at any time for the guide and a list of every keyboard shortcut.</p>
+
+            <div class="lesson">
+                <span class="lesson-index" aria-hidden="true">01</span>
+                <p class="sample-key"><kbd>File</kbd> &rsaquo; <kbd>Open folder…</kbd></p>
+                <p class="action">Open something. <b>Open folder</b> turns a folder into a project, <b>Open file</b> opens a single page, and <b>Open project</b> reopens one from your library. A folder is always one project: opening it again takes you back to the same one. Or just load the starter template.</p>
+            </div>
+
+            <div class="lesson">
+                <span class="lesson-index" aria-hidden="true">02</span>
+                <p class="sample-key"><kbd>Ctrl/Cmd</kbd>+<kbd>Shift</kbd>+<kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></p>
+                <p class="action">Choose a view. <b>Code</b> is the editor alone, <b>Split</b> shows the code beside the Stage, and <b>Design</b> is the Stage alone. Switch whenever the job changes.</p>
+            </div>
+
+            <div class="lesson">
+                <span class="lesson-index" aria-hidden="true">03</span>
+                <p class="sample-key">Click &middot; double-click &middot; drag</p>
+                <p class="action">Edit on the Stage. Click to select and see the code. Double-click text to rewrite it. Drag to reorder. The <b>Inspector</b> edits attributes and styles: flex and grid gap handles, pseudo-states like <code>:hover</code>, and a breakpoint switcher for <code>@media</code> rules.</p>
+            </div>
+
+            <div class="lesson">
+                <span class="lesson-index" aria-hidden="true">04</span>
+                <p class="sample-key"><kbd>Insert</kbd> &rsaquo; drag onto the Stage</p>
+                <p class="action">Add things fast. Drag an item from <b>Insert</b> onto the Stage and a guide shows where it will land. In the editor, type shorthand like <code>section.hero</code> or <code>ul*3</code> and press <kbd>Tab</kbd>.</p>
+            </div>
+
+            <div class="lesson">
+                <span class="lesson-index" aria-hidden="true">05</span>
+                <p class="sample-key"><kbd>Problems</kbd> tab &middot; <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd></p>
+                <p class="action">Check and tidy. The <b>Problems</b> tab finds broken links, missing images, missing <code>alt</code> text, skipped headings and unclosed tags across the whole project. <b>Format</b> re-indents the open file, and <b>Find in project</b> searches and replaces everywhere.</p>
+            </div>
+
+            <div class="lesson">
+                <span class="lesson-index" aria-hidden="true">06</span>
+                <p class="sample-key"><kbd>File</kbd> &rsaquo; <kbd>Preview…</kbd> &middot; <kbd>Export…</kbd></p>
+                <p class="action">Look, then ship. <b>Preview</b> opens the page in a real browser tab, and in the desktop app it can serve your project on your network so you can open it on a phone. <b>Export</b> writes your files back to a folder, or, in the browser, downloads them as a zip.</p>
+            </div>
+
+            <aside class="margin-note">
+                <span class="note-tag">Safe by default</span>
+                <p>Your edits live in the Studio's own workspace. Nothing on your disk changes until you press <b>Export</b>, and Export never deletes a file. Everything is undoable with <kbd>Ctrl/Cmd</kbd>+<kbd>Z</kbd>.</p>
+            </aside>
+        </section>
+
+        <section class="sheet" id="features" aria-labelledby="features-title">
+            <span class="page-number" aria-hidden="true">3.</span>
+            <p class="page-label"><span>03</span> Features</p>
+            <h2 class="scene" id="features-title">Small enough to open in a second</h2>
+            <p class="action">Built for real sites with several pages, stylesheets and images, not just a single file.</p>
+
+            <dl class="features">
+                <div class="feature">
+                    <dt>The Stage</dt>
+                    <dd>Design mode for editing, Live JS mode for running your scripts, phone and tablet widths, and a console that shows what your scripts print.</dd>
+                </div>
+                <div class="feature">
+                    <dt>The Inspector</dt>
+                    <dd>Attributes, a CSS Designer that edits the right rule in your stylesheet, box-model overlays, and an Assets browser for your images.</dd>
+                </div>
+                <div class="feature">
+                    <dt>The Project</dt>
+                    <dd>A file Explorer with folders you can collapse, drag to move and rename, with links updated for you. Shared page parts keep a header or footer in sync across pages.</dd>
+                </div>
+                <div class="feature">
+                    <dt>The Checks</dt>
+                    <dd>Links, accessibility and markup hints in one list. Click a problem to jump to the exact spot in the code.</dd>
+                </div>
+                <div class="feature">
+                    <dt>The Keeper</dt>
+                    <dd>Autosave, a project library, named versions you can return to, and undo and redo across every file and Stage action.</dd>
+                </div>
+                <div class="feature">
+                    <dt>The Promise</dt>
+                    <dd>It runs in your browser, works offline, and keeps your projects on your device. No account, no cloud lock-in, no tracking, and no runtime dependencies.</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section class="sheet" id="desktop" aria-labelledby="desktop-title">
+            <span class="page-number" aria-hidden="true">4.</span>
+            <p class="page-label"><span>04</span> Desktop</p>
+            <h2 class="scene" id="desktop-title">The same studio, with folder access</h2>
+            <p class="action">The browser version works anywhere. The desktop app (built with Tauri) adds a native folder picker, local images served straight from your folder, and the network preview for testing on a phone. Chromium browsers can open and export folders too.</p>
+            <aside class="margin-note">
+                <span class="note-tag">One folder, one project</span>
+                <p>The Studio remembers which folder a project came from. Open the same folder again and you get your project back, with a <b>Reload from disk</b> button if the files changed outside the Studio.</p>
+            </aside>
+        </section>
+
+        <section class="sheet" aria-labelledby="end-title">
+            <span class="page-number" aria-hidden="true">5.</span>
+            <p class="page-label"><span>05</span> Your turn</p>
+            <h2 class="end-title" id="end-title">Start building<span class="cursor" aria-hidden="true">_</span></h2>
+            <p class="action">Open the Studio with a starter page, or open one of your own folders. Nothing to sign up for and nothing to configure.</p>
+            <p class="title-action"><a class="btn primary" href="app.html">Open the Studio <span aria-hidden="true">&gt;</span></a></p>
+            <p class="action small">Want the details? Read the <a href="docs/manual.html">manual</a>, or browse the <a href="https://github.com/aedmark/plainchant-web">source</a>. Plainchant Web is the web-design sibling of <a href="https://github.com/aedmark/plainchant">Plainchant</a>, the screenwriting app.</p>
+        </section>
+    </article>
+</main>
+
+<footer class="site-foot">
+    <div class="wrap">
+        <p class="foot-brand">Plainchant Web <span>Edit the page. Keep the code.</span></p>
+        <div class="foot-links">
+            <a href="docs/manual.html">Manual</a>
+            <a href="https://github.com/aedmark/plainchant-web">Source</a>
+            <a href="LICENSE">License</a>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Plainchant Web: WYSIWYG HTML5, CSS &amp; JS Studio</title>
+    <meta name="description"
+          content="Dreamweaver-inspired HTML5, CSS, and JavaScript WYSIWYG studio: edit code and visual design in harmony.">
+    <meta name="theme-color" content="#0f1115">
+    <meta name="apple-mobile-web-app-title" content="Plainchant Web">
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="stylesheet" href="src/styles.css">
+</head>
+<body data-view="write" data-panes="both">
+
+<div class="mobile-bar">
+    <div class="seg" role="group" aria-label="View">
+        <button id="tabWrite" type="button" aria-pressed="true">Code</button>
+        <button id="tabPreview" type="button" aria-pressed="false">Stage</button>
+    </div>
+    <button id="menuBtn" type="button" class="btn menu-btn" aria-label="Menu" aria-haspopup="true"
+            aria-expanded="false">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <circle cx="4" cy="10" r="1.75"/>
+            <circle cx="10" cy="10" r="1.75"/>
+            <circle cx="16" cy="10" r="1.75"/>
+        </svg>
+    </button>
+</div>
+
+<div class="pane-void" role="main" aria-label="Code Editor">
+    <div class="header">
+        <div class="button-group">
+            <div class="menu-wrap">
+                <button id="fileMenuBtn" type="button" class="btn" aria-haspopup="true" aria-expanded="false" aria-controls="fileMenuPanel" title="Projects, folders, export, and preview">File &#9662;</button>
+                <div id="fileMenuPanel" class="menu-panel" role="menu" aria-label="File" hidden>
+                    <button id="newBtn" type="button" class="menu-item" role="menuitem" title="Start a blank project"><span>New project</span></button>
+                    <button id="openFileBtn" type="button" class="menu-item" role="menuitem" title="Open a single .html, .css, or .js file as its own project"><span>Open file&hellip;</span></button>
+                    <button id="folderBtn" type="button" class="menu-item" role="menuitem" title="Open a folder as a project (a folder that is already a project opens that project)"><span>Open folder&hellip;</span></button>
+                    <button id="libraryBtn" type="button" class="menu-item" role="menuitem" title="Open a project from your library"><span>Open project&hellip;</span></button>
+                    <button id="exportBtn" type="button" class="menu-item" role="menuitem" title="Export project to disk or bundle"><span>Export&hellip;</span></button>
+                    <button id="previewBtn" type="button" class="menu-item" role="menuitem" title="Preview the project in a real browser or on a phone"><span>Preview&hellip;</span></button>
+                </div>
+            </div>
+            <div class="menu-wrap">
+                <button id="editMenuBtn" type="button" class="btn" aria-haspopup="true" aria-expanded="false" aria-controls="editMenuPanel" title="Undo, redo, copy, format, and find">Edit &#9662;</button>
+                <div id="editMenuPanel" class="menu-panel" role="menu" aria-label="Edit" hidden>
+                    <button id="undoBtn" type="button" class="menu-item" role="menuitem" title="Undo (Ctrl/Cmd+Z)" disabled><span>Undo</span><kbd>Ctrl/Cmd+Z</kbd></button>
+                    <button id="redoBtn" type="button" class="menu-item" role="menuitem" title="Redo (Ctrl/Cmd+Shift+Z or Ctrl+Y)" disabled><span>Redo</span><kbd>Ctrl/Cmd+Shift+Z</kbd></button>
+                    <div class="menu-sep" role="separator"></div>
+                    <button id="copyBtn" type="button" class="menu-item" role="menuitem" title="Copy current file"><span>Copy file</span></button>
+                    <button id="formatBtn" type="button" class="menu-item" role="menuitem" title="Re-indent and tidy the open HTML, CSS, or JS file"><span>Format file</span><kbd>Alt+Shift+F</kbd></button>
+                    <button id="menuFindBtn" type="button" class="menu-item" role="menuitem" title="Find in the open file"><span>Find&hellip;</span><kbd>Ctrl/Cmd+F</kbd></button>
+                    <button id="menuReplaceBtn" type="button" class="menu-item" role="menuitem" title="Find and replace in the open file"><span>Replace&hellip;</span><kbd>Ctrl/Cmd+H</kbd></button>
+                    <button id="menuFindProjectBtn" type="button" class="menu-item" role="menuitem" title="Find and replace across the project"><span>Find in project&hellip;</span><kbd>Ctrl/Cmd+Shift+F</kbd></button>
+                </div>
+            </div>
+            <div class="insert-dropdown-wrap">
+                <button id="insertMenuBtn" type="button" class="btn" aria-haspopup="true" aria-expanded="false" title="Insert HTML5 Element (click an item, or drag it onto the Design Stage)">Insert &#9662;</button>
+                <div id="insertMenu" class="insert-bar insert-dropdown" role="menu" aria-label="Insert HTML5 Element" hidden>
+                    <button type="button" class="ins-btn" role="menuitem" data-insert="section" title="Insert &lt;section&gt;"><span>Section</span><code>&lt;section&gt;</code></button>
+                    <button type="button" class="ins-btn" role="menuitem" data-insert="article" title="Insert &lt;article class='card'&gt;"><span>Card</span><code>&lt;article&gt;</code></button>
+                    <button type="button" class="ins-btn" role="menuitem" data-insert="flex" title="Insert Flex Row"><span>Flex Row</span><code>.flex-row</code></button>
+                    <button type="button" class="ins-btn" role="menuitem" data-insert="grid" title="Insert 3-Column Grid"><span>3-Col Grid</span><code>.grid-3</code></button>
+                    <button type="button" class="ins-btn" role="menuitem" data-insert="div" title="Insert &lt;div&gt;"><span>Container</span><code>&lt;div&gt;</code></button>
+                    <button type="button" class="ins-btn" role="menuitem" data-insert="heading" title="Insert &lt;h2&gt;"><span>Heading</span><code>&lt;h2&gt;</code></button>
+                    <button type="button" class="ins-btn" role="menuitem" data-insert="paragraph" title="Insert &lt;p&gt;"><span>Paragraph</span><code>&lt;p&gt;</code></button>
+                    <button type="button" class="ins-btn" role="menuitem" data-insert="button" title="Insert &lt;button&gt;"><span>Button</span><code>&lt;button&gt;</code></button>
+                    <button type="button" class="ins-btn" role="menuitem" data-insert="link" title="Insert &lt;a&gt;"><span>Link</span><code>&lt;a&gt;</code></button>
+                    <button type="button" class="ins-btn" role="menuitem" data-insert="image" title="Insert &lt;img&gt;"><span>Image</span><code>&lt;img&gt;</code></button>
+                    <button type="button" class="ins-btn" role="menuitem" data-insert="list" title="Insert &lt;ul&gt;"><span>List</span><code>&lt;ul&gt;</code></button>
+                    <button type="button" class="ins-btn" role="menuitem" data-insert="form" title="Insert &lt;form&gt;"><span>Form</span><code>&lt;form&gt;</code></button>
+                </div>
+            </div>
+            <button id="assetsBtn" type="button" class="btn" title="Browse and add the project's images">Assets</button>
+            <button id="saveBtn" type="button" class="btn" title="Save project to Studio workspace (Ctrl/Cmd+S)">Save</button>
+            <button id="settingsBtn" type="button" class="btn help-btn" aria-label="Settings" title="Settings">
+                <span class="txt-short" aria-hidden="true">&#9881;</span><span class="txt-long">Settings</span>
+            </button>
+            <button id="helpBtn" type="button" class="btn help-btn" aria-label="Help" title="Help (F1)">
+                <span class="txt-short" aria-hidden="true">?</span><span class="txt-long">Help</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="tab-strip">
+        <button id="toggleExplorerBtn" type="button" class="btn explorer-toggle" aria-pressed="true" title="Toggle Project File Explorer">Files</button>
+        <div id="fileTabs" class="file-tabs" role="tablist" aria-label="Open files">
+            <button type="button" class="file-tab" role="tab" data-file="index.html" data-tab="html" aria-selected="true">index.html</button>
+            <button type="button" class="file-tab" role="tab" data-file="styles.css" data-tab="css" aria-selected="false">styles.css</button>
+            <button type="button" class="file-tab" role="tab" data-file="script.js" data-tab="js" aria-selected="false">script.js</button>
+        </div>
+    </div>
+
+    <div id="file-bar" class="file-bar" role="region" aria-label="Imported project workspace" hidden>
+        <span id="fileBarText" aria-live="polite"></span>
+        <span class="file-bar-actions">
+            <button type="button" class="mini" id="fileReloadBtn" title="Replace the Studio copy with the files now on disk (undoable)" hidden>Reload from disk</button>
+            <button type="button" class="mini" id="fileSyncNowBtn" title="Open Export dialog to write changes back to disk">Export to Disk&hellip;</button>
+            <button type="button" class="mini" id="fileUnlinkBtn" title="Detach source folder reference">Detach</button>
+        </span>
+    </div>
+
+    <div id="findBar" class="find-bar" role="search" aria-label="Find and replace in the current file" hidden>
+        <input type="text" id="findInput" placeholder="Find" aria-label="Find" autocomplete="off" spellcheck="false">
+        <button type="button" class="mini" id="findCaseBtn" aria-pressed="false" title="Match case">Aa</button>
+        <button type="button" class="mini" id="findScopeBtn" aria-pressed="false" title="Search every file in the project (Ctrl/Cmd+Shift+F)">Project</button>
+        <span id="findCount" class="find-count" aria-live="polite"></span>
+        <button type="button" class="mini" id="findPrevBtn" title="Previous match (Shift+Enter)">&uarr;</button>
+        <button type="button" class="mini" id="findNextBtn" title="Next match (Enter)">&darr;</button>
+        <input type="text" id="replaceInput" placeholder="Replace" aria-label="Replace with" autocomplete="off" spellcheck="false">
+        <button type="button" class="mini" id="replaceBtn" title="Replace the current match (Enter in the Replace box)">Replace</button>
+        <button type="button" class="mini" id="replaceAllBtn" title="Replace every match in this file">Replace All</button>
+        <button type="button" class="mini" id="findCloseBtn" aria-label="Close find bar" title="Close (Esc)">&times;</button>
+    </div>
+
+    <div id="findResults" class="find-results" hidden>
+        <div class="find-results-head">
+            <span id="findResultsSummary" aria-live="polite"></span>
+        </div>
+        <div id="findResultsList" class="find-results-list"></div>
+    </div>
+
+    <div class="workspace-body">
+        <aside id="fileExplorer" class="file-explorer" aria-label="Project File Explorer">
+            <div class="explorer-header">
+                <span id="explorerTitle" class="explorer-title">Project Files</span>
+                <button type="button" id="newFileBtn" class="mini" title="Create a new file in this project">+ File</button>
+                <button type="button" id="newFolderBtn" class="mini" title="Create a new folder in this project">+ Folder</button>
+            </div>
+            <div class="explorer-search-wrap">
+                <input type="search" id="explorerFilter" class="explorer-search" placeholder="Filter files..." aria-label="Filter project files" autocomplete="off">
+            </div>
+            <div id="explorerTree" class="explorer-tree" role="tree" aria-label="Files in project"></div>
+        </aside>
+        <div class="editor-wrap">
+            <div id="editorGutter" class="editor-gutter" aria-hidden="true"></div>
+            <textarea id="editor" aria-label="Source code" spellcheck="false"
+                      placeholder="Type HTML, CSS, or JavaScript here..."></textarea>
+        </div>
+    </div>
+
+    <div class="element-bar" role="toolbar" aria-label="DOM Path and Suggestions">
+        <div id="breadcrumbBar" class="breadcrumb-bar" role="navigation" aria-label="Tag selector">
+            <span class="crumb-empty">body</span>
+        </div>
+        <div class="suggestions" role="group" aria-label="Code suggestions" hidden></div>
+        <p id="suggestSay" class="sr-only" role="status" aria-live="polite"></p>
+    </div>
+</div>
+
+<div class="pane-canvas" role="region" aria-label="Design and Live Stage">
+    <div class="header">
+        <div class="stage-header-left">
+            <h2>Stage</h2>
+            <div class="mode-switch" role="group" aria-label="Stage Mode">
+                <button type="button" id="modeDesignBtn" class="mode-btn" data-mode="design" aria-pressed="true"
+                        title="Design Mode: click elements to inspect, double-click text to edit inline">Design
+                </button>
+                <button type="button" id="modeLiveBtn" class="mode-btn" data-mode="live" aria-pressed="false"
+                        title="Live Mode: run interactive JavaScript and test links">Live JS
+                </button>
+            </div>
+            <div class="viewport-switch" role="group" aria-label="Viewport size">
+                <button type="button" class="vp-btn" data-vp="full" aria-pressed="true" title="Full responsive width">100%</button>
+                <button type="button" class="vp-btn" data-vp="tablet" aria-pressed="false" title="Tablet (768px)">768px</button>
+                <button type="button" class="vp-btn" data-vp="mobile" aria-pressed="false" title="Mobile (375px)">375px</button>
+            </div>
+        </div>
+        <div class="canvas-tools">
+            <div id="panesSwitch" class="panes-switch" role="group" aria-label="Workspace Layout">
+                <button type="button" data-panes="write" aria-pressed="false" aria-label="Code only"
+                        title="Code view only (Ctrl/Cmd+Shift+1)">Code
+                </button>
+                <button type="button" data-panes="both" aria-pressed="true" aria-label="Split Code and Stage"
+                        title="Split view (Ctrl/Cmd+Shift+2)">Split
+                </button>
+                <button type="button" data-panes="preview" aria-pressed="false" aria-label="Stage only"
+                        title="Design/Live Stage only (Ctrl/Cmd+Shift+3)">Design
+                </button>
+            </div>
+            <button type="button" id="inspectorToggleBtn" class="canvas-btn" aria-pressed="true"
+                    title="Toggle Properties &amp; CSS Designer panel">Inspector
+            </button>
+            <button type="button" id="outlineBtn" class="canvas-btn" aria-haspopup="dialog"
+                    title="DOM Tree &amp; Element Outline">DOM
+            </button>
+        </div>
+    </div>
+
+    <div id="canvasBody" class="canvas-body" data-dock="bottom">
+    <div id="render-target" class="stage-viewport">
+        <div id="stage-frame-wrap" class="stage-frame-wrap">
+            <iframe id="stageFrame" title="Live WYSIWYG Stage" sandbox="allow-scripts allow-same-origin"></iframe>
+        </div>
+    </div>
+
+    <section id="inspectorPanel" class="inspector-panel dock-bottom" aria-label="Properties, CSS Designer, and Console">
+        <div id="inspectorResizer" class="inspector-resizer" role="separator" aria-orientation="vertical" aria-label="Resize Inspector width" tabindex="0" hidden></div>
+        <div id="inspectorHeader" class="inspector-header">
+            <div class="inspector-tabs" role="tablist" aria-label="Inspector sections">
+                <button type="button" class="insp-tab" data-insp="props" aria-selected="true">Properties (HTML)</button>
+                <button type="button" class="insp-tab" data-insp="css" aria-selected="false">CSS Designer</button>
+                <button type="button" class="insp-tab" data-insp="parts" aria-selected="false">Parts <span id="partsCountBadge" class="console-badge" hidden>0</span></button>
+                <button type="button" class="insp-tab" data-insp="problems" aria-selected="false">Problems <span id="problemsCountBadge" class="console-badge" hidden>0</span></button>
+                <button type="button" class="insp-tab" data-insp="console" aria-selected="false">Console <span id="consoleCountBadge" class="console-badge" hidden>0</span></button>
+            </div>
+            <div class="inspector-selection-badge">
+                <span id="inspSelectedTag">No element selected</span>
+                <div class="insp-actions">
+                    <button type="button" class="mini" id="inspMoveUpBtn" title="Move element up (Alt+Up)" disabled>&uarr;</button>
+                    <button type="button" class="mini" id="inspMoveDownBtn" title="Move element down (Alt+Down)" disabled>&darr;</button>
+                    <button type="button" class="mini" id="inspPartBtn" title="Move the selected element into a shared part file reused across pages" disabled>Make Part&hellip;</button>
+                    <button type="button" class="mini" id="inspDupBtn" title="Duplicate selected element" disabled>Duplicate</button>
+                    <button type="button" class="mini" id="inspWrapBtn" title="Wrap selected element in a &lt;div&gt;" disabled>Wrap &lt;div&gt;</button>
+                    <button type="button" class="mini danger-mini" id="inspDeleteBtn" title="Delete selected element (Del)" disabled>Delete</button>
+                    <button type="button" class="mini" id="inspDockBtn" aria-haspopup="menu" aria-expanded="false" title="Choose where the Inspector sits: bottom, top, left, right, or floating">Bottom &#9662;</button>
+                    <button type="button" class="mini" id="inspCollapseBtn" title="Collapse or expand inspector body">&#9662;</button>
+                    <button type="button" class="mini" id="inspCloseBtn" title="Hide Inspector (Ctrl/Cmd+Shift+I)">&times;</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="inspPropsPane" class="inspector-body">
+            <div class="insp-grid">
+                <label class="insp-field">
+                    <span>ID</span>
+                    <input type="text" id="propId" placeholder="e.g. hero" autocomplete="off" disabled>
+                </label>
+                <label class="insp-field insp-wide">
+                    <span>Classes (space-separated)</span>
+                    <input type="text" id="propClass" placeholder="e.g. card featured" autocomplete="off" disabled>
+                </label>
+                <label class="insp-field insp-wide">
+                    <span>Text Content</span>
+                    <input type="text" id="propText" placeholder="Inline text of element" autocomplete="off" disabled>
+                </label>
+                <label class="insp-field" id="propHrefWrap">
+                    <span>Link (href)</span>
+                    <input type="text" id="propHref" placeholder="#section or https://..." autocomplete="off" disabled>
+                    <button type="button" class="mini" id="propFollowBtn" title="Open the linked project page in the Studio" disabled>Follow Link &#8599;</button>
+                </label>
+                <label class="insp-field" id="propSrcWrap">
+                    <span>Source (src)</span>
+                    <input type="text" id="propSrc" placeholder="image.png" autocomplete="off" disabled>
+                    <button type="button" class="mini" id="propSrcBrowseBtn" title="Choose from the project's images" disabled>Browse&hellip;</button>
+                </label>
+                <label class="insp-field" id="propAltWrap">
+                    <span>Alt / Title</span>
+                    <input type="text" id="propAlt" placeholder="Accessible description" autocomplete="off" disabled>
+                </label>
+            </div>
+        </div>
+
+        <div id="inspCssPane" class="inspector-body" hidden>
+            <div class="css-target-bar">
+                <label class="insp-inline-label">
+                    <span>Target Rule:</span>
+                    <select id="cssTargetSelect" aria-label="Target CSS selector or inline style"></select>
+                </label>
+                <button type="button" class="mini" id="cssJumpRuleBtn" title="Jump to this CSS rule in the Code editor">Go to CSS &#8599;</button>
+                <input type="text" id="cssCustomSelector" class="css-custom-input" placeholder=".new-class or #id" aria-label="Custom CSS selector">
+                <button type="button" class="mini" id="cssAddRuleBtn">Use Selector</button>
+                <span id="cssBoxSummary" class="css-box-summary" aria-live="polite"></span>
+            </div>
+            <div id="cssMediaBar" class="css-state-bar" role="group" aria-label="Breakpoint to edit and preview">
+                <span class="insp-inline-label">Breakpoint:</span>
+                <button type="button" class="mini css-state-btn css-media-btn" data-media="" aria-pressed="true" title="Edit the base styles that apply at every screen size">All sizes</button>
+                <button type="button" class="mini css-state-btn css-media-btn" data-media="(max-width: 768px)" aria-pressed="false" title="Edit styles inside @media (max-width: 768px) and preview at 768px">&le; 768px</button>
+                <button type="button" class="mini css-state-btn css-media-btn" data-media="(max-width: 375px)" aria-pressed="false" title="Edit styles inside @media (max-width: 375px) and preview at 375px">&le; 375px</button>
+                <span id="cssMediaHint" class="css-state-hint" aria-live="polite"></span>
+            </div>
+            <div id="cssStateBar" class="css-state-bar" role="group" aria-label="Pseudo-class state to edit and preview">
+                <span class="insp-inline-label">State:</span>
+                <button type="button" class="mini css-state-btn" data-state="" aria-pressed="true" title="Edit the normal (resting) rule">Normal</button>
+                <button type="button" class="mini css-state-btn" data-state="hover" aria-pressed="false" title="Edit and preview :hover">:hover</button>
+                <button type="button" class="mini css-state-btn" data-state="focus" aria-pressed="false" title="Edit and preview :focus">:focus</button>
+                <button type="button" class="mini css-state-btn" data-state="active" aria-pressed="false" title="Edit and preview :active">:active</button>
+                <button type="button" class="mini css-state-btn" data-state="focus-visible" aria-pressed="false" title="Edit and preview :focus-visible">:focus-visible</button>
+                <button type="button" class="mini css-state-btn" data-state="focus-within" aria-pressed="false" title="Edit and preview :focus-within">:focus-within</button>
+                <span id="cssStateHint" class="css-state-hint" aria-live="polite"></span>
+            </div>
+            <div class="insp-grid css-grid">
+                <label class="insp-field">
+                    <span>Display</span>
+                    <select id="cssDisplay">
+                        <option value="">(default)</option>
+                        <option value="block">block</option>
+                        <option value="flex">flex</option>
+                        <option value="grid">grid</option>
+                        <option value="inline-block">inline-block</option>
+                        <option value="inline">inline</option>
+                        <option value="none">none</option>
+                    </select>
+                </label>
+                <label class="insp-field">
+                    <span>Padding</span>
+                    <input type="text" id="cssPadding" placeholder="e.g. 1.5rem">
+                </label>
+                <label class="insp-field">
+                    <span>Margin</span>
+                    <input type="text" id="cssMargin" placeholder="e.g. 0 auto">
+                </label>
+                <label class="insp-field">
+                    <span>Gap</span>
+                    <input type="text" id="cssGap" placeholder="e.g. 1rem">
+                </label>
+                <label class="insp-field">
+                    <span>Width / Max-W</span>
+                    <input type="text" id="cssWidth" placeholder="e.g. 100% or 760px">
+                </label>
+                <label class="insp-field">
+                    <span>Font Size</span>
+                    <input type="text" id="cssFontSize" placeholder="e.g. 1.25rem">
+                </label>
+                <label class="insp-field">
+                    <span>Text Align</span>
+                    <select id="cssTextAlign">
+                        <option value="">(inherit)</option>
+                        <option value="left">left</option>
+                        <option value="center">center</option>
+                        <option value="right">right</option>
+                    </select>
+                </label>
+                <label class="insp-field">
+                    <span>Radius</span>
+                    <input type="text" id="cssRadius" placeholder="e.g. 0.5rem">
+                </label>
+                <label class="insp-field">
+                    <span>Text Color</span>
+                    <div class="color-pair">
+                        <input type="color" id="cssColorPicker" value="#0f172a" aria-label="Pick text color">
+                        <input type="text" id="cssColor" placeholder="#0f172a">
+                    </div>
+                </label>
+                <label class="insp-field">
+                    <span>Background</span>
+                    <div class="color-pair">
+                        <input type="color" id="cssBgPicker" value="#ffffff" aria-label="Pick background color">
+                        <input type="text" id="cssBg" placeholder="#ffffff">
+                    </div>
+                </label>
+                <div id="cssLayoutGroup" class="insp-layout" hidden>
+                    <label class="insp-field">
+                        <span>Direction</span>
+                        <select id="cssFlexDir">
+                            <option value="row">row</option>
+                            <option value="row-reverse">row-reverse</option>
+                            <option value="column">column</option>
+                            <option value="column-reverse">column-reverse</option>
+                        </select>
+                    </label>
+                    <label class="insp-field">
+                        <span>Wrap</span>
+                        <select id="cssFlexWrap">
+                            <option value="nowrap">nowrap</option>
+                            <option value="wrap">wrap</option>
+                        </select>
+                    </label>
+                    <label class="insp-field">
+                        <span>Justify</span>
+                        <select id="cssJustify">
+                            <option value="flex-start">start</option>
+                            <option value="center">center</option>
+                            <option value="flex-end">end</option>
+                            <option value="space-between">space-between</option>
+                            <option value="space-around">space-around</option>
+                            <option value="space-evenly">space-evenly</option>
+                        </select>
+                    </label>
+                    <label class="insp-field">
+                        <span>Align items</span>
+                        <select id="cssAlign">
+                            <option value="stretch">stretch</option>
+                            <option value="flex-start">start</option>
+                            <option value="center">center</option>
+                            <option value="flex-end">end</option>
+                            <option value="baseline">baseline</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="insp-field">
+                    <span>Bg Image</span>
+                    <div class="color-pair">
+                        <button type="button" class="mini" id="cssBgImageBrowseBtn" title="Choose an image from the project">Browse…</button>
+                        <input type="text" id="cssBgImage" placeholder="url(images/hero.jpg)" aria-label="Background image">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="inspPartsPane" class="inspector-body" hidden>
+            <p class="parts-help">Shared parts are marked regions (<code>&lt;!-- pc:part src="parts/header.html" --&gt;</code>) kept in step with one part file. Editing the part file updates every page.</p>
+            <div id="partsList" class="parts-list"></div>
+        </div>
+        <div id="inspProblemsPane" class="inspector-body" hidden>
+            <div id="problemsFilterBar" class="css-state-bar" role="group" aria-label="Kinds of problems to show">
+                <span class="insp-inline-label">Show:</span>
+                <button type="button" class="mini css-state-btn problems-filter-btn" data-filter="all" aria-pressed="true">All</button>
+                <button type="button" class="mini css-state-btn problems-filter-btn" data-filter="links" aria-pressed="false" title="Broken links and missing files">Links</button>
+                <button type="button" class="mini css-state-btn problems-filter-btn" data-filter="accessibility" aria-pressed="false" title="Missing alt text, heading order, labels, and page language">Accessibility</button>
+                <button type="button" class="mini css-state-btn problems-filter-btn" data-filter="markup" aria-pressed="false" title="Duplicate ids, unclosed or stray tags, and obsolete elements">Markup</button>
+            </div>
+            <div class="console-bar">
+                <span id="problemsSummary" class="parts-help" aria-live="polite"></span>
+                <button type="button" class="mini" id="problemsRecheckBtn" title="Check every page and stylesheet for broken links, accessibility, and markup problems">Re-check</button>
+            </div>
+            <div id="problemsList" class="parts-list"></div>
+        </div>
+        <div id="inspConsolePane" class="inspector-body console-pane" hidden>
+            <div class="console-bar">
+                <div class="console-filters" role="group" aria-label="Console filter">
+                    <button type="button" class="mini console-filter" data-console-filter="all" aria-pressed="true">All</button>
+                    <button type="button" class="mini console-filter" data-console-filter="error" aria-pressed="false">Errors</button>
+                    <button type="button" class="mini console-filter" data-console-filter="warn" aria-pressed="false">Warnings</button>
+                    <button type="button" class="mini console-filter" data-console-filter="log" aria-pressed="false">Logs</button>
+                </div>
+                <button type="button" class="mini" id="consoleClearBtn" title="Clear console output">Clear</button>
+            </div>
+            <div id="consoleList" class="console-list" role="log" aria-live="polite"></div>
+        </div>
+    </section>
+    </div>
+</div>
+
+<div id="library-modal" class="modal-overlay">
+    <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="library-title">
+        <div class="modal-header">
+            <h2 id="library-title">Your Projects</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="library-tools">
+            <input id="librarySearch" class="library-search" type="search" placeholder="Search your projects"
+                   aria-label="Search your projects" autocomplete="off">
+            <div class="library-views" role="group" aria-label="Show">
+                <button type="button" class="chip" id="libViewScripts" aria-pressed="true">Projects</button>
+                <button type="button" class="chip" id="libViewTrash" aria-pressed="false">Recently deleted</button>
+            </div>
+            <button type="button" class="chip" id="libStarterBtn">Load Starter Template</button>
+            <button type="button" class="chip" id="libImport">Open file&hellip;</button>
+            <input type="file" id="importInput" accept=".html,.htm,.css,.js" multiple hidden>
+        </div>
+        <div id="library-list" class="modal-body"></div>
+        <div id="library-status" role="status" aria-live="polite"></div>
+    </div>
+</div>
+
+<div id="versions-modal" class="modal-overlay">
+    <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="versions-title">
+        <div class="modal-header">
+            <h2 id="versions-title">Project Snapshots</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="versions-top">
+            <p id="versionsFor" class="versions-for"></p>
+            <form id="versionForm" class="rename-form">
+                <input type="text" id="versionName" maxlength="80" autocomplete="off"
+                       placeholder="Name this snapshot, e.g. Before hero redesign"
+                       aria-label="Snapshot name">
+                <button type="submit" class="btn primary">Keep Snapshot</button>
+            </form>
+        </div>
+        <div id="versions-list" class="modal-body"></div>
+        <div id="versions-status" role="status" aria-live="polite"></div>
+    </div>
+</div>
+
+<div id="outline-modal" class="modal-overlay">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="outline-title">
+        <div class="modal-header">
+            <h2 id="outline-title">DOM Structure &amp; Stats</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="library-tools">
+            <input id="outlineFilter" class="library-search" type="search" placeholder="Filter by tag, #id, .class, or text"
+                   aria-label="Filter DOM elements" autocomplete="off">
+            <span id="domStatsBadge" class="dom-stats-badge"></span>
+        </div>
+        <div id="outline-list" class="modal-body outline-list"></div>
+    </div>
+</div>
+
+<div id="assets-modal" class="modal-overlay">
+    <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="assets-title">
+        <div class="modal-header">
+            <h2 id="assets-title">Assets</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="library-tools">
+            <input id="assetSearch" class="library-search" type="search" placeholder="Filter images" aria-label="Filter images" autocomplete="off">
+            <button type="button" class="chip" id="assetAddBtn" title="Add images to the project's images folder (you can also drop image files anywhere)">Add images&hellip;</button>
+            <input type="file" id="assetFileInput" accept="image/*,.svg,.avif" multiple hidden>
+        </div>
+        <div id="assetGrid" class="asset-grid modal-body"></div>
+        <div id="assetStatus" role="status" aria-live="polite"></div>
+    </div>
+</div>
+
+<div id="preview-modal" class="modal-overlay">
+    <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="preview-title">
+        <div class="modal-header">
+            <h2 id="preview-title">Preview in a Browser or on a Phone</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <section class="export-option" id="previewTabSection">
+                <h3>New browser tab</h3>
+                <p>Opens a snapshot of the current page in a new tab of this browser, with its stylesheets, scripts, and images inline. It does not update as you edit, and links to other pages do not work.</p>
+                <div class="export-buttons">
+                    <button type="button" class="btn" id="previewTabBtn">Open in new tab</button>
+                </div>
+            </section>
+            <section class="export-option" id="previewNetSection">
+                <h3>Live preview on this network</h3>
+                <p id="previewNetNote">Serves the open project, including unsaved edits and added images, read-only over HTTP so you can open it in any browser or on a phone on the same Wi-Fi. Pages reload by themselves when you edit. Anyone on your network who has the link can view it, so share it only on a network you trust. Sharing is off until you start it and stops when you press Stop or quit the app.</p>
+                <div class="export-buttons">
+                    <button type="button" class="btn primary" id="previewToggleBtn">Start sharing</button>
+                    <button type="button" class="btn" id="previewOpenBtn" hidden>Open in this computer's browser</button>
+                </div>
+                <div id="previewUrls" class="preview-urls" hidden></div>
+            </section>
+            <section class="export-option" id="previewDesktopOnly" hidden>
+                <h3>Live preview on this network</h3>
+                <p>Preview on a phone or in another browser needs the desktop app, which can serve the project on your network. In this browser, use the new tab above, or export the project to a folder and serve it yourself.</p>
+            </section>
+        </div>
+    </div>
+</div>
+
+<div id="export-modal" class="modal-overlay">
+    <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="export-title">
+        <div class="modal-header">
+            <h2 id="export-title">Export Project to Disk</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <section class="export-option">
+                <h3 id="folderExportHeading">Local Disk Folder (Retains Existing Folder &amp; File Structure)</h3>
+                <p id="folderExportNote">Your edits are safely stored in this studio project environment and are not written to disk until you export here. Exporting writes every project file to its exact relative path, preserving your folder hierarchy and existing assets.</p>
+                <div class="export-buttons">
+                    <button type="button" class="btn primary" id="exportFolderBtn">Export to Original Folder</button>
+                    <button type="button" class="btn" id="exportNewFolderBtn">Export to Another Folder&hellip;</button>
+                </div>
+            </section>
+            <section class="export-option">
+                <h3>Individual Project Files</h3>
+                <p id="separateExportNote">Download any individual file from your current project workspace.</p>
+                <div id="exportFilesList" class="export-buttons">
+                    <button type="button" class="btn" id="exportHtmlBtn">index.html</button>
+                    <button type="button" class="btn" id="exportCssBtn">styles.css</button>
+                    <button type="button" class="btn" id="exportJsBtn">script.js</button>
+                </div>
+            </section>
+            <section class="export-option" id="zipExportSection">
+                <h3>Whole Project as a .zip</h3>
+                <p id="zipExportNote">Downloads every project file in one archive with the same folder layout, including images and other binary files loaded from an opened folder. Pages sit at the top level, so the archive can be unpacked or uploaded to a web host as it is.</p>
+                <div class="export-buttons">
+                    <button type="button" class="btn" id="exportZipBtn">Download project .zip</button>
+                </div>
+            </section>
+            <section class="export-option">
+                <h3>Standalone Single-File HTML Bundle</h3>
+                <p id="bundleExportNote">Inlines the active HTML page with its linked CSS and JavaScript into a single self-contained <code>.html</code> file.</p>
+                <div class="export-buttons">
+                    <button type="button" class="btn" id="exportBundleBtn">Download bundled .html</button>
+                    <button type="button" class="btn" id="copyBundleBtn">Copy bundled HTML</button>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<div id="settings-modal" class="modal-overlay">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <div class="modal-header">
+            <h2 id="settings-title">Settings</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <fieldset class="settings-group">
+                <legend>Theme</legend>
+                <div class="radio-row">
+                    <label><input type="radio" name="theme" value="dark"> Dark</label>
+                    <label><input type="radio" name="theme" value="light"> Light</label>
+                    <label><input type="radio" name="theme" value="retro"> Retro</label>
+                    <label><input type="radio" name="theme" value="system"> System</label>
+                </div>
+            </fieldset>
+            <fieldset class="settings-group">
+                <legend>Code text size</legend>
+                <div class="radio-row">
+                    <label><input type="radio" name="size" value="small"> Small</label>
+                    <label><input type="radio" name="size" value="normal"> Normal</label>
+                    <label><input type="radio" name="size" value="large"> Large</label>
+                    <label><input type="radio" name="size" value="larger"> Larger</label>
+                </div>
+            </fieldset>
+            <fieldset class="settings-group">
+                <legend>Editor helpers</legend>
+                <label class="check-row">
+                    <input type="checkbox" id="setColours">
+                    <span>Syntax color hints in the code editor</span>
+                </label>
+                <label class="check-row">
+                    <input type="checkbox" id="setIndent">
+                    <span>Smart indentation on Enter and tag expansion on Tab</span>
+                </label>
+            </fieldset>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn primary" data-close>Done</button>
+        </div>
+    </div>
+</div>
+
+<div id="help-modal" class="modal-overlay">
+    <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="help-title">
+        <div class="modal-header">
+            <h2 id="help-title">Plainchant Web Guide</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <h3>Dreamweaver-Style Round-Trip Editing</h3>
+            <p>Your HTML, CSS, and JavaScript files are always the single source of truth. Every visual action on the Stage splices only the exact character range in your source code.</p>
+            <ul>
+                <li><strong>Select, Highlight &amp; Edit Text in Place:</strong> In <strong>Design Mode</strong>, click any element on the Stage to highlight its code block in the Code editor and view its live margin/padding box model. Clicking a text element places a live text cursor right where you clicked so you can type and edit copy directly on the Stage while the HTML updates in real time.</li>
+                <li><strong>Direct Stage Reordering:</strong> Drag elements on the Stage (or grab the <code>&#10287;</code> badge handle) to reorder them, or use the floating badge buttons (<code>&uarr;</code>, <code>&darr;</code>, <code>&#10697;</code>, <code>&#10005;</code>) and <kbd>Alt+&uarr;/&darr;</kbd>.</li>
+                <li><strong>Dockable &amp; Floating Inspector:</strong> Edit HTML attributes or use the <strong>CSS Designer</strong> to inspect computed styles, modify rules, or click <strong>Go to CSS &#8599;</strong> to jump straight to the rule in your stylesheet. Toggle, collapse, or move the Inspector (bottom, top, left, right, or floating, from its <strong>Dock</strong> menu) (<kbd>Ctrl/Cmd+Shift+I</kbd>).</li>
+                <li><strong>Insert Menu &amp; Right-Click Context Menu:</strong> Use the top <strong>Insert &#9662;</strong> menu, right-click on the Stage or HTML editor, or type shorthand like <code>section.hero</code> or <code>ul*3</code> and press <kbd>Tab</kbd>.</li>
+                <li><strong>Multi-File Undo &amp; Redo:</strong> Use <strong>Edit &#9662; Undo</strong> / <strong>Redo</strong> or <kbd>Ctrl/Cmd+Z</kbd> and <kbd>Ctrl/Cmd+Shift+Z</kbd> (<kbd>Ctrl+Y</kbd>) across all files and visual actions.</li>
+                <li><strong>Format:</strong> <strong>Edit &#9662; Format file</strong> (<kbd>Alt+Shift+F</kbd>) re-indents and tidies the open HTML, CSS, or JS file in one undo step. HTML and CSS are rebuilt line by line; JavaScript is only re-indented.</li>
+                <li><strong>Line Numbers &amp; Find/Replace:</strong> The code editor shows line numbers. Press <kbd>Ctrl/Cmd+F</kbd> to find in the current file or <kbd>Ctrl/Cmd+H</kbd> to find and replace, or <kbd>Ctrl/Cmd+Shift+F</kbd> (the <strong>Project</strong> button) to search and replace in every file; <kbd>Enter</kbd> / <kbd>Shift+Enter</kbd> step through matches and <kbd>Esc</kbd> closes the bar.</li>
+                <li><strong>Safe Folder Projects &amp; Export:</strong> Opening a local folder creates an isolated Studio project environment. Changes are not written to local disk until you click <strong>Export</strong>, which preserves your existing folder and file structure.</li>
+            </ul>
+            <h3 id="shortcutsHeading">Keyboard Shortcuts</h3>
+            <div id="shortcutList" class="shortcut-list" aria-labelledby="shortcutsHeading"></div>
+            <div class="help-actions">
+                <button type="button" class="btn primary" id="helpLoadStarter">Load Starter Template</button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn primary" data-close>Got it</button>
+        </div>
+    </div>
+</div>
+
+<div id="fileMenu" class="ctx-menu" role="menu" aria-label="File actions" hidden>
+    <div id="fileMenuLabel" class="ctx-header">file</div>
+    <button type="button" class="ctx-item" role="menuitem" data-file-cmd="rename"><span>Rename&hellip;</span></button>
+    <button type="button" class="ctx-item" role="menuitem" data-file-cmd="duplicate"><span>Duplicate</span></button>
+    <button type="button" class="ctx-item" role="menuitem" data-file-cmd="delete"><span>Delete</span></button>
+</div>
+
+<div id="dockMenu" class="ctx-menu" role="menu" aria-label="Inspector position" hidden>
+    <button type="button" class="ctx-item" role="menuitemradio" aria-checked="true" data-dock="bottom"><span>Dock at bottom</span></button>
+    <button type="button" class="ctx-item" role="menuitemradio" aria-checked="false" data-dock="top"><span>Dock at top</span></button>
+    <button type="button" class="ctx-item" role="menuitemradio" aria-checked="false" data-dock="left"><span>Dock at left</span></button>
+    <button type="button" class="ctx-item" role="menuitemradio" aria-checked="false" data-dock="right"><span>Dock at right</span></button>
+    <button type="button" class="ctx-item" role="menuitemradio" aria-checked="false" data-dock="float"><span>Floating window</span></button>
+</div>
+
+<div id="contextMenu" class="ctx-menu" role="menu" aria-label="Element and Insert Menu" hidden>
+    <div id="ctxHeaderLabel" class="ctx-header">&lt;body&gt;</div>
+    <div class="ctx-item-wrap ctx-has-sub">
+        <button type="button" id="ctxInsertTrigger" class="ctx-item" role="menuitem" aria-haspopup="true" aria-expanded="false">
+            <span>Insert Element</span>
+            <span class="ctx-arrow">&#9656;</span>
+        </button>
+        <div id="ctxInsertSubmenu" class="ctx-submenu" role="menu" aria-label="Insert HTML5 Element">
+            <button type="button" class="ins-btn" role="menuitem" data-insert="section"><span>Section</span><code>&lt;section&gt;</code></button>
+            <button type="button" class="ins-btn" role="menuitem" data-insert="article"><span>Card</span><code>&lt;article&gt;</code></button>
+            <button type="button" class="ins-btn" role="menuitem" data-insert="flex"><span>Flex Row</span><code>.flex-row</code></button>
+            <button type="button" class="ins-btn" role="menuitem" data-insert="grid"><span>3-Col Grid</span><code>.grid-3</code></button>
+            <button type="button" class="ins-btn" role="menuitem" data-insert="div"><span>Container</span><code>&lt;div&gt;</code></button>
+            <button type="button" class="ins-btn" role="menuitem" data-insert="heading"><span>Heading</span><code>&lt;h2&gt;</code></button>
+            <button type="button" class="ins-btn" role="menuitem" data-insert="paragraph"><span>Paragraph</span><code>&lt;p&gt;</code></button>
+            <button type="button" class="ins-btn" role="menuitem" data-insert="button"><span>Button</span><code>&lt;button&gt;</code></button>
+            <button type="button" class="ins-btn" role="menuitem" data-insert="link"><span>Link</span><code>&lt;a&gt;</code></button>
+            <button type="button" class="ins-btn" role="menuitem" data-insert="image"><span>Image</span><code>&lt;img&gt;</code></button>
+            <button type="button" class="ins-btn" role="menuitem" data-insert="list"><span>List</span><code>&lt;ul&gt;</code></button>
+            <button type="button" class="ins-btn" role="menuitem" data-insert="form"><span>Form</span><code>&lt;form&gt;</code></button>
+        </div>
+    </div>
+    <div class="ctx-sep" role="separator"></div>
+    <button type="button" class="ctx-item" role="menuitem" data-ctx-cmd="move-up"><span>Move Up</span><kbd>Alt+&uarr;</kbd></button>
+    <button type="button" class="ctx-item" role="menuitem" data-ctx-cmd="move-down"><span>Move Down</span><kbd>Alt+&darr;</kbd></button>
+    <button type="button" class="ctx-item" role="menuitem" data-ctx-cmd="duplicate"><span>Duplicate</span><code>&#10697;</code></button>
+    <button type="button" class="ctx-item" role="menuitem" data-ctx-cmd="wrap"><span>Wrap in &lt;div&gt;</span><code>&lt;div&gt;</code></button>
+    <button type="button" class="ctx-item" role="menuitem" data-ctx-cmd="inspect-css"><span>Go to CSS Rule</span><code>&#8599;</code></button>
+    <div class="ctx-sep" role="separator"></div>
+    <button type="button" class="ctx-item" role="menuitem" data-ctx-cmd="undo"><span>Undo</span><kbd>Ctrl+Z</kbd></button>
+    <button type="button" class="ctx-item" role="menuitem" data-ctx-cmd="redo"><span>Redo</span><kbd>Ctrl+Y</kbd></button>
+    <div class="ctx-sep" role="separator"></div>
+    <button type="button" class="ctx-item ctx-danger" role="menuitem" data-ctx-cmd="delete"><span>Delete Element</span><kbd>Del</kbd></button>
+</div>
+
+<div id="dropHint" class="drop-hint" hidden>Drop HTML, CSS, or JS files here to import</div>
+<div id="notice" class="notice" role="status" aria-live="polite"></div>
+
+<script src="src/html-ast.js"></script>
+<script src="src/css-ast.js"></script>
+<script src="src/vendor/prism/prism.js" data-manual></script>
+<script src="src/code-shade.js"></script>
+<script src="src/dom-outline.js"></script>
+<script src="src/project.js"></script>
+<script src="src/parts.js"></script>
+<script src="src/links.js"></script>
+<script src="src/editing.js"></script>
+<script src="src/suggest.js"></script>
+<script src="src/library.js"></script>
+<script src="src/store.js"></script>
+<script src="src/versions.js"></script>
+<script src="src/filesync.js"></script>
+<script src="src/finding.js"></script>
+<script src="src/zip.js"></script>
+<script src="src/imagelib.js"></script>
+<script src="src/layout.js"></script>
+<script src="src/hints.js"></script>
+<script src="src/preview.js"></script>
+<script src="src/projectlink.js"></script>
+<script src="src/format.js"></script>
+<script src="src/shortcuts.js"></script>
+<script src="src/importing.js"></script>
+<script src="src/app/core.js"></script>
+<script src="src/app/layout.js"></script>
+<script src="src/app/persistence.js"></script>
+<script src="src/app/assets.js"></script>
+<script src="src/app/dialogs.js"></script>
+<script src="src/app/library-ui.js"></script>
+<script src="src/app/versions-ui.js"></script>
+<script src="src/app/settings.js"></script>
+<script src="src/app/typing.js"></script>
+<script src="src/app/shade.js"></script>
+<script src="src/app/find.js"></script>
+<script src="src/app/find-project.js"></script>
+<script src="src/app/panes.js"></script>
+<script src="src/app/dock-ui.js"></script>
+<script src="src/app/stage.js"></script>
+<script src="src/app/stage-live.js"></script>
+<script src="src/app/stage-layout.js"></script>
+<script src="src/app/insert-drag.js"></script>
+<script src="src/app/inspector-ui.js"></script>
+<script src="src/app/css-states.js"></script>
+<script src="src/app/css-media.js"></script>
+<script src="src/app/layout-ui.js"></script>
+<script src="src/app/console-ui.js"></script>
+<script src="src/app/parts-ui.js"></script>
+<script src="src/app/problems-ui.js"></script>
+<script src="src/app/outline-ui.js"></script>
+<script src="src/app/explorer-ui.js"></script>
+<script src="src/app/asset-ui.js"></script>
+<script src="src/app/explorer-move.js"></script>
+<script src="src/app/export.js"></script>
+<script src="src/app/import.js"></script>
+<script src="src/app/tauri-files.js"></script>
+<script src="src/app/project-links.js"></script>
+<script src="src/app/zip-ui.js"></script>
+<script src="src/app/preview-ui.js"></script>
+<script src="src/app/format-ui.js"></script>
+<script src="src/app/menus.js"></script>
+<script src="src/app/help.js"></script>
+<script src="src/app/offline.js"></script>
+<script src="src/app/main.js"></script>
+</body>
+</html>
