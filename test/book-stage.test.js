@@ -96,3 +96,46 @@ test('project: a book saves and reloads without web-page files, keeps its folder
     const web = Project.unpack(Project.pack(Project.starter()));
     assert.ok('index.html' in web.entries && !Project.isBookEntries(web.entries), 'web pages pack as before');
 });
+
+test('book-stage: reader settings fall back to defaults, write forced margins and theme colours, and keep book link colours (P2-02)', () => {
+    assert.deepEqual(BookStage.readerPrefs(), { size: 100, margins: 'normal', theme: 'light' });
+    assert.deepEqual(BookStage.readerPrefs({ size: 120, margins: 'huge', theme: 'sepia' }), { size: 100, margins: 'normal', theme: 'sepia' }, 'only listed sizes and names');
+    const css = BookStage.readerCss({ size: 150, margins: 'wide', theme: 'dark' });
+    assert.ok(css.indexOf('html, body { background-color: #121212 !important; color: #e0e0e0 !important; }') !== -1, css);
+    assert.ok(css.indexOf('body { margin: 0 !important; padding: 1.5em 3em !important; }') !== -1);
+    assert.ok(/a:link, a:visited \{ color: #8ab4f8; \}/.test(css), 'the theme\'s link colour, without !important, so a book\'s own wins');
+    assert.equal(/font-size/.test(css), false, 'text size is applied on load from the book\'s computed root size, not here');
+    assert.equal(/a:link/.test(BookStage.readerCss({ theme: 'light' })), false, 'light keeps the browser\'s link colours');
+    // WCAG 2 relative luminance: text and links must reach 4.5:1 on each theme's page.
+    const lum = (hex) => {
+        const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
+        return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    };
+    const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+    Object.keys(BookStage.READER.themes).forEach((name) => {
+        const t = BookStage.READER.themes[name];
+        assert.ok(ratio(t.text, t.page) >= 4.5, name + ' text ' + ratio(t.text, t.page).toFixed(2));
+        if (t.link) assert.ok(ratio(t.link, t.page) >= 4.5, name + ' links ' + ratio(t.link, t.page).toFixed(2));
+    });
+});
+
+test('book-stage: the reader style goes last in <head>, after the book\'s inlined styles, and the book file is unchanged', () => {
+    const files = bsTemplate();
+    const css = BookStage.readerCss({ theme: 'sepia' });
+    const r = BookStage.assemble(files, BS_CH, {}, { css: css });
+    const ast = XmlAst.parse(r.xhtml);
+    assert.deepEqual(ast.errors, []);
+    const head = XmlAst.find(ast, 'head');
+    const styles = XmlAst.elementChildren(head).filter((el) => el.local === 'style');
+    assert.equal(styles.length, 2);
+    assert.equal(XmlAst.getAttr(styles[1], 'id'), 'scribe-reader');
+    assert.equal(XmlAst.textContent(styles[1]), css);
+    assert.equal(XmlAst.elementChildren(head).slice(-1)[0], styles[1], 'last, so it follows the book\'s styles');
+    assert.equal(files[BS_CH].indexOf('scribe-reader'), -1);
+    const prefixed = '<?xml version="1.0"?>\n<h:html xmlns:h="http://www.w3.org/1999/xhtml"><h:head/><h:body><h:p>x</h:p></h:body></h:html>';
+    const p = BookStage.assemble({ [BS_CH]: prefixed }, BS_CH, {}, { css: 'p{}' });
+    assert.ok(p.xhtml.indexOf('<h:head><h:style id="scribe-reader">p{}</h:style></h:head>') !== -1, p.xhtml);
+    const headless = BookStage.assemble({ [BS_CH]: '<html xmlns="http://www.w3.org/1999/xhtml"><body><p>x</p></body></html>' }, BS_CH, {}, { css: 'a < b' });
+    assert.ok(headless.xhtml.indexOf('<html xmlns="http://www.w3.org/1999/xhtml"><style id="scribe-reader">a &lt; b</style><body>') !== -1, headless.xhtml);
+    assert.deepEqual(XmlAst.parse(headless.xhtml).errors, []);
+});

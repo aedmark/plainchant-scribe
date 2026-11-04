@@ -684,6 +684,23 @@ body.shaded #editor {
     transition: max-width 0.2s ease;
 }
 
+/* Reader settings on the Stage bar (P2-02) */
+.reader-wrap { position: relative; display: inline-flex; }
+.reader-wrap[hidden] { display: none; }
+#readerBtn[aria-expanded="true"] { background-color: var(--btn-primary-bg); color: var(--btn-primary-text); }
+.reader-panel {
+    position: absolute; top: calc(100% + 0.35rem); right: 0; z-index: 800; min-width: 17rem;
+    display: flex; flex-direction: column; gap: 0.55rem; padding: 0.65rem;
+    background-color: var(--bg-raised); border: 1px solid var(--border-strong); border-radius: 0.45rem;
+    box-shadow: var(--shadow-pop); color: var(--text-strong); font-size: 0.8rem;
+}
+.reader-panel[hidden] { display: none; }
+.reader-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.reader-label { color: var(--text-void-muted); }
+.reader-step, .reader-choice { display: inline-flex; align-items: center; gap: 0.25rem; }
+.reader-step output { min-width: 3rem; text-align: center; font-variant-numeric: tabular-nums; }
+.reader-reset { align-self: flex-end; }
+
 .stage-frame-wrap[data-vp="tablet"] { max-width: 768px; }
 .stage-frame-wrap[data-vp="mobile"] { max-width: 375px; }
 

@@ -36,7 +36,7 @@
             <div class="menu-wrap">
                 <button id="fileMenuBtn" type="button" class="btn" aria-haspopup="true" aria-expanded="false" aria-controls="fileMenuPanel" title="Projects, folders, export, and preview">File &#9662;</button>
                 <div id="fileMenuPanel" class="menu-panel" role="menu" aria-label="File" hidden>
-                    <button id="newBtn" type="button" class="menu-item" role="menuitem" title="Start a blank project"><span>New project</span></button>
+                    <button id="newBtn" type="button" class="menu-item" role="menuitem" title="Start a new EPUB book"><span>New book</span></button>
                     <button id="openFileBtn" type="button" class="menu-item" role="menuitem" title="Open a single .html, .css, or .js file as its own project"><span>Open file&hellip;</span></button>
                     <button id="folderBtn" type="button" class="menu-item" role="menuitem" title="Open a folder as a project (a folder that is already a project opens that project)"><span>Open folder&hellip;</span></button>
                     <button id="libraryBtn" type="button" class="menu-item" role="menuitem" title="Open a project from your library"><span>Open project&hellip;</span></button>
@@ -142,6 +142,37 @@
                 <button type="button" class="vp-btn" data-vp="full" aria-pressed="true" title="Full responsive width">100%</button>
                 <button type="button" class="vp-btn" data-vp="tablet" aria-pressed="false" title="Tablet (768px)">768px</button>
                 <button type="button" class="vp-btn" data-vp="mobile" aria-pressed="false" title="Mobile (375px)">375px</button>
+            </div>
+            <div id="readerWrap" class="reader-wrap" hidden>
+                <button type="button" id="readerBtn" class="chip" aria-haspopup="true" aria-expanded="false" aria-controls="readerPanel" title="Reader settings for the Stage: text size, margins, theme. They never change the book.">Reader</button>
+                <div id="readerPanel" class="reader-panel" role="group" aria-label="Reader settings" hidden>
+                    <div class="reader-row">
+                        <span class="reader-label" id="readerSizeLabel">Text size</span>
+                        <div class="reader-step" role="group" aria-labelledby="readerSizeLabel">
+                            <button type="button" id="readerSmaller" class="chip" aria-label="Smaller text">A&minus;</button>
+                            <output id="readerSizeOut" aria-live="polite">100%</output>
+                            <button type="button" id="readerLarger" class="chip" aria-label="Larger text">A+</button>
+                        </div>
+                    </div>
+                    <div class="reader-row">
+                        <span class="reader-label" id="readerMarginsLabel">Margins</span>
+                        <div class="reader-choice" role="group" aria-labelledby="readerMarginsLabel">
+                            <button type="button" class="chip" data-reader-margins="none" aria-pressed="false">None</button>
+                            <button type="button" class="chip" data-reader-margins="narrow" aria-pressed="false">Narrow</button>
+                            <button type="button" class="chip" data-reader-margins="normal" aria-pressed="true">Normal</button>
+                            <button type="button" class="chip" data-reader-margins="wide" aria-pressed="false">Wide</button>
+                        </div>
+                    </div>
+                    <div class="reader-row">
+                        <span class="reader-label" id="readerThemeLabel">Theme</span>
+                        <div class="reader-choice" role="group" aria-labelledby="readerThemeLabel">
+                            <button type="button" class="chip" data-reader-theme="light" aria-pressed="true">Light</button>
+                            <button type="button" class="chip" data-reader-theme="sepia" aria-pressed="false">Sepia</button>
+                            <button type="button" class="chip" data-reader-theme="dark" aria-pressed="false">Dark</button>
+                        </div>
+                    </div>
+                    <button type="button" id="readerReset" class="chip reader-reset">Reset to reader defaults</button>
+                </div>
             </div>
         </div>
         <div class="canvas-tools">
@@ -630,6 +661,7 @@
 <script src="src/app/stage.js"></script>
 <script src="src/app/stage-links.js"></script>
 <script src="src/app/stage-book.js"></script>
+<script src="src/app/reader-ui.js"></script>
 <script src="src/app/inspector-ui.js"></script>
 <script src="src/app/parts-ui.js"></script>
 <script src="src/app/problems-ui.js"></script>

@@ -8,14 +8,20 @@ const SETTING_DEFAULTS = {
     inspector: true,
     inspectorDock: 'bottom',
     inspectorWidth: 320,
-    problemsFilter: 'all'
+    problemsFilter: 'all',
+    readerSize: 100,
+    readerMargins: 'normal',
+    readerTheme: 'light'
 };
 const SETTING_CHOICES = {
     panes: ['both', 'write', 'preview'],
     theme: ['system', 'light', 'dark'],
     size: ['small', 'normal', 'large', 'larger'],
     inspectorDock: ['bottom', 'top', 'left', 'right', 'float'],
-    problemsFilter: ['all', 'links', 'accessibility', 'markup']
+    problemsFilter: ['all', 'links', 'accessibility', 'markup'],
+    readerSize: BookStage.READER.sizes,
+    readerMargins: Object.keys(BookStage.READER.margins),
+    readerTheme: Object.keys(BookStage.READER.themes)
 };
 const TEXT_SCALE = { small: 0.875, normal: 1, large: 1.15, larger: 1.3 };
 const settingsModal = document.getElementById('settings-modal');

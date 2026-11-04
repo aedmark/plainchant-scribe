@@ -24,6 +24,7 @@ function clearBookStage() {
     if (stageBookUrl) URL.revokeObjectURL(stageBookUrl);
     stageBookUrl = null;
     if (stageFrame.hasAttribute('src')) stageFrame.removeAttribute('src');
+    syncReaderUi();
 }
 
 function rememberBookScroll() {
@@ -50,7 +51,8 @@ function bookStageError(path, errors) {
 function drawBookStage() {
     rememberBookScroll();
     const path = activeHtmlFile;
-    const res = BookStage.assemble(projectFiles.entries, path, projectAssetUrls);
+    syncReaderUi();
+    const res = BookStage.assemble(projectFiles.entries, path, projectAssetUrls, { css: BookStage.readerCss(readerPrefs()) });
     const old = stageBookUrl;
     if (!res.ok) {
         clearBookStage();
@@ -71,6 +73,7 @@ stageFrame.addEventListener('load', () => {
     let doc;
     try { doc = stageFrame.contentDocument; } catch (e) { return; }
     if (!doc) return;
+    applyReaderSize(doc);
     if (stageBookScroll.y) stageFrame.contentWindow.scrollTo(0, stageBookScroll.y);
     // Links inside the chapter (#note-1) still jump; links to other files would load them as a bare page.
     doc.addEventListener('click', (e) => {

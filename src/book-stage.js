@@ -19,6 +19,18 @@
     const URL_ATTRS = { src: true, poster: true, href: true, data: true };
     const UNSAFE = /^\s*(?:javascript|vbscript):/i;
     const MAX_IMPORT_DEPTH = 8;
+    // Reader settings (P2-02, D-020): overrides on the Stage's copy only. Text size scales the book's own root size
+    // (stage-book.js does it on load, from the computed value), so em and rem follow and px does not.
+    const READER = {
+        sizes: [75, 90, 100, 115, 130, 150, 175, 200],
+        margins: { none: '0', narrow: '0.5em 0.75em', normal: '1em 1.5em', wide: '1.5em 3em' },
+        themes: {
+            light: { page: '#ffffff', text: '#000000', link: null },
+            sepia: { page: '#f4ecd8', text: '#5b4636', link: '#8a3b12' },
+            dark: { page: '#121212', text: '#e0e0e0', link: '#8ab4f8' }
+        },
+        defaults: { size: 100, margins: 'normal', theme: 'light' }
+    };
 
     const has = (o, k) => Object.prototype.hasOwnProperty.call(o || {}, k);
     const isBook = (entries) => typeof (entries || {})[CONTAINER] === 'string';
@@ -61,8 +73,31 @@
         });
     }
 
+    function readerPrefs(prefs) {
+        const p = prefs || {}, d = READER.defaults;
+        return {
+            size: READER.sizes.indexOf(p.size) !== -1 ? p.size : d.size,
+            margins: has(READER.margins, p.margins) ? p.margins : d.margins,
+            theme: has(READER.themes, p.theme) ? p.theme : d.theme
+        };
+    }
+
+    // Margins and the theme's page and text colours are forced on html and body, as a reading system does; colours
+    // the book sets on particular elements stay, and its link colours win over the theme's.
+    function readerCss(prefs) {
+        const p = readerPrefs(prefs), t = READER.themes[p.theme];
+        const lines = [
+            '/* Scribe reader settings: on the Stage only, never written to the book (P2-02). */',
+            'html, body { background-color: ' + t.page + ' !important; color: ' + t.text + ' !important; }',
+            'body { margin: 0 !important; padding: ' + READER.margins[p.margins] + ' !important; }'
+        ];
+        if (t.link) lines.push('a:link, a:visited { color: ' + t.link + '; }');
+        return lines.join('\n');
+    }
+
     // Returns { ok: true, xhtml } or { ok: false, errors } when the chapter is not well-formed.
-    function assemble(entries, path, assetUrls) {
+    // options.css is added last in <head>, after the book's own styles.
+    function assemble(entries, path, assetUrls, options) {
         const text = (entries || {})[path];
         if (typeof text !== 'string') return { ok: false, errors: [{ message: 'The chapter "' + path + '" is not in the book.', line: 0, column: 0 }] };
         const urls = assetUrls || {};
@@ -108,8 +143,18 @@
                 }
             });
         });
+        const extra = options && options.css;
+        if (extra) {
+            const root = ast.documentElement;
+            const head = XmlAst.elementChildren(root).find((el) => el.local === 'head' && el.ns === XHTML);
+            const name = (head || root).prefix ? (head || root).prefix + ':style' : 'style';
+            const style = '<' + name + ' id="scribe-reader">' + XmlAst.escapeText(extra) + '</' + name + '>';
+            if (head && !head.selfClosing) edits.push({ start: head.closeStart, end: head.closeStart, text: style });
+            else if (head) edits.push({ start: head.start, end: head.end, text: '<' + head.name + '>' + style + '</' + head.name + '>' });
+            else if (!root.selfClosing) edits.push({ start: root.openEnd, end: root.openEnd, text: style });
+        }
         return { ok: true, xhtml: XmlAst.applyEdits(text, edits) };
     }
 
-    return { CONTAINER: CONTAINER, isBook: isBook, chapters: chapters, chapterFor: chapterFor, assemble: assemble, rewriteCss: rewriteCss };
+    return { CONTAINER: CONTAINER, READER: READER, isBook: isBook, chapters: chapters, chapterFor: chapterFor, assemble: assemble, rewriteCss: rewriteCss, readerPrefs: readerPrefs, readerCss: readerCss };
 });
