@@ -14,13 +14,11 @@ const BRIDGE_CSS = [
     '#pc-stage-badge .pc-b-act:hover { background: rgba(255,255,255,0.32); }'
 ].join('\n');
 
-function buildBridgeScript(designMode, initialSelectedId, forcedState) {
+function buildBridgeScript(designMode, initialSelectedId) {
     if (!designMode) return buildLiveBridgeScript();
     return [
         '(function() {',
         '  var selectedId = ' + JSON.stringify(initialSelectedId || null) + ';',
-        '  var forced = ' + JSON.stringify(forcedState || '') + ';',
-        '  var FORCE = { hover: ["hover"], active: ["active", "hover"], focus: ["focus", "focus-within"], "focus-visible": ["focus-visible", "focus", "focus-within"], "focus-within": ["focus-within"] };',
         '  var editingEl = null, dragState = null, suppressNextClick = false;',
         '  var marginBox = document.createElement("div"); marginBox.id = "pc-margin-box";',
         '  var paddingBox = document.createElement("div"); paddingBox.id = "pc-padding-box";',
@@ -173,18 +171,8 @@ function buildBridgeScript(designMode, initialSelectedId, forcedState) {
         '    var dr = document.querySelectorAll("[data-pc-dragging]");',
         '    for (var j = 0; j < dr.length; j++) dr[j].removeAttribute("data-pc-dragging");',
         '  }',
-        '  function applyForce() {',
-        '    var old = document.querySelectorAll("[data-pc-force]");',
-        '    for (var i = 0; i < old.length; i++) old[i].removeAttribute("data-pc-force");',
-        '    var el = selectedId && FORCE[forced] ? document.querySelector(\'[data-pc-id="\' + selectedId + \'"]\') : null;',
-        '    if (!el) return;',
-        '    el.setAttribute("data-pc-force", FORCE[forced].join(" "));',
-        '    var up = forced === "focus" || forced === "focus-visible" ? "focus-within" : FORCE[forced].join(" ");',
-        '    for (var p = el.parentElement; p; p = p.parentElement) p.setAttribute("data-pc-force", up);',
-        '  }',
         '  function setSelect(id) {',
         '    selectedId = id;',
-        '    applyForce();',
         '    var prev = document.querySelectorAll("[data-pc-selected]");',
         '    for (var i = 0; i < prev.length; i++) prev[i].removeAttribute("data-pc-selected");',
         '    if (!id) { positionBadge(null); return; }',
@@ -384,7 +372,6 @@ function buildBridgeScript(designMode, initialSelectedId, forcedState) {
         '  window.addEventListener("message", function(e) {',
         '    var d = e.data || {};',
         '    if (d.type === "pc-highlight") setSelect(d.id);',
-        '    if (d.type === "pc-force-state") { forced = d.state || ""; setSelect(selectedId); }',
         '  });',
         '})();'
     ].join('\n');
@@ -404,8 +391,7 @@ function drawStageNow() {
         assetUrls: projectAssetUrls,
         liveJs: !isDesign,
         bridgeCss: isDesign ? BRIDGE_CSS : '',
-        forceStates: isDesign,
-        bridgeScript: buildBridgeScript(isDesign, selectedPcId, activeCssState) + (isDesign ? buildLayoutBridgeScript() : '')
+        bridgeScript: buildBridgeScript(isDesign, selectedPcId)
     });
     stageFrame.srcdoc = doc;
 }

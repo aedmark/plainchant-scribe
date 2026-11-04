@@ -57,62 +57,6 @@ test('css-ast: findRuleBySelector returns byte offsets and line number for exact
     assert.includes(css.slice(rule.start, rule.end), 'padding: 1rem;');
 });
 
-test('css-ast: pseudo-class states are split, rebuilt, and made forceable for the Stage preview', () => {
-    assert.deepEqual(CssAst.STATES, ['hover', 'active', 'focus', 'focus-visible', 'focus-within']);
-    assert.deepEqual(CssAst.splitTopLevel('a:hover, .b:not(.x, .y), [data-x="a,b"]'), ['a:hover', '.b:not(.x, .y)', '[data-x="a,b"]']);
-    assert.equal(CssAst.stateOf('.btn:hover'), 'hover');
-    assert.equal(CssAst.stateOf('nav a:focus-visible'), 'focus-visible');
-    assert.equal(CssAst.stateOf('a:hover, a:hover'), 'hover');
-    assert.equal(CssAst.stateOf('a:hover, a:focus'), '', 'mixed states have no single state');
-    assert.equal(CssAst.stateOf('.btn'), '');
-    assert.equal(CssAst.stateOf('a:first-child'), '');
-    assert.equal(CssAst.baseSelector('.btn:hover'), '.btn');
-    assert.equal(CssAst.baseSelector('a:hover, a:focus, .x'), 'a, .x', 'states are stripped and duplicates merged');
-    assert.equal(CssAst.baseSelector('a:hover:focus'), 'a', 'stacked states are stripped');
-    assert.equal(CssAst.baseSelector('li:not(:hover) a'), 'li:not(:hover) a', 'states inside other pseudo-classes are not trailing');
-    assert.equal(CssAst.withState('.btn', 'hover'), '.btn:hover');
-    assert.equal(CssAst.withState('.btn:focus', 'active'), '.btn:active', 'an existing state is replaced');
-    assert.equal(CssAst.withState('nav a', 'focus-visible'), 'nav a:focus-visible');
-    assert.equal(CssAst.withState('.btn', ''), '.btn');
-    assert.equal(CssAst.withState('.btn', 'bogus'), '.btn');
-    const el = { type: 'element', tag: 'a', attrs: { class: 'link' } };
-    assert.equal(CssAst.withState('.card, .link', 'hover', el), '.link:hover', 'a grouped rule uses the part that matches the element');
-    assert.equal(CssAst.withState('.card, .link', 'hover'), '.card:hover');
-
-    const css = '.btn { color: red; }\n.btn:hover { color: blue; }\na:hover, a:focus-visible { outline: 1px solid; }\n@media (min-width: 600px) {\n  .card:active .title { color: green; }\n}\n@keyframes spin { from { opacity: 0; } to { opacity: 1; } }\n.x:not(:hover) { top: 0; }';
-    const forced = CssAst.forceStates(css);
-    assert.includes(forced, '.btn:hover, .btn[data-pc-force~="hover"] { color: blue; }');
-    assert.includes(forced, 'a:hover, a:focus-visible, a[data-pc-force~="hover"], a[data-pc-force~="focus-visible"] {');
-    assert.includes(forced, '.card:active .title, .card[data-pc-force~="active"] .title { color: green; }');
-    assert.includes(forced, '.btn { color: red; }', 'rules without states are untouched');
-    assert.includes(forced, '@keyframes spin { from { opacity: 0; } to { opacity: 1; } }');
-    assert.includes(forced, '.x:not(:hover), .x:not([data-pc-force~="hover"]) { top: 0; }');
-    assert.equal(CssAst.forceStates('p { margin: 0; }'), 'p { margin: 0; }');
-    assert.equal(CssAst.forceStates(''), '');
-    assert.equal(CssAst.parse(forced).rules.length, CssAst.parse(css).rules.length, 'the result is still the same number of rules');
-    assert.equal(css.includes('data-pc-force'), false, 'the input is not modified');
-
-    const edited = CssAst.setProperty(css, CssAst.withState('.btn', 'hover'), 'color', 'green');
-    assert.includes(edited, '.btn:hover { color: green; }');
-    const created = CssAst.setProperty('.nav { top: 0; }', CssAst.withState('.nav', 'focus'), 'outline', '2px solid blue');
-    assert.includes(created, '.nav:focus {\n  outline: 2px solid blue;\n}');
-    assert.deepEqual(CssAst.getDeclarations(edited, '.btn:hover'), { color: 'green' });
-});
-
-test('project: design previews make pseudo-class rules forceable, live previews do not', () => {
-    const files = { entries: {
-        'index.html': '<html><head><link rel="stylesheet" href="s.css"><style>.i:hover { top: 1px; }</style></head><body><a class="btn">x</a></body></html>',
-        's.css': '.btn:hover { color: blue; }'
-    } };
-    const design = Project.assemblePreview(files, { liveJs: false, forceStates: true });
-    assert.includes(design, '.btn:hover, .btn[data-pc-force~="hover"] { color: blue; }');
-    assert.includes(design, '.i:hover, .i[data-pc-force~="hover"] { top: 1px; }', 'inline <style> blocks are covered');
-    const plain = Project.assemblePreview(files, { liveJs: true });
-    assert.excludes(plain, 'data-pc-force');
-    assert.excludes(Project.assemblePreview(files, { liveJs: false }), 'data-pc-force');
-    assert.equal(files.entries['s.css'], '.btn:hover { color: blue; }', 'the project source is untouched');
-});
-
 test('css: media-scoped lookups only see rules in the matching @media block', () => {
     const css = '.a { color: red; }\n@media (max-width: 768px) {\n  .a { color: blue; padding: 4px; }\n}\n@media screen and (max-width: 375px) { .a { color: green; } }\n';
     assert.deepEqual(CssAst.getDeclarations(css, '.a'), { color: 'red' }, 'no media argument reads the base rule only');

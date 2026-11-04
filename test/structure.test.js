@@ -200,15 +200,6 @@ test('structure: dragging from the Insert menu onto the Stage is wired in (P7-06
     assert.includes(css, '.insert-ghost');
 });
 
-test('structure: the CSS Designer state bar, force-state bridge, and css-states.js are wired in (P7-07)', () => {
-    ['id="cssStateBar"', 'id="cssStateHint"'].forEach((needle) => assert.includes(html, needle));
-    ['hover', 'focus', 'active', 'focus-visible', 'focus-within'].forEach((state) => assert.includes(html, 'data-state="' + state + '"'));
-    assert.ok(listed.indexOf('css-states.js') > listed.indexOf('inspector-ui.js'), 'css-states.js loads after inspector-ui.js');
-    const stage = readRoot('src/app/stage.js');
-    ['pc-force-state', 'data-pc-force', 'forceStates: isDesign'].forEach((needle) => assert.includes(stage, needle));
-    assert.includes(readRoot('src/app/inspector-ui.js'), 'cssEditSelector');
-});
-
 test('structure: the Export dialog offers a whole-project .zip built by zip.js (P7-13)', () => {
     ['id="zipExportSection"', 'id="exportZipBtn"'].forEach((needle) => assert.includes(html, needle));
     const order = Array.from(html.matchAll(/<script src="([^"]+)"><\/script>/g)).map((m) => m[1]);
@@ -230,21 +221,6 @@ test('structure: the Explorer + Folder button, folder rows, and explorer-move.js
     assert.ok(listed.indexOf('explorer-move.js') > listed.indexOf('asset-ui.js') && listed.indexOf('explorer-move.js') > listed.indexOf('explorer-ui.js'), 'explorer-move.js loads after explorer-ui.js and asset-ui.js');
     assert.includes(readRoot('src/app/core.js'), 'decorateExplorerDir', 'directory rows are decorated');
     assert.includes(readRoot('src-tauri/src/main.rs'), 'dirs: Option<Vec<String>>', 'the desktop export creates empty folders');
-});
-
-test('structure: the CSS Designer breakpoint bar and css-media.js are wired in (P7-03)', () => {
-    ['id="cssMediaBar"', 'id="cssMediaHint"', 'data-media="(max-width: 768px)"', 'data-media="(max-width: 375px)"'].forEach((needle) => assert.includes(html, needle));
-    assert.ok(listed.indexOf('css-media.js') > listed.indexOf('css-states.js'), 'css-media.js loads after css-states.js');
-    assert.includes(readRoot('src/app/inspector-ui.js'), 'cssEditMedia()', 'the Designer reads and writes through the active breakpoint');
-});
-
-test('structure: the flex/grid gap handles, layout.js, stage-layout.js, and the Layout group are wired in (P7-01)', () => {
-    ['id="cssLayoutGroup"', 'id="cssFlexDir"', 'id="cssFlexWrap"', 'id="cssJustify"', 'id="cssAlign"'].forEach((needle) => assert.includes(html, needle));
-    const order = Array.from(html.matchAll(/<script src="([^"]+)"><\/script>/g)).map((m) => m[1]);
-    assert.ok(order.indexOf('src/layout.js') !== -1 && order.indexOf('src/layout.js') < order.indexOf('src/importing.js'), 'layout.js loads before importing.js');
-    assert.ok(listed.indexOf('stage-layout.js') > listed.indexOf('stage.js'), 'stage-layout.js loads after stage.js');
-    assert.ok(listed.indexOf('layout-ui.js') > listed.indexOf('inspector-ui.js'), 'layout-ui.js loads after inspector-ui.js');
-    assert.includes(readRoot('src/app/stage.js'), 'buildLayoutBridgeScript()', 'the Design bridge carries the layout script');
 });
 
 test('structure: the Assets modal, Browse button, image library, and asset-ui.js are wired in (P7-02)', () => {

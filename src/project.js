@@ -785,8 +785,6 @@
         let html = HtmlAst.stamp(rawHtml, ast);
         const assetUrls = opts.assetUrls && Object.keys(opts.assetUrls).length ? opts.assetUrls : null;
         if (assetUrls) html = rewriteAssetUrls(html, activeHtmlPath, assetUrls);
-        const forceCss = (css) => (opts.forceStates ? CssAst.forceStates(css) : css);
-        if (opts.forceStates) html = html.replace(/(<style\b[^>]*>)([\s\S]*?)(<\/style>)/gi, (m, open, css, close) => open + CssAst.forceStates(css) + close);
 
         const links = linkedStylesheets(html, entries, activeHtmlPath);
         const inlinedCssPaths = new Set();
@@ -796,7 +794,7 @@
                 inlinedCssPaths.add(lnk.path);
                 html = html.replace(
                     lnk.fullMatch,
-                    '<style id="pc-project-css" data-pc-href="' + lnk.path + '">\n' + forceCss(assetUrls ? rewriteCssUrls(entries[lnk.path], lnk.path, assetUrls) : entries[lnk.path]) + '\n</style>'
+                    '<style id="pc-project-css" data-pc-href="' + lnk.path + '">\n' + (assetUrls ? rewriteCssUrls(entries[lnk.path], lnk.path, assetUrls) : entries[lnk.path]) + '\n</style>'
                 );
             }
         });
@@ -804,7 +802,7 @@
         const fallbackCss = f.css != null ? f.css : (entries['styles.css'] || entries['style.css'] || '');
         const hasInjectedStyle = html.indexOf('id="pc-project-css"') !== -1;
         const styleBlock = !hasInjectedStyle
-            ? '<style id="pc-project-css">\n' + forceCss(assetUrls ? rewriteCssUrls(fallbackCss, primaryCssFile(f, activeHtmlPath), assetUrls) : String(fallbackCss)) + '\n</style>'
+            ? '<style id="pc-project-css">\n' + (assetUrls ? rewriteCssUrls(fallbackCss, primaryCssFile(f, activeHtmlPath), assetUrls) : String(fallbackCss)) + '\n</style>'
             : '';
 
         html = html.replace(/<script\b([^>]*)\bsrc\s*=\s*(?:"([^"]+)"|'([^']+)')([^>]*)>\s*<\/script>/gi, (full, pre, s1, s2) => {

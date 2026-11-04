@@ -167,11 +167,6 @@
         return { rules: rules, text: text, blocks: blocks };
     }
 
-    const MEDIA_PRESETS = [
-        { key: 'tablet', query: '(max-width: 768px)', width: '768px' },
-        { key: 'mobile', query: '(max-width: 375px)', width: '375px' }
-    ];
-
     function mediaQuery(raw) {
         return String(raw || '').trim().replace(/^@media\s*/i, '').replace(/\s+/g, ' ').replace(/\s*:\s*/g, ': ').replace(/\(\s+/g, '(').replace(/\s+\)/g, ')').toLowerCase();
     }
@@ -347,74 +342,6 @@
         return text.slice(0, targetRule.bodyEnd).replace(/\s*$/, '') + sep + cleanProp + ': ' + cleanVal + '; ' + text.slice(targetRule.bodyEnd);
     }
 
-    const STATES = ['hover', 'active', 'focus', 'focus-visible', 'focus-within'];
-    const TRAILING_STATES = /(?::(?:hover|active|focus-visible|focus-within|focus))+$/;
-    const STATE_PSEUDO = /:(hover|active|focus-visible|focus-within|focus)(?![\w-])/g;
-
-    function splitTopLevel(selector) {
-        const parts = [];
-        let depth = 0;
-        let quote = null;
-        let from = 0;
-        const text = String(selector || '');
-        for (let i = 0; i < text.length; i++) {
-            const ch = text[i];
-            if (quote) {
-                if (ch === quote && text[i - 1] !== '\\') quote = null;
-            } else if (ch === '"' || ch === "'") quote = ch;
-            else if (ch === '(' || ch === '[') depth++;
-            else if (ch === ')' || ch === ']') depth = Math.max(0, depth - 1);
-            else if (ch === ',' && depth === 0) {
-                parts.push(text.slice(from, i));
-                from = i + 1;
-            }
-        }
-        parts.push(text.slice(from));
-        return parts.map((p) => p.trim()).filter(Boolean);
-    }
-
-    function stateOf(selector) {
-        let found = '';
-        const parts = splitTopLevel(selector);
-        for (let i = 0; i < parts.length; i++) {
-            const m = /:(hover|active|focus-visible|focus-within|focus)$/.exec(parts[i]);
-            if (!m || (found && found !== m[1])) return '';
-            found = m[1];
-        }
-        return found;
-    }
-
-    function baseSelector(selector) {
-        const seen = [];
-        splitTopLevel(selector).forEach((p) => {
-            const base = p.replace(TRAILING_STATES, '') || p;
-            if (seen.indexOf(base) === -1) seen.push(base);
-        });
-        return seen.join(', ');
-    }
-
-    function withState(selector, state, el) {
-        if (STATES.indexOf(state) === -1) return String(selector || '').trim().replace(/\s+/g, ' ');
-        const parts = splitTopLevel(baseSelector(selector));
-        const pick = (parts.length > 1 && el && parts.find((p) => selectorMatchesElement(p, el))) || parts[0] || '';
-        return pick.replace(/\s+/g, ' ') + ':' + state;
-    }
-
-    function forceStates(css) {
-        const ast = parse(css);
-        let text = ast.text;
-        ast.rules.slice().sort((a, b) => b.selectorStart - a.selectorStart).forEach((rule) => {
-            const raw = text.slice(rule.selectorStart, rule.selectorEnd);
-            const parts = splitTopLevel(raw);
-            const extra = parts.filter((p) => /:(hover|active|focus-visible|focus-within|focus)(?![\w-])/.test(p))
-                .map((p) => p.replace(STATE_PSEUDO, '[data-pc-force~="$1"]'));
-            if (!extra.length) return;
-            const trailing = raw.match(/\s*$/)[0];
-            text = text.slice(0, rule.selectorStart) + raw.replace(/\s*$/, '') + ', ' + extra.join(', ') + trailing + text.slice(rule.selectorEnd);
-        });
-        return text;
-    }
-
     function parseInlineStyle(styleStr) {
         const decls = parseDeclarations(String(styleStr || ''), 0);
         const map = {};
@@ -466,14 +393,7 @@
         findRuleBySelector: findRuleBySelector,
         getDeclarations: getDeclarations,
         setProperty: setProperty,
-        STATES: STATES,
-        MEDIA_PRESETS: MEDIA_PRESETS,
         mediaQuery: mediaQuery,
-        splitTopLevel: splitTopLevel,
-        stateOf: stateOf,
-        baseSelector: baseSelector,
-        withState: withState,
-        forceStates: forceStates,
         parseInlineStyle: parseInlineStyle,
         formatInlineStyle: formatInlineStyle,
         listSelectors: listSelectors

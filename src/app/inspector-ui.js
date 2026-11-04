@@ -131,16 +131,10 @@ function refreshInspector() {
 
 function populateCssTargets(node) {
     const options = [];
-    const typedState = activeCssTarget !== 'inline' ? CssAst.stateOf(activeCssTarget) : '';
-    if (typedState) {
-        activeCssState = typedState;
-        activeCssTarget = CssAst.baseSelector(activeCssTarget);
-    }
     if (node) {
         const matched = CssAst.findRulesForElement(currentCssAst, node);
         matched.forEach((r) => {
-            const base = CssAst.baseSelector(r.selector);
-            if (options.indexOf(base) === -1) options.push(base);
+            if (options.indexOf(r.selector) === -1) options.push(r.selector);
         });
         const def = defaultSelectorFor(node);
         if (options.indexOf(def) === -1) options.unshift(def);
@@ -164,7 +158,6 @@ function populateCssTargets(node) {
         el.selected = opt === activeCssTarget;
         cssTargetSelect.appendChild(el);
     });
-    refreshCssStateUi(node);
 }
 
 function populateCssValues(node) {
@@ -172,7 +165,7 @@ function populateCssValues(node) {
     if (activeCssTarget === 'inline') {
         decls = node && node.attrs ? CssAst.parseInlineStyle(node.attrs.style || '') : {};
     } else if (activeCssTarget) {
-        decls = CssAst.getDeclarations(currentCssAst, cssEditSelector(node), cssEditMedia());
+        decls = CssAst.getDeclarations(currentCssAst, activeCssTarget);
     }
 
     const comp = lastComputedStyle || {};
@@ -224,8 +217,8 @@ function applyCssPropertyChange(prop, value) {
         applyHtmlTransform(nextHtml, node.id);
         return;
     }
-    const sel = cssEditSelector(node) || defaultSelectorFor(node);
-    const nextCss = CssAst.setProperty(projectFiles.css, sel, prop, value, cssEditMedia());
+    const sel = activeCssTarget || defaultSelectorFor(node);
+    const nextCss = CssAst.setProperty(projectFiles.css, sel, prop, value);
     applyCssTransform(nextCss);
 }
 
@@ -267,17 +260,12 @@ function jumpToActiveCssRule() {
         return;
     }
     const targetFile = activeCssFile || 'styles.css';
-    const sel = cssEditSelector();
-    const media = cssEditMedia();
-    let rule = CssAst.findRuleBySelector(currentCssAst, sel, media);
-    if (!rule && sel && media) {
-        showNotice('No rule for ' + sel + ' inside @media ' + media + ' yet. Change a value to create it.');
-        return;
-    }
+    const sel = activeCssTarget;
+    let rule = CssAst.findRuleBySelector(currentCssAst, sel);
     if (!rule && sel) {
         const nextCss = (projectFiles.css ? projectFiles.css.replace(/\s*$/, '\n\n') : '') + sel + ' {\n  \n}\n';
         applyCssTransform(nextCss);
-        rule = CssAst.findRuleBySelector(currentCssAst, sel, media);
+        rule = CssAst.findRuleBySelector(currentCssAst, sel);
     }
     if (panesShown() === 'preview') setPanes('both');
     openFileInEditor(targetFile);
@@ -349,9 +337,7 @@ if (cssJumpRuleBtn) cssJumpRuleBtn.addEventListener('click', jumpToActiveCssRule
 cssAddRuleBtn.addEventListener('click', () => {
     const custom = cssCustomSelector.value.trim();
     if (!custom) return;
-    const typed = CssAst.stateOf(custom);
-    if (typed) activeCssState = typed;
-    activeCssTarget = typed ? CssAst.baseSelector(custom) : custom;
+    activeCssTarget = custom;
     cssCustomSelector.value = '';
     const known = Array.from(cssTargetSelect.options).find((o) => o.value === activeCssTarget);
     if (known) {
@@ -364,9 +350,7 @@ cssAddRuleBtn.addEventListener('click', () => {
         cssTargetSelect.prepend(opt);
     }
     const node = selectedPcId ? HtmlAst.findById(currentHtmlAst, selectedPcId) : null;
-    refreshCssStateUi(node);
     populateCssValues(node);
-    if (typed) sendForceState();
 });
 
 Object.keys(cssInputs).forEach((prop) => {

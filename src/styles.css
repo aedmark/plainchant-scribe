@@ -804,16 +804,6 @@ body.shaded #editor {
     gap: 0.5rem 0.75rem;
 }
 
-.insp-layout {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 0.5rem 0.75rem;
-    padding: 0.4rem 0;
-    border-top: 1px dashed var(--border-void, rgba(128, 128, 128, 0.35));
-    border-bottom: 1px dashed var(--border-void, rgba(128, 128, 128, 0.35));
-}
-
 .insp-field {
     display: flex;
     flex-direction: column;
