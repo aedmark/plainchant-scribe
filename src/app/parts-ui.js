@@ -103,7 +103,7 @@ function insertPart(path) {
     showNotice('Inserted shared part ' + path);
 }
 
-function makePartFromSelection() {
+async function makePartFromSelection() {
     const node = selectedPcId ? HtmlAst.findById(currentHtmlAst, selectedPcId) : null;
     if (!node || ['html', 'head', 'body'].indexOf(node.tag) !== -1) {
         showNotice('Select a page element (not html, head, or body) to make a shared part.', true);
@@ -121,17 +121,19 @@ function makePartFromSelection() {
         return;
     }
     const fallback = 'parts/' + (node.attrs && node.attrs.id ? node.attrs.id : node.tag) + '.html';
-    const answer = window.prompt('Shared part file (kept in the project, reused by every page that includes it):', fallback);
-    if (!answer || !answer.trim()) return;
-    const path = answer.trim().replace(/^\/+/, '');
-    if (!/\.html?$/i.test(path) || path.split('/').indexOf('..') !== -1) {
-        showNotice('Use a project-relative .html path such as parts/header.html.', true);
-        return;
-    }
-    if (path in projectFiles.entries) {
-        showNotice(path + ' already exists. Choose a new name, or use Insert on the Parts tab.', true);
-        return;
-    }
+    const checkPartPath = (text) => {
+        const clean = text.replace(/^\/+/, '');
+        if (!/\.html?$/i.test(clean) || clean.split('/').indexOf('..') !== -1) return 'Use a project-relative .html path such as parts/header.html.';
+        if (clean in projectFiles.entries) return clean + ' already exists. Choose a new name, or use Insert on the Parts tab.';
+        return '';
+    };
+    const answer = await askText({
+        title: 'Make shared part',
+        hint: 'Part file, kept in the project and reused by every page that includes it',
+        value: fallback, confirm: 'Create part', validate: checkPartPath
+    });
+    if (!answer) return;
+    const path = answer.replace(/^\/+/, '');
     const outer = html.slice(node.start, node.end);
     const region = Parts.wrap(Parts.relPath(activeHtmlFile, path), outer, lineIndentOf(html, node.start));
     applyHtmlTransform(html.slice(0, node.start) + region + html.slice(node.end), null);

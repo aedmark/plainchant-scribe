@@ -57,8 +57,12 @@ function commitFileChange(next, change) {
     if (typeof syncLatestHistoryState === 'function') syncLatestHistoryState();
 }
 
-function renameProjectFile(path) {
-    const answer = window.prompt('Rename ' + path + '\n(Include folders to move it. Links to the file are updated.)', path);
+async function renameProjectFile(path) {
+    const answer = await askText({
+        title: 'Rename file',
+        hint: 'New path for ' + path + '. Include folders to move it. Links to the file are updated.',
+        value: path, confirm: 'Rename', validate: (text) => (text ? '' : 'Enter a name.')
+    });
     if (answer == null || Project.normalizeFilePath(answer) === path) return;
     moveProjectFileTo(path, answer);
 }

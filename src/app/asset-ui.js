@@ -101,7 +101,11 @@ async function moveAssetTo(item, to) {
 
 async function renameAssetItem(item) {
     if (item.source === 'text') { closeModal(assetsModal); renameProjectFile(item.path); return; }
-    const answer = window.prompt('Rename ' + item.path + '\n(Include folders to move it. Links to the image are updated.)', item.path);
+    const answer = await askText({
+        title: 'Rename image',
+        hint: 'New path for ' + item.path + '. Include folders to move it. Links to the image are updated.',
+        value: item.path, confirm: 'Rename', validate: (text) => (text ? '' : 'Enter a name.')
+    });
     if (answer == null || Project.normalizeFilePath(answer) === item.path) return;
     const res = await moveAssetTo(item, answer);
     if (!res) return;

@@ -26,10 +26,19 @@ function ensureProjectTree() {
     return Project.deriveTree(projectFiles.entries, projectFiles.tree, Object.keys(projectAssets));
 }
 
-function newProjectFolder() {
+async function newProjectFolder() {
     ensureEntries();
     syncBufferFromEditor();
-    const answer = window.prompt('New folder (e.g. images or assets/fonts):', 'new-folder');
+    const answer = await askText({
+        title: 'New folder',
+        hint: 'Folder path (e.g. images or assets/fonts)',
+        value: 'new-folder',
+        confirm: 'Create',
+        validate: (text) => {
+            const result = Project.validateFolderPath(projectFilePaths(), projectDirPaths(), text, '');
+            return result.ok ? '' : result.error;
+        }
+    });
     if (answer == null) return;
     const check = Project.validateFolderPath(projectFilePaths(), projectDirPaths(), answer, '');
     if (!check.ok) { showNotice(check.error, true); return; }
@@ -91,8 +100,12 @@ async function moveProjectPath(src, destDir) {
     }
 }
 
-function renameProjectFolder(dir) {
-    const answer = window.prompt('Rename folder ' + dir + '\n(Include parent folders to move it. Links to its files are updated.)', dir);
+async function renameProjectFolder(dir) {
+    const answer = await askText({
+        title: 'Rename folder',
+        hint: 'New path for ' + dir + '. Include parent folders to move it. Links to its files are updated.',
+        value: dir, confirm: 'Rename', validate: (text) => (text ? '' : 'Enter a name.')
+    });
     if (answer == null || Project.normalizeFilePath(answer).replace(/\/+$/, '') === dir) return;
     moveProjectFolderTo(dir, answer);
 }

@@ -26,4 +26,5 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ### Changed
 
+- **In-app dialogs for names and paths**: New file, New folder, renaming files, folders, and images, and Make shared part now ask in a Studio dialog that checks the name as you go, instead of the browser's prompt box.
 - The studio is now Plainchant Scribe: new name, bundle id, version (`0.1.0`), and separate browser storage. The editing features are still those of the web-page editor it was copied from; book features arrive phase by phase ([ROADMAP.md](../ROADMAP.md)).

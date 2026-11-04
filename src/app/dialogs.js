@@ -48,3 +48,31 @@ document.addEventListener('click', (e) => {
     const closer = e.target.closest('[data-close]');
     if (closer) closeModal(closer.closest('.modal-overlay'));
 });
+
+// Modal replacement for window.prompt. Resolves to the trimmed text, or null when cancelled.
+// `validate(text)` may return an error string to keep the dialog open.
+function askText(options) {
+    const overlay = document.getElementById('ask-modal');
+    const form = document.getElementById('askForm');
+    const input = document.getElementById('askInput');
+    const error = document.getElementById('askError');
+    return new Promise((resolve) => {
+        let answer = null;
+        document.getElementById('ask-title').textContent = options.title;
+        document.getElementById('askHint').textContent = options.hint || '';
+        document.getElementById('askOkBtn').textContent = options.confirm || 'OK';
+        input.value = options.value || '';
+        error.hidden = true;
+        form.onsubmit = (e) => {
+            e.preventDefault();
+            const text = input.value.trim();
+            const problem = options.validate ? options.validate(text) : '';
+            if (problem) { error.textContent = problem; error.hidden = false; input.focus(); return; }
+            answer = text;
+            closeModal(overlay);
+        };
+        input.oninput = () => { error.hidden = true; };
+        openModal(overlay, { focus: '#askInput', onClose: () => { form.onsubmit = null; resolve(answer); } });
+        input.select();
+    });
+}

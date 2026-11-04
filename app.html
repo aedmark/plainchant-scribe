@@ -392,6 +392,24 @@
     </div>
 </div>
 
+<div id="ask-modal" class="modal-overlay">
+    <form class="modal-content ask-content" role="dialog" aria-modal="true" aria-labelledby="ask-title" id="askForm">
+        <div class="modal-header">
+            <h2 id="ask-title">Name</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <label for="askInput" id="askHint" class="ask-hint"></label>
+            <input type="text" id="askInput" class="ask-input" autocomplete="off" spellcheck="false">
+            <p id="askError" class="ask-error" role="alert" hidden></p>
+        </div>
+        <div class="modal-footer ask-footer">
+            <button type="button" class="btn" data-close>Cancel</button>
+            <button type="submit" class="btn primary" id="askOkBtn">Create</button>
+        </div>
+    </form>
+</div>
+
 <div id="library-modal" class="modal-overlay">
     <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="library-title">
         <div class="modal-header">

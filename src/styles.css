@@ -993,6 +993,11 @@ body.shaded #editor {
 }
 
 .modal-content.wide { max-width: 720px; }
+.ask-content { max-width: 440px; }
+.ask-hint { display: block; margin-bottom: 0.5rem; color: var(--text-void-muted); font-size: 0.85rem; }
+.ask-input { width: 100%; box-sizing: border-box; padding: 0.5rem 0.6rem; font: inherit; }
+.ask-error { margin: 0.5rem 0 0; color: var(--danger-soft-text); font-size: 0.85rem; }
+.ask-footer { justify-content: flex-end; gap: 0.5rem; }
 
 .modal-header, .modal-footer {
     padding: 0.85rem 1.25rem;

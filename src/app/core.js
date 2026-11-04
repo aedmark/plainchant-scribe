@@ -425,9 +425,15 @@ if (explorerFilter) {
 }
 
 if (newFileBtn) {
-    newFileBtn.addEventListener('click', () => {
-        const name = window.prompt('New file name (e.g. about.html, theme.css, utils.js):', 'page.html');
-        if (!name || !name.trim()) return;
+    newFileBtn.addEventListener('click', async () => {
+        const name = await askText({
+            title: 'New file',
+            hint: 'File name (e.g. about.html, theme.css, utils.js)',
+            value: 'page.html',
+            confirm: 'Create',
+            validate: (text) => (text.replace(/^\/+/, '') ? '' : 'Enter a file name.')
+        });
+        if (!name) return;
         const clean = name.trim().replace(/^\/+/, '');
         ensureEntries();
         if (!(clean in projectFiles.entries)) {
