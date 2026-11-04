@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ### Added
 
+- **Device presets for books**: Fit, Phone, E-ink 6", and Tablet on the Stage bar show the chapter at that screen's size, scaled to fit, with a rotate button for landscape; E-ink is greyscale with animation off (`P2-04`, `D-022`).
 - **Paged and scroll layouts on the Stage**: paged (the default) splits the open chapter into pages the size of the Stage, like a reader, with ‹ Page n of m › on the Stage bar and the arrow and Page keys to turn them; Scroll in the Reader panel shows one continuous page (`P2-03`, `D-021`).
 - **Reader settings on the Stage**: a Reader button sets text size, margins, and a light, sepia, or dark theme, the way a reading app does. They apply to every book, are remembered in this browser, and never change the book's files. The File menu's New is now New book (`P2-02`, `D-020`).
 - **New makes an EPUB book**: the files of a reflowable EPUB 3 book (package document, contents, one chapter, a stylesheet), and **Load Example Book** opens a short three-chapter guide. The Stage shows the open chapter as a reading system parses it, with the book's own styles and images; a chapter that is not well-formed shows an error instead. Projects saved earlier still open as web pages (`P2-01`, `D-018`).

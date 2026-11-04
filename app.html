@@ -138,10 +138,17 @@
     <div class="header">
         <div class="stage-header-left">
             <h2>Stage</h2>
-            <div class="viewport-switch" role="group" aria-label="Viewport size">
+            <div id="viewportSwitch" class="viewport-switch" role="group" aria-label="Viewport size">
                 <button type="button" class="vp-btn" data-vp="full" aria-pressed="true" title="Full responsive width">100%</button>
                 <button type="button" class="vp-btn" data-vp="tablet" aria-pressed="false" title="Tablet (768px)">768px</button>
                 <button type="button" class="vp-btn" data-vp="mobile" aria-pressed="false" title="Mobile (375px)">375px</button>
+            </div>
+            <div id="deviceSwitch" class="device-switch" role="group" aria-label="Device" hidden>
+                <button type="button" class="chip" data-device="fit" aria-pressed="true" title="Fill the Stage">Fit</button>
+                <button type="button" class="chip" data-device="phone" aria-pressed="false" title="Phone, 390 &times; 844">Phone</button>
+                <button type="button" class="chip" data-device="eink" aria-pressed="false" title="6-inch e-ink reader, 600 &times; 800, greyscale, no animation">E-ink</button>
+                <button type="button" class="chip" data-device="tablet" aria-pressed="false" title="Tablet, 820 &times; 1180">Tablet</button>
+                <button type="button" id="deviceRotate" class="chip" aria-pressed="false" aria-label="Landscape" title="Turn the device to landscape">&#8635;</button>
             </div>
             <div id="pageNav" class="page-nav" role="group" aria-label="Pages" hidden>
                 <button type="button" id="pagePrev" class="chip" aria-label="Previous page" title="Previous page (Left arrow, Page Up)">&lsaquo;</button>
@@ -674,6 +681,7 @@
 <script src="src/app/stage-links.js"></script>
 <script src="src/app/stage-book.js"></script>
 <script src="src/app/reader-ui.js"></script>
+<script src="src/app/reader-device.js"></script>
 <script src="src/app/inspector-ui.js"></script>
 <script src="src/app/parts-ui.js"></script>
 <script src="src/app/problems-ui.js"></script>

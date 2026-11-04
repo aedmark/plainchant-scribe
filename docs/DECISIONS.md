@@ -160,6 +160,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** Page numbers depend on the Stage's size, the reader settings, and the fonts, as on a device. Mouse-wheel and touch paging are not handled.
 **Review trigger:** `P2-04` adds spreads, or a whole-book page count is needed for the page list (`P6-02`).
 
+## D-022 Device presets on the Stage  (2026-11-04, status: accepted)
+**Context:** `P2-04` needed choices about what replaces the inherited viewport switch for books, the preset sizes, what e-ink changes, and orientation. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. For books, Fit, Phone, E-ink, and Tablet replace the 100%/768px/375px switch; web-page projects keep it. 2. Portrait sizes in CSS px: Phone 390 × 844, E-ink 6" 600 × 800, Tablet 820 × 1180. The frame is drawn at that size and scaled down, never up, to fit the Stage. 3. E-ink is greyscale (a filter on the frame, so it covers the page colour too) with CSS animations and transitions off; the reader theme still applies. 4. A rotate button swaps width and height, still one page at a time (D-021). The device and orientation are saved with the reader settings.
+**Alternatives:** A custom size as well (rejected for now: the presets cover the targets); a smaller phone and a 7-inch e-ink (rejected: the chosen sizes are the common cases); an e-ink paper look (rejected: it would override the chosen theme); a spread in landscape tablet, or portrait only (rejected: one page keeps paging simple, and rotation is cheap).
+**Consequences:** The sizes are approximate: each reading app adds its own margins and chrome. A scaled-down device frame shows smaller text than the device would.
+**Review trigger:** The maintainer's devices (D-010, Q-004) show page breaks the presets do not match.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

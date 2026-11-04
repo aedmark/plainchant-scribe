@@ -98,8 +98,8 @@ test('project: a book saves and reloads without web-page files, keeps its folder
 });
 
 test('book-stage: reader settings fall back to defaults, write forced margins and theme colours, and keep book link colours (P2-02)', () => {
-    assert.deepEqual(BookStage.readerPrefs(), { size: 100, margins: 'normal', theme: 'light', mode: 'paged' });
-    assert.deepEqual(BookStage.readerPrefs({ size: 120, margins: 'huge', theme: 'sepia', mode: 'flip' }), { size: 100, margins: 'normal', theme: 'sepia', mode: 'paged' }, 'only listed sizes and names');
+    assert.deepEqual(BookStage.readerPrefs(), { size: 100, margins: 'normal', theme: 'light', mode: 'paged', device: 'fit', orientation: 'portrait' });
+    assert.deepEqual(BookStage.readerPrefs({ size: 120, margins: 'huge', theme: 'sepia', mode: 'flip', device: 'watch', orientation: 'sideways' }), { size: 100, margins: 'normal', theme: 'sepia', mode: 'paged', device: 'fit', orientation: 'portrait' }, 'only listed sizes and names');
     const css = BookStage.readerCss({ size: 150, margins: 'wide', theme: 'dark', mode: 'scroll' });
     assert.ok(css.indexOf('html, body { background-color: #121212 !important; color: #e0e0e0 !important; }') !== -1, css);
     assert.ok(css.indexOf('body { margin: 0 !important; padding: 1.5em 3em !important; }') !== -1);
@@ -154,4 +154,21 @@ test('book-stage: paged mode lays the body out in columns exactly one viewport w
     assert.ok(scroll.indexOf('padding: 1em 1.5em !important;') !== -1);
     const r = BookStage.assemble(bsTemplate(), BS_CH, {}, { css: paged });
     assert.deepEqual(XmlAst.parse(r.xhtml).errors, []);
+});
+
+test('book-stage: device presets give their screen size, turn for landscape, scale down to fit, and e-ink stops animation (P2-04)', () => {
+    assert.equal(BookStage.deviceSize({ device: 'fit' }), null);
+    assert.deepEqual(BookStage.deviceSize({ device: 'phone' }), { width: 390, height: 844, greyscale: false, label: 'Phone' });
+    assert.deepEqual(BookStage.deviceSize({ device: 'eink' }), { width: 600, height: 800, greyscale: true, label: 'E-ink 6"' });
+    assert.deepEqual(BookStage.deviceSize({ device: 'tablet', orientation: 'landscape' }), { width: 1180, height: 820, greyscale: false, label: 'Tablet' });
+    const eink = BookStage.deviceSize({ device: 'eink' });
+    assert.equal(BookStage.fitScale(eink, 300, 2000), 0.5, 'limited by width');
+    assert.equal(BookStage.fitScale(eink, 2000, 400), 0.5, 'limited by height');
+    assert.equal(BookStage.fitScale(eink, 2000, 2000), 1, 'never scaled up');
+    assert.equal(BookStage.fitScale(null, 10, 10), 1);
+    assert.equal(BookStage.fitScale(eink, 0, 0), 1, 'a hidden Stage is left alone');
+    const still = '*, *::before, *::after { animation: none !important; transition: none !important; }';
+    assert.ok(BookStage.readerCss({ device: 'eink' }).indexOf(still) !== -1);
+    ['fit', 'phone', 'tablet'].forEach((d) => assert.equal(BookStage.readerCss({ device: d }).indexOf('animation'), -1, d));
+    assert.ok(/data-device="eink"\] #stageFrame \{ filter: grayscale\(1\); \}/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'src', 'styles.css'), 'utf8')), 'e-ink greyscale is a filter on the frame');
 });

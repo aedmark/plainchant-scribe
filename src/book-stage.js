@@ -26,12 +26,20 @@
         // Vertical and horizontal page margins, in the book's body em.
         margins: { none: [0, 0], narrow: [0.5, 0.75], normal: [1, 1.5], wide: [1.5, 3] },
         modes: ['paged', 'scroll'],
+        // Device presets (P2-04, D-022): portrait screen sizes in CSS px; Fit fills the Stage. Approximate by nature.
+        devices: {
+            fit: null,
+            phone: { label: 'Phone', width: 390, height: 844 },
+            eink: { label: 'E-ink 6"', width: 600, height: 800, greyscale: true, still: true },
+            tablet: { label: 'Tablet', width: 820, height: 1180 }
+        },
+        orientations: ['portrait', 'landscape'],
         themes: {
             light: { page: '#ffffff', text: '#000000', link: null },
             sepia: { page: '#f4ecd8', text: '#5b4636', link: '#8a3b12' },
             dark: { page: '#121212', text: '#e0e0e0', link: '#8ab4f8' }
         },
-        defaults: { size: 100, margins: 'normal', theme: 'light', mode: 'paged' }
+        defaults: { size: 100, margins: 'normal', theme: 'light', mode: 'paged', device: 'fit', orientation: 'portrait' }
     };
 
     const has = (o, k) => Object.prototype.hasOwnProperty.call(o || {}, k);
@@ -81,7 +89,9 @@
             size: READER.sizes.indexOf(p.size) !== -1 ? p.size : d.size,
             margins: has(READER.margins, p.margins) ? p.margins : d.margins,
             theme: has(READER.themes, p.theme) ? p.theme : d.theme,
-            mode: READER.modes.indexOf(p.mode) !== -1 ? p.mode : d.mode
+            mode: READER.modes.indexOf(p.mode) !== -1 ? p.mode : d.mode,
+            device: has(READER.devices, p.device) ? p.device : d.device,
+            orientation: READER.orientations.indexOf(p.orientation) !== -1 ? p.orientation : d.orientation
         };
     }
 
@@ -106,7 +116,24 @@
                 'img, svg, video { max-width: 100% !important; max-height: calc(100vh - 2 * ' + v + ') !important; object-fit: contain; }'
             );
         }
+        // An e-ink screen does not animate. (Its greyscale is a filter on the Stage frame, so it covers the page too.)
+        const device = READER.devices[p.device];
+        if (device && device.still) lines.push('*, *::before, *::after { animation: none !important; transition: none !important; }');
         return lines.join('\n');
+    }
+
+    // The screen size for a device and orientation, or null for Fit.
+    function deviceSize(prefs) {
+        const p = readerPrefs(prefs), dev = READER.devices[p.device];
+        if (!dev) return null;
+        const landscape = p.orientation === 'landscape';
+        return { width: landscape ? dev.height : dev.width, height: landscape ? dev.width : dev.height, greyscale: !!dev.greyscale, label: dev.label };
+    }
+
+    // The scale that fits a device screen into the space available, never above 1.
+    function fitScale(size, availWidth, availHeight) {
+        if (!size || !(availWidth > 0) || !(availHeight > 0)) return 1;
+        return Math.min(1, availWidth / size.width, availHeight / size.height);
     }
 
     // Returns { ok: true, xhtml } or { ok: false, errors } when the chapter is not well-formed.
@@ -170,5 +197,5 @@
         return { ok: true, xhtml: XmlAst.applyEdits(text, edits) };
     }
 
-    return { CONTAINER: CONTAINER, READER: READER, isBook: isBook, chapters: chapters, chapterFor: chapterFor, assemble: assemble, rewriteCss: rewriteCss, readerPrefs: readerPrefs, readerCss: readerCss };
+    return { CONTAINER: CONTAINER, READER: READER, isBook: isBook, chapters: chapters, chapterFor: chapterFor, assemble: assemble, rewriteCss: rewriteCss, readerPrefs: readerPrefs, readerCss: readerCss, deviceSize: deviceSize, fitScale: fitScale };
 });

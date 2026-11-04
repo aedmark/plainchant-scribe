@@ -14,7 +14,7 @@ const pageOut = document.getElementById('pageOut');
 let stagePage = { path: null, index: 0, count: 1 };
 
 function readerPrefs() {
-    return BookStage.readerPrefs({ size: settings.readerSize, margins: settings.readerMargins, theme: settings.readerTheme, mode: settings.readerMode });
+    return BookStage.readerPrefs({ size: settings.readerSize, margins: settings.readerMargins, theme: settings.readerTheme, mode: settings.readerMode, device: settings.readerDevice, orientation: settings.readerOrientation });
 }
 
 // Scales the book's own root font size, read after load, so its em and rem sizes follow and px does not.
@@ -125,6 +125,7 @@ function syncReaderUi() {
     const book = isBookProject();
     readerWrap.hidden = !book;
     if (!book) setReaderPanel(false);
+    if (typeof layoutDevice === 'function') layoutDevice();
     showPageNav();
 }
 
@@ -164,6 +165,8 @@ document.getElementById('readerReset').addEventListener('click', () => {
     setSetting('readerSize', d.size);
     setSetting('readerMargins', d.margins);
     setSetting('readerMode', d.mode);
+    setSetting('readerDevice', d.device);
+    setSetting('readerOrientation', d.orientation);
     setReaderPref('readerTheme', d.theme);
 });
 readerWrap.addEventListener('keydown', (e) => {

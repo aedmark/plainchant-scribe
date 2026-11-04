@@ -701,6 +701,12 @@ body.shaded #editor {
 .reader-step output { min-width: 3rem; text-align: center; font-variant-numeric: tabular-nums; }
 .reader-reset { align-self: flex-end; }
 .page-nav { display: inline-flex; align-items: center; gap: 0.3rem; }
+.device-switch { display: inline-flex; align-items: center; gap: 0.25rem; }
+.device-switch[hidden], .viewport-switch[hidden] { display: none; }
+/* A device screen on the Stage (P2-04): drawn at its CSS size and scaled to fit by reader-device.js. */
+.stage-frame-wrap[data-device] { position: relative; background: var(--bg-sunken); border-color: transparent; box-shadow: none; }
+.stage-frame-wrap[data-device] #stageFrame { position: absolute; top: 0; left: 0; transform-origin: 0 0; outline: 1px solid var(--border-strong); box-shadow: var(--shadow-sm); }
+.stage-frame-wrap[data-device="eink"] #stageFrame { filter: grayscale(1); }
 .page-nav[hidden] { display: none; }
 .page-nav output { min-width: 6.5rem; text-align: center; font-size: 0.76rem; color: var(--text-strong); font-variant-numeric: tabular-nums; }
 

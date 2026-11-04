@@ -55,6 +55,7 @@ const APP_FILES = [
     'src/app/stage-links.js',
     'src/app/stage-book.js',
     'src/app/reader-ui.js',
+    'src/app/reader-device.js',
     'src/app/inspector-ui.js',
     'src/app/parts-ui.js',
     'src/app/problems-ui.js',
