@@ -1,4 +1,4 @@
-const CACHE_NAME = 'plainchant-web-v1';
+const CACHE_NAME = 'plainchant-scribe-v1';
 const APP_FILES = [
     './',
     'index.html',

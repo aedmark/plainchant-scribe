@@ -1,7 +1,7 @@
 {
-  "name": "plainchant-web",
-  "version": "1.0.0",
-  "description": "Dreamweaver-inspired WYSIWYG HTML5, CSS, and JS studio built on Plainchant's zero-dependency architecture with Tauri desktop support.",
+  "name": "plainchant-scribe",
+  "version": "0.1.0",
+  "description": "An EPUB studio with non-destructive round-trip editing and Tauri desktop support.",
   "main": "index.html",
   "scripts": {
     "test": "node test/run.js",

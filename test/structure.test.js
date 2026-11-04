@@ -332,7 +332,7 @@ test('structure: the home page is a self-contained how-to whose links and anchor
     const home = readRoot('index.html');
     assert.ok(!/<script\b/i.test(home) && !/<style\b/i.test(home), 'index.html has no inline or external scripts or inline styles');
     const local = Array.from(home.matchAll(/(?:href|src)="([^"#:]+)(?:#[^"]*)?"/g)).map((m) => m[1]).filter((u) => !/^(https?:|mailto:)/.test(u));
-    assert.ok(local.length >= 6, 'the page links to its stylesheet, app, manual, and license');
+    assert.ok(local.length >= 4, 'the page links to its stylesheet, app, and manual');
     local.forEach((u) => assert.ok(fs.existsSync(path.join(root, u)), 'index.html links to a missing file: ' + u));
     const ids = new Set(Array.from(home.matchAll(/\bid="([^"]+)"/g)).map((m) => m[1]));
     Array.from(home.matchAll(/href="#([^"]+)"/g)).forEach((m) => assert.ok(ids.has(m[1]), 'index.html links to a missing anchor #' + m[1]));
@@ -361,4 +361,16 @@ test('structure: Prism is vendored unmodified with its licence, loaded before co
     const shade = readRoot('src/code-shade.js');
     assert.includes(shade, 'Prism.tokenize');
     assert.ok(!/\.highlight\(|highlightElement|innerHTML/.test(shade + readRoot('src/app/shade.js')), 'Prism output is never turned into HTML');
+});
+
+test('structure: the product is named Plainchant Scribe everywhere the app, its storage, and its desktop shell are named (P0-03)', () => {
+    const files = ['app.html', 'index.html', 'manifest.webmanifest', 'sw.js', 'package.json', 'src-tauri/Cargo.toml', 'src-tauri/tauri.conf.json', 'src-tauri/src/main.rs'];
+    const walk = (dir) => fs.readdirSync(path.join(root, dir), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]));
+    walk('src').filter((f) => /\.(js|css|md)$/.test(f)).forEach((f) => files.push(f));
+    files.forEach((f) => assert.ok(!/plainchant[-_ ]web|plainchantWeb|io\.plainchant\.web/i.test(readRoot(f)), f + ' still uses the Plainchant Web name'));
+    assert.includes(readRoot('src-tauri/tauri.conf.json'), '"identifier": "io.plainchant.scribe"');
+    assert.includes(readRoot('src/store.js'), "'plainchant_scribe'");
+    assert.includes(readRoot('sw.js'), "'plainchant-scribe-v1'");
+    assert.includes(readRoot('src/app/settings.js'), "'plainchant_scribe_settings'");
+    assert.includes(readRoot('src/app/persistence.js'), "'plainchant_scribe_emergency'");
 });

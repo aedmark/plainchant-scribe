@@ -1,6 +1,6 @@
 # Plainchant Scribe
 
-An EPUB studio spun off from Plainchant Web (`aedmark/plainchant-web`): make, lay out, check, and export reflowable EPUB 3.3 books from the book's own `.xhtml`, `.css`, and `content.opf` files, which stay the single source of truth. Built for authors and small presses who want visual control over a book without a tool rewriting their files. Static HTML, CSS, and vanilla JavaScript with no frontend build step, running in any modern browser or as a native desktop app via Tauri v2. **Status: planning.** The repository holds the plan and the documentation schemes; the inherited code arrives in `P0-02`.
+An EPUB studio spun off from Plainchant Web (`aedmark/plainchant-web`): make, lay out, check, and export reflowable EPUB 3.3 books from the book's own `.xhtml`, `.css`, and `content.opf` files, which stay the single source of truth. Built for authors and small presses who want visual control over a book without a tool rewriting their files. Static HTML, CSS, and vanilla JavaScript with no frontend build step, running in any modern browser or as a native desktop app via Tauri v2. **Status: early development.** The inherited Plainchant Web code is in place, renamed, and green (`P0-02`, `P0-03`); it is still a web-page editor until the later phases turn it into a book tool.
 
 This is the canonical instruction file for coding agents. `CLAUDE.md` imports it; do not duplicate these rules in tool-specific files. Project facts belong in the documents linked below, not in an agent's private memory.
 
@@ -43,7 +43,7 @@ Direct-to-`master` workflow with maintainer review in-session, as in Plainchant 
 - Default branch: `master`.
 - Working branch pattern: `feature/<topic>` when branching is requested; otherwise `master`.
 - Commit format: concise imperative summary referencing roadmap IDs when applicable.
-- Release/version scheme: SemVer in `package.json` and `src-tauri/Cargo.toml` once they exist (`0.1.0` at `P0-03`).
+- Release/version scheme: SemVer in `package.json`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json` (`0.1.0`).
 
 Never force-push, rewrite shared history, publish, or rotate/delete production data without explicit permission.
 
@@ -64,7 +64,7 @@ Things an agent must not change without explicit permission. Every rule includes
 | --- | --- | --- |
 | `LICENSE`, `fonts/*.txt`, `src/vendor/*/LICENSE` | Do not edit, except to add a third-party notice the maintainer has approved | Legal and font licensing terms (D-001) |
 | `tools/check_docs.py`, `tools/manual.py`, `tools/manual.LICENSE` | Do not edit; replace from `the-manifold` or `3x-documentation-scheme` | They are the shared schemes' own tools (D-007) |
-| `test/structure.test.js` invariants (once ported) | Do not weaken | They enforce the no-build, global-scope, line-limit, and offline-cache rules inherited from Plainchant Web (D-001) |
+| `test/structure.test.js` invariants | Do not weaken | They enforce the no-build, global-scope, line-limit, and offline-cache rules inherited from Plainchant Web (D-001) |
 
 ## Names and terms
 
@@ -83,6 +83,16 @@ Things an agent must not change without explicit permission. Every rule includes
 | Path | Purpose |
 | --- | --- |
 | `README.md` | Purpose, status, and where to start |
+| `index.html`, `src/home.css` | Public landing page (a placeholder until `P0-05`) and its stylesheet |
+| `app.html` | Studio application markup and script/style links (no inline script or style) |
+| `src/*.js` | Pure UMD modules, no DOM: parsers, project model, checkers, zip, formatter, colour mapper, folder links, and the rest inherited from Plainchant Web |
+| `src/app/` | Classic scripts sharing one global scope, loaded in order by `app.html` (`core.js` first, `main.js` last) |
+| `src/styles.css` | Studio stylesheet (the inherited dark theme until `P0-06`) |
+| `src/vendor/prism/` | Vendored, unmodified Prism 1.30.0 with its licence, credited in `LICENSE` |
+| `src-tauri/` | Tauri v2 Rust desktop shell, folder and file access, asset server, and opt-in preview server |
+| `test/` | Node unit and structural test runner (`test/run.js`, `test/*.test.js`) |
+| `sw.js`, `manifest.webmanifest`, `package.json` | Offline cache, web app manifest, and scripts |
+| `fonts/`, `icons/` | Bundled fonts with licences, and app icons (still Plainchant Web's until `P0-06`) |
 | `LICENSE` | Project licence |
 | `.gitignore` | Ignored build output and local files |
 | `AGENTS.md` | Canonical agent instructions |
@@ -105,7 +115,7 @@ Things an agent must not change without explicit permission. Every rule includes
 ## Engineering conventions
 
 - Vanilla JavaScript (ES2020+), no frontend frameworks, no npm runtime dependencies. The only third-party runtime code is vendored, unmodified Prism, kept from Plainchant Web (D-001).
-- Classic `<script>` files in `src/app/*.js` and UMD modules in `src/*.js` so Node tests can `require()` them, as in Plainchant Web (D-001). The 500-line limit per `src/app/*.js` file, the no-duplicate-global rule, and the service worker file list come with the port (`P0-02`).
+- Classic `<script>` files in `src/app/*.js` and UMD modules in `src/*.js` so Node tests can `require()` them (D-001). Every file in `src/app/*.js` must be listed in `app.html` in load order, stay at or under 500 lines, and not redeclare a top-level name from another; any asset linked in `app.html` must be in `sw.js` `APP_FILES` (`test/structure.test.js`).
 - The book's files are the source of truth: edits are non-destructive splices of exact byte ranges, never a reserialisation of the file (D-002). Markdown is import-only.
 - Target EPUB 3.3, reflowable first; fixed layout and the EPUB 2 NCX fallback are deferred (D-004). Scribe produces EPUB only, not `.mobi` or `.azw3` (D-006).
 - Imported archives and files are untrusted input (see SECURITY).
@@ -121,8 +131,9 @@ Things an agent must not change without explicit permission. Every rule includes
 
 ## Run and verify
 
-- Setup: no install is needed yet. Node and Rust arrive with the port (`P0-02`).
-- Fast checks: `python3 tools/check_docs.py` and `python3 tools/manual.py check docs/plainchant-scribe.manual.json`.
+- Setup: no npm install is needed for tests; the Rust toolchain is needed only for desktop builds.
+- Run in the browser: `python3 -m http.server 8080`, then open `http://localhost:8080/app.html`. Run the desktop app: `npm run tauri:dev`.
+- Fast checks: `npm test`, `python3 tools/check_docs.py`, and `python3 tools/manual.py check docs/plainchant-scribe.manual.json`.
 - Rebuild the manual: `python3 tools/manual.py build docs/plainchant-scribe.manual.json --output docs/manual.html`.
-- Full checks today: `python3 tools/check_docs.py && python3 -m unittest tools/test_manual.py`. After `P0-02` add `npm test` and `cargo build --manifest-path src-tauri/Cargo.toml`.
+- Full checks: `npm test && python3 tools/check_docs.py && python3 -m unittest tools/test_manual.py && cargo build --manifest-path src-tauri/Cargo.toml`.
 - Detailed test guidance: [docs/TESTING.md](docs/TESTING.md).

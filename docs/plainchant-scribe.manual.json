@@ -109,9 +109,9 @@
             "history",
             "D-003"
           ],
-          "what": "Plainchant Scribe starts from a copy of Plainchant Web's source at one named commit, without its git history. A digest records what that project built, which of its decisions still apply to Scribe, and the mistakes that cost it time.",
+          "what": "Plainchant Scribe started from a copy of Plainchant Web's source at one named commit, without its git history. A digest records what that project built, which of its decisions still apply to Scribe, and the mistakes that cost it time.",
           "how": [
-            "The copy happens at roadmap item `P0-02`, from the commit hash recorded in D-003.",
+            "The copy was made at roadmap item `P0-02` with `git archive` from the commit hash recorded in D-003, then renamed at `P0-03`.",
             "`docs/archive/plainchant-web-lineage.md` lists the decisions as keep, adapt, or drop, and the gotchas, using a numbering form the documentation checker ignores.",
             "The upstream repository stays the place for full history."
           ],

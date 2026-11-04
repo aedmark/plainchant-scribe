@@ -1,4 +1,4 @@
-const EMERGENCY_KEY = 'plainchant_web_emergency';
+const EMERGENCY_KEY = 'plainchant_scribe_emergency';
 
 const saveBtn = document.getElementById('saveBtn');
 const newBtn = document.getElementById('newBtn');
@@ -7,7 +7,7 @@ let library = {};
 let scriptDb = null;
 let storageMode = null;
 const pendingWrites = new Set();
-const libraryChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('plainchant-web-library') : null;
+const libraryChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('plainchant-scribe-library') : null;
 
 function getScripts() {
     return library;

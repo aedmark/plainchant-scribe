@@ -1,4 +1,4 @@
-const SETTINGS_KEY = 'plainchant_web_settings';
+const SETTINGS_KEY = 'plainchant_scribe_settings';
 const SETTING_DEFAULTS = {
     theme: 'dark',
     size: 'normal',

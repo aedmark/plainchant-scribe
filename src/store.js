@@ -4,7 +4,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
     'use strict';
 
-    const DB_NAME = 'plainchant_web';
+    const DB_NAME = 'plainchant_scribe';
     const DB_VERSION = 2;
     const SCRIPTS = 'scripts';
     const META = 'meta';

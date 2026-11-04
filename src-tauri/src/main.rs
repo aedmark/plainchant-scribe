@@ -436,5 +436,5 @@ fn main() {
             preview::preview_open
         ])
         .run(tauri::generate_context!())
-        .expect("error while running Plainchant Web Tauri application");
+        .expect("error while running Plainchant Scribe Tauri application");
 }

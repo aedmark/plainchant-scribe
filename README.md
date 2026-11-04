@@ -4,7 +4,7 @@
 
 Plainchant Scribe is a planned spinoff of [Plainchant Web](https://github.com/aedmark/plainchant-web) that turns its round-trip HTML editor into an EPUB studio. A book is a folder of ordinary `.xhtml`, `.css`, and `content.opf` files; every change you make on the Reading Stage edits only the exact characters it touches, and **Export** zips the result into a valid EPUB 3.3.
 
-**Status: planning (2026-11-03).** This repository currently holds the plan ([ROADMAP.md](ROADMAP.md)), the decisions behind it ([docs/DECISIONS.md](docs/DECISIONS.md)), and the documentation schemes. The code is copied from Plainchant Web in `P0-02`.
+**Status: early development (2026-11-03).** The code was copied from Plainchant Web and renamed, so the app still behaves like a web-page editor; the plan ([ROADMAP.md](ROADMAP.md)) turns it into a book tool, and the decisions behind it are in [docs/DECISIONS.md](docs/DECISIONS.md). Run it with `python3 -m http.server 8080` and open `http://localhost:8080/app.html`.
 
 ## What it will do
 

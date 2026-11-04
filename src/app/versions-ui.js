@@ -26,7 +26,7 @@ async function renderVersions() {
     if (!list.length) {
         const empty = document.createElement('p');
         empty.className = 'empty-msg';
-        empty.textContent = 'No snapshots saved yet. Keep one above or Plainchant Web will save them periodically as you work.';
+        empty.textContent = 'No snapshots saved yet. Keep one above or Plainchant Scribe will save them periodically as you work.';
         versionsList.appendChild(empty);
         return;
     }

@@ -1,7 +1,7 @@
 [package]
-name = "plainchant-web"
-version = "1.0.0"
-description = "Dreamweaver-inspired HTML5, CSS, and JS WYSIWYG studio built on Plainchant's foundation"
+name = "plainchant-scribe"
+version = "0.1.0"
+description = "An EPUB studio with non-destructive round-trip editing"
 edition = "2021"
 
 [build-dependencies]

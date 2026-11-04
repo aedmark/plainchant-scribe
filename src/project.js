@@ -620,7 +620,7 @@
         if (typeof f.css === 'string') entries[f.activeCss || primaryCssFile(f, f.activeHtml)] = f.css;
         if (typeof f.js === 'string') entries[f.activeJs || 'script.js'] = f.js;
         return JSON.stringify({
-            plainchantWeb: 2,
+            plainchantScribe: 1,
             html: String(f.html == null ? (entries['index.html'] || '') : f.html),
             css: String(f.css == null ? (entries[primaryCssFile({ entries: entries }, 'index.html')] || '') : f.css),
             js: String(f.js == null ? (entries['script.js'] || '') : f.js),
@@ -634,7 +634,7 @@
         if (s.trim().startsWith('{')) {
             try {
                 const parsed = JSON.parse(s);
-                if (parsed && typeof parsed === 'object' && ('html' in parsed || 'plainchantWeb' in parsed || 'entries' in parsed)) {
+                if (parsed && typeof parsed === 'object' && ('html' in parsed || 'plainchantScribe' in parsed || 'entries' in parsed)) {
                     const entries = Object.assign({}, parsed.entries || {});
                     const html = String(parsed.html != null ? parsed.html : (entries['index.html'] || ''));
                     if (!('index.html' in entries) && html) entries['index.html'] = html;

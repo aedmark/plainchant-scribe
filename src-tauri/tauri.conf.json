@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Plainchant Web",
-  "version": "1.0.0",
-  "identifier": "io.plainchant.web",
+  "productName": "Plainchant Scribe",
+  "version": "0.1.0",
+  "identifier": "io.plainchant.scribe",
   "build": {
     "frontendDist": "dist"
   },
@@ -10,7 +10,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "Plainchant Web — HTML5, CSS & JS Studio",
+        "title": "Plainchant Scribe — EPUB Studio",
         "url": "app.html",
         "width": 1440,
         "height": 900,

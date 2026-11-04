@@ -1,6 +1,6 @@
 # Testing
 
-**Status:** the project has no application code yet, so the only suites are the documentation checks. Plainchant Web's test strategy comes with the port (`P0-02`) and is rewritten here then.
+**Status:** the inherited Plainchant Web suites run unchanged (`npm test`, 104 tests, and 7 Rust tests); there are no EPUB-specific tests yet. Those are planned below and arrive with their roadmap items.
 
 ## Commands
 
@@ -12,7 +12,11 @@
 | Rebuild the manual | `python3 tools/manual.py build docs/plainchant-scribe.manual.json --output docs/manual.html` | under a second |
 | Full checks today | `python3 tools/check_docs.py && python3 -m unittest tools/test_manual.py` | under a second |
 
-After `P0-02`: `npm test` (Node, no install) and `cargo build --manifest-path src-tauri/Cargo.toml`.
+| Unit and structural tests | `npm test` (Node, no install) | about 1 second |
+| Rust unit tests | `cargo test --manifest-path src-tauri/Cargo.toml` | 1 to 60 seconds |
+| Desktop build | `cargo build --manifest-path src-tauri/Cargo.toml` | 1 to 60 seconds |
+
+The full command is in `AGENTS.md`, Run and verify.
 
 ## What each suite proves, and what it does not
 
@@ -27,7 +31,7 @@ After `P0-02`: `npm test` (Node, no install) and `cargo build --manifest-path sr
 - **Golden books** in `test/fixtures/`: small hand-written EPUBs, valid and deliberately broken, each with the expected findings.
 - **EPUBCheck as the oracle** where Java is available: every exported fixture must pass, and a deliberately broken one must fail. When EPUBCheck is not available the test report says "not run", never "passed" (D-005).
 - **Real reading systems are manual.** Per release, open the sample books in Calibre and record the result and date in HANDOFF. The legacy Kindle is reached through Calibre's conversion, so its results are labelled as such and trusted only once the model is known (D-010, Q-004). No other reader is available to the project. A passing unit suite says nothing about how a reader paginates.
-- **Structure tests** keep Plainchant Web's rules (no inline script, 500-line limit, offline cache list) once ported.
+- **Structure tests** keep the inherited rules (no inline script, 500-line limit, no duplicate globals, offline cache list) and a rename guard that fails if the old product name returns (`P0-03`).
 
 ## Known pitfalls
 

@@ -1,6 +1,6 @@
 # Architecture
 
-**Status: planned.** Nothing described here exists yet except the documentation tooling. Each row says which roadmap item delivers it. When an item ships, rewrite its row as current fact and delete this banner once the code port (`P0-02`) lands. Inherited parts are described from Plainchant Web's code at the commit named in D-003, not from this repository.
+**Status: mixed.** The inherited Plainchant Web code is in the repository (`P0-02`) and renamed (`P0-03`); the rows marked New or Adapted are planned, and each says which roadmap item delivers it. When an item ships, rewrite its row as current fact. The inherited parts are not re-documented here; their structure is described in the lineage digest and Plainchant Web's own architecture document.
 
 ## The shape, in one paragraph
 

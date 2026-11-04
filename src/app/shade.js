@@ -201,7 +201,7 @@ function stopShade(why, detail) {
     shadeLayer.textContent = '';
     shadeKeys = [];
     shadeText = null;
-    console.warn('Plainchant Web: ' + why + ', so they are off until reload.', detail);
+    console.warn('Plainchant Scribe: ' + why + ', so they are off until reload.', detail);
     showNotice('Syntax colours were switched off because they stopped lining up with the text. Turn Syntax colours off and on in Settings, or reload, to bring them back.', true);
 }
 

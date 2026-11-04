@@ -1,7 +1,7 @@
 {
-  "name": "Plainchant Web",
-  "short_name": "Plainchant Web",
-  "description": "Dreamweaver-inspired HTML5, CSS, and JS WYSIWYG studio: edit code and visual design in harmony.",
+  "name": "Plainchant Scribe",
+  "short_name": "Scribe",
+  "description": "Make, lay out, check, and export EPUB books from your own XHTML, CSS, and package files.",
   "start_url": "app.html",
   "display": "standalone",
   "background_color": "#0f1115",
