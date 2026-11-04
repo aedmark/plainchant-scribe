@@ -71,6 +71,32 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
+    test('epubcheck: a book whose nav was edited with Nav passes EPUBCheck with no messages (P1-05)', () => {
+        let files = BookTemplate.create({ title: 'Nav' }).files;
+        files['OEBPS/text/chapter-2.xhtml'] = files['OEBPS/text/chapter-1.xhtml'].replace(/Chapter 1/g, 'Chapter 2').replace(/chapter-1/g, 'chapter-2');
+        const opfOps = [
+            (m) => OpfEdit.addItem(m, { id: 'chapter-2', path: 'OEBPS/text/chapter-2.xhtml', mediaType: 'application/xhtml+xml' }),
+            (m) => OpfEdit.addItemref(m, 'chapter-2')
+        ];
+        opfOps.forEach((op) => {
+            files = Object.assign({}, files, { 'OEBPS/content.opf': XmlAst.applyEdits(files['OEBPS/content.opf'], op(Book.read(files).model)) });
+        });
+        const ch = (n, frag) => ({ path: 'OEBPS/text/chapter-' + n + '.xhtml', fragment: frag });
+        [
+            (n) => Nav.addEntry(n, n.toc, 'append', Object.assign({ label: 'Chapter 2' }, ch(2))),
+            (n) => Nav.addEntry(n, n.toc.entries[0], 'child', Object.assign({ label: 'The heading' }, ch(1, 'chapter-1-title'))),
+            (n) => Nav.setLabel(n, n.toc.entries[1], 'Chapter Two'),
+            (n) => Nav.setLandmark(n, 'bodymatter', ch(1, 'chapter-1'), 'Start'),
+            (n) => Nav.setPageList(n, [Object.assign({ label: '1' }, ch(1, 'chapter-1')), Object.assign({ label: '2' }, ch(2, 'chapter-2'))])
+        ].forEach((op) => {
+            const nav = Nav.read(files, Book.read(files).model).nav;
+            files = Object.assign({}, files, { 'OEBPS/nav.xhtml': XmlAst.applyEdits(files['OEBPS/nav.xhtml'], op(nav)) });
+        });
+        assert.deepEqual(Nav.read(files, Book.read(files).model).problems, []);
+        const r = epubcheck(oracle.jar, files);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+    });
+
     test('epubcheck: a template with the modified date removed fails, so the oracle is really checking', () => {
         const files = BookTemplate.create().files;
         files['OEBPS/content.opf'] = files['OEBPS/content.opf'].replace(/ *<meta property="dcterms:modified">[^<]*<\/meta>\n/, '');

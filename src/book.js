@@ -48,6 +48,14 @@
         return { path: parts.join('/'), fragment: fragment };
     }
 
+    // A path-relative URL from one container path to another, percent-encoded per segment (EPUB 3.3 §4.2.5).
+    function hrefFor(fromPath, path) {
+        const from = fromPath.split('/').slice(0, -1), to = path.split('/');
+        let i = 0;
+        while (i < from.length && i < to.length - 1 && from[i] === to[i]) i++;
+        return from.slice(i).map(() => '..').concat(to.slice(i).map(encodeURIComponent)).join('/');
+    }
+
     function read(files, options) {
         const f = files || {};
         const assets = new Set((options && options.assets) || []);
@@ -320,5 +328,5 @@
         return r ? r.value : null;
     }
 
-    return { NS: NS, CONTAINER_PATH: CONTAINER_PATH, read: read, resolveHref: resolveHref, refinement: refinement };
+    return { NS: NS, CONTAINER_PATH: CONTAINER_PATH, read: read, resolveHref: resolveHref, hrefFor: hrefFor, refinement: refinement };
 });

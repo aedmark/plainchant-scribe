@@ -13,7 +13,7 @@ A book is a set of files in the Studio's working copy: `mimetype`, `META-INF/con
 | XML parsing and splicing | `src/xml-ast.js` | New (done, D-011) | `P1-01` |
 | New-book template | `src/book-template.js` | New (done, D-012) | `P1-02` |
 | Book model (OPF, manifest, spine) | `src/book.js`, `src/opf-edit.js` | New (reading done, D-014; edits done, D-015) | `P1-03`, `P1-04` |
-| Nav document | `src/nav.js` | New | `P1-05`, `P3-04` |
+| Nav document | `src/nav.js` | New (read and edit done, D-016) | `P1-05`, `P3-04` |
 | XHTML checks and normalising | `src/xhtml.js` | New | `P1-06` |
 | Reading Stage and reader controls | `src/app/reader-*.js` | Adapted from Plainchant Web's Stage | `P2-01` to `P2-06` |
 | Book panel, spine organiser, cover | `src/app/book-ui.js`, `src/app/spine-ui.js` | New | `P3-01` to `P3-06` |
@@ -44,6 +44,7 @@ Import: .epub -> Epub.read() (path and size checks) -> working-copy files
 | `BookTemplate.create(options)` | `src/book-template.js` | New-book command (after `P1-03`), tests | Returns `{ files, dirs, paths, identifier, modified }`; `files` lists `mimetype` first; the files pass EPUBCheck with no messages (`test/epubcheck.test.js`, D-012) |
 | `Book.read(files, { assets })` | `src/book.js` | Book panel, Problems, Export, OPF edits (`P1-04`) | Finds the OPF through `container.xml` and returns `{ model, problems }`: metadata (with refinements), manifest, spine, nav, cover, and EPUB 2 leftovers, each entry with its XmlAst node; `model` is null when the container or OPF cannot be read. Problems are package rules only, each `{ severity, code, message, path, start, end, line }` (D-014) |
 | `OpfEdit.*(model, ...)` | `src/opf-edit.js` | Book panel, spine organiser, importers | Each op takes a fresh `Book.read` model and returns XmlAst edits for the OPF; nothing outside the edited ranges changes; structural breakage throws an Error with a `.code`, rule gaps are left for `Book.read` to report; only `touchModified` changes `dcterms:modified` (D-015) |
+| `Nav.read(files, bookModel)`, `Nav.*(nav, ...)` | `src/nav.js` | Book panel, TOC generator (`P3-04`), Reading Stage navigation (`P2-05`) | `read` returns `{ nav, problems }`: toc, landmarks, page list, and other typed navs as entry trees with XmlAst nodes; problems are §7 rules plus links into the spine, and four EPUBCheck rules stricter than §7. Edit ops take a fresh nav model and return XmlAst edits for the nav file, as `OpfEdit` does (D-016) |
 | `Epub.build(files)` | `src/epub.js` | Export | Output opens in EPUBCheck without errors when `Book.check()` reports none |
 | `Epub.read(bytes)` | `src/epub.js` | Import | Refuses unsafe paths, absolute paths, duplicate names, and over-limit sizes (see SECURITY) |
 

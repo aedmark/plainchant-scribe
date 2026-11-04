@@ -191,13 +191,7 @@
         return item;
     }
 
-    // A path-relative URL from the OPF to a container path, percent-encoded per segment (EPUB 3.3 §5.6.2).
-    function hrefFor(opfPath, path) {
-        const from = opfPath.split('/').slice(0, -1), to = path.split('/');
-        let i = 0;
-        while (i < from.length && i < to.length - 1 && from[i] === to[i]) i++;
-        return from.slice(i).map(() => '..').concat(to.slice(i).map(encodeURIComponent)).join('/');
-    }
+    const hrefFor = (opfPath, path) => Book.hrefFor(opfPath, path);
 
     function checkPath(model, path, except) {
         if (typeof path !== 'string' || path === '' || path.startsWith('/') || path.indexOf('\\') !== -1 || !path.split('/').every((s) => s && s !== '.' && s !== '..')) {
