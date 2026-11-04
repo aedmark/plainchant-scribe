@@ -167,6 +167,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** The sizes are approximate: each reading app adds its own margins and chrome. A scaled-down device frame shows smaller text than the device would.
 **Review trigger:** The maintainer's devices (D-010, Q-004) show page breaks the presets do not match.
 
+## D-023 Moving through a book on the Stage  (2026-11-04, status: accepted)
+**Context:** `P2-05` needed choices about what the editor does when the Stage moves to another chapter, where the contents go, how chapters are stepped, and what links that leave the book do. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. The editor follows: going to a chapter (button, contents, link, or paging past an end) opens it in the editor, so the Stage always shows the file being edited. 2. The contents are a sidebar over the Stage, opened by a Contents button, built from the nav document's toc with its nesting. 3. Chapters are stepped by paging past either end (into the next chapter's first page or the previous chapter's last) and by « and » on the Stage bar; there is no extra shortcut. Stepping follows the spine and skips `linear="no"` items (EPUB 3.3 §5.7.2), which stay reachable through links and the contents. 4. A link that leaves the book (https, mailto) shows its address in a notice and is never opened; links to book files that are not chapters, and to missing files, also give a notice.
+**Alternatives:** A Stage that reads on while the editor stays (rejected: two notions of the open chapter, and live updates would apply to only one); the contents as an Explorer tab (rejected: readers put them over the page); a keyboard shortcut for chapters (not chosen); opening external links in a new tab after a confirmation (rejected: the Studio does not open web pages from book content).
+**Consequences:** Reading through a book opens each chapter in the editor and its tab strip. The nav document is read again each time the contents open, so edits to it show at once.
+**Review trigger:** Authors want to read ahead on the Stage without leaving the file they are editing.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

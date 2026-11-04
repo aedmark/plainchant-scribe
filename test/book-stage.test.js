@@ -172,3 +172,47 @@ test('book-stage: device presets give their screen size, turn for landscape, sca
     ['fit', 'phone', 'tablet'].forEach((d) => assert.equal(BookStage.readerCss({ device: d }).indexOf('animation'), -1, d));
     assert.ok(/data-device="eink"\] #stageFrame \{ filter: grayscale\(1\); \}/.test(require('fs').readFileSync(require('path').join(__dirname, '..', 'src', 'styles.css'), 'utf8')), 'e-ink greyscale is a filter on the frame');
 });
+
+test('book-stage: next and previous chapter follow the spine and skip non-linear items (P2-05)', () => {
+    const files = ExampleBook.create().files;
+    const c = (n) => 'OEBPS/text/chapter-' + n + '.xhtml';
+    assert.deepEqual(BookStage.readingOrder(files).map((o) => [o.path, o.linear]), [[c(1), true], [c(2), true], [c(3), true]]);
+    assert.equal(BookStage.neighbour(files, c(1), 1), c(2));
+    assert.equal(BookStage.neighbour(files, c(2), -1), c(1));
+    assert.equal(BookStage.neighbour(files, c(1), -1), null, 'the first chapter has no previous');
+    assert.equal(BookStage.neighbour(files, c(3), 1), null);
+    assert.equal(BookStage.neighbour(files, 'OEBPS/nav.xhtml', 1), c(1), 'from outside the spine, next is the first chapter');
+    assert.equal(BookStage.neighbour(files, 'OEBPS/nav.xhtml', -1), null);
+    const aux = Object.assign({}, files);
+    aux['OEBPS/content.opf'] = files['OEBPS/content.opf'].replace('<itemref idref="chapter-2"/>', '<itemref idref="chapter-2" linear="no"/>');
+    assert.equal(BookStage.neighbour(aux, c(1), 1), c(3), 'linear="no" is skipped');
+    assert.equal(BookStage.neighbour(aux, c(2), 1), c(3), 'but from it, reading goes on');
+    assert.equal(BookStage.neighbour(aux, c(3), -1), c(1));
+});
+
+test('book-stage: links are told apart: same chapter, another chapter, a book file, missing, external, invalid', () => {
+    const files = ExampleBook.create().files;
+    const from = 'OEBPS/text/chapter-1.xhtml';
+    const kind = (href, assets) => { const t = BookStage.linkTarget(files, from, href, assets); return [t.kind, t.path, t.fragment]; };
+    assert.deepEqual(kind('#top'), ['fragment', from, 'top']);
+    assert.deepEqual(kind('chapter-1.xhtml#s%C3%A9c'), ['fragment', from, 's\u00E9c']);
+    assert.deepEqual(kind('chapter-3.xhtml#note-1'), ['chapter', 'OEBPS/text/chapter-3.xhtml', 'note-1']);
+    assert.deepEqual(kind('../nav.xhtml'), ['chapter', 'OEBPS/nav.xhtml', null]);
+    assert.deepEqual(kind('../css/book.css'), ['file', 'OEBPS/css/book.css', null]);
+    assert.deepEqual(kind('../images/a.png', ['OEBPS/images/a.png']), ['file', 'OEBPS/images/a.png', null], 'binary assets count as book files');
+    assert.deepEqual(kind('gone.xhtml'), ['missing', 'OEBPS/text/gone.xhtml', null]);
+    assert.deepEqual(kind('https://example.org/'), ['external', null, null]);
+    assert.deepEqual(kind('mailto:a@example.org'), ['external', null, null]);
+    assert.deepEqual(kind('../../../x.xhtml'), ['invalid', null, null]);
+});
+
+test('book-stage: the contents tree comes from the nav toc, with nesting and headings', () => {
+    assert.deepEqual(BookStage.contents(ExampleBook.create().files).map((e) => [e.label, e.path, e.fragment, e.children.length]), [
+        ['A Book Is a Folder of Files', 'OEBPS/text/chapter-1.xhtml', null, 0], ['Chapters and Contents', 'OEBPS/text/chapter-2.xhtml', null, 0], ['A Page of Typical Elements', 'OEBPS/text/chapter-3.xhtml', null, 0]
+    ]);
+    const files = bsTemplate();
+    files['OEBPS/nav.xhtml'] = files['OEBPS/nav.xhtml'].replace('<li><a href="text/chapter-1.xhtml">Chapter 1</a></li>', '<li><span>Part One</span><ol><li><a href="text/chapter-1.xhtml#s1">Section</a></li></ol></li>');
+    assert.deepEqual(BookStage.contents(files), [{ label: 'Part One', path: null, fragment: null, children: [{ label: 'Section', path: 'OEBPS/text/chapter-1.xhtml', fragment: 's1', children: [] }] }]);
+    assert.deepEqual(BookStage.contents(Object.assign({}, files, { 'OEBPS/nav.xhtml': '<broken' })), []);
+    assert.deepEqual(BookStage.contents(Project.starter().entries), []);
+});

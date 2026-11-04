@@ -49,8 +49,9 @@ function showPageNav() {
     pageNav.hidden = !doc || !isBookProject();
     if (pageNav.hidden) return;
     pageOut.textContent = 'Page ' + (stagePage.index + 1) + ' of ' + stagePage.count;
-    pagePrev.disabled = stagePage.index === 0;
-    pageNext.disabled = stagePage.index >= stagePage.count - 1;
+    // At a chapter's end the buttons stay on while there is a chapter to page into.
+    pagePrev.disabled = stagePage.index === 0 && !BookStage.neighbour(projectFiles.entries, activeHtmlFile, -1, Object.keys(projectAssets || {}));
+    pageNext.disabled = stagePage.index >= stagePage.count - 1 && !BookStage.neighbour(projectFiles.entries, activeHtmlFile, 1, Object.keys(projectAssets || {}));
 }
 
 // Browsers leave the body's end padding out of the scroll width, so the last page could not be reached exactly. A 1px
@@ -91,8 +92,14 @@ function turnToFragment(doc, id) {
     return true;
 }
 
+// Paging past either end moves to the next chapter's first page or the previous chapter's last page (D-023).
 function turnPage(dir) {
-    goToPage(stagePage.index + dir);
+    const next = stagePage.index + dir;
+    if (next < 0 || next > stagePage.count - 1) {
+        if (BookStage.neighbour(projectFiles.entries, activeHtmlFile, dir, Object.keys(projectAssets || {}))) stepChapter(dir, dir > 0 ? 'first' : 'last');
+        return;
+    }
+    goToPage(next);
 }
 
 function pageKey(e) {
@@ -119,6 +126,7 @@ function onBookStageLoad(doc) {
         if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(keep);
         keep();
     } else showPageNav();
+    applyStageTarget(doc);
 }
 
 function syncReaderUi() {
@@ -126,6 +134,7 @@ function syncReaderUi() {
     readerWrap.hidden = !book;
     if (!book) setReaderPanel(false);
     if (typeof layoutDevice === 'function') layoutDevice();
+    if (typeof syncChapterNav === 'function') syncChapterNav();
     showPageNav();
 }
 

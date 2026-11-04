@@ -702,6 +702,28 @@ body.shaded #editor {
 .reader-reset { align-self: flex-end; }
 .page-nav { display: inline-flex; align-items: center; gap: 0.3rem; }
 .device-switch { display: inline-flex; align-items: center; gap: 0.25rem; }
+/* The Stage bar holds the device, chapter, page, and reader controls for books: let it wrap rather than clip. */
+.stage-header-left { flex-shrink: 1; min-width: 0; }
+
+/* Contents sidebar over the Stage (P2-05) */
+.stage-viewport { position: relative; }
+.contents-panel {
+    position: absolute; top: 0.75rem; bottom: 0.75rem; left: 0.75rem; z-index: 700; width: min(20rem, 80%);
+    display: flex; flex-direction: column; overflow: hidden;
+    background-color: var(--bg-raised); border: 1px solid var(--border-strong); border-radius: 0.45rem;
+    box-shadow: var(--shadow-pop); color: var(--text-strong);
+}
+.contents-panel[hidden] { display: none; }
+.contents-head { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.65rem; border-bottom: 1px solid var(--border-void); }
+.contents-head h3 { margin: 0; font-size: 0.9rem; }
+#contentsList { overflow: auto; padding: 0.4rem 0.3rem 0.6rem; font-size: 0.82rem; }
+#contentsList ol { list-style: none; margin: 0; padding: 0 0 0 0.9rem; }
+#contentsList > ol { padding-left: 0; }
+#contentsList button { display: block; width: 100%; text-align: left; padding: 0.3rem 0.45rem; border: none; border-radius: 0.3rem; background: none; color: var(--text-strong); font: inherit; cursor: pointer; }
+#contentsList button:hover, #contentsList button:focus-visible { background: var(--btn-hover); outline: none; }
+#contentsList button[aria-current="page"] { font-weight: 700; }
+#contentsList .contents-heading { padding: 0.3rem 0.45rem; color: var(--text-void-muted); }
+#contentsList .contents-empty { padding: 0.5rem; color: var(--text-void-muted); }
 .device-switch[hidden], .viewport-switch[hidden] { display: none; }
 /* A device screen on the Stage (P2-04): drawn at its CSS size and scaled to fit by reader-device.js. */
 .stage-frame-wrap[data-device] { position: relative; background: var(--bg-sunken); border-color: transparent; box-shadow: none; }

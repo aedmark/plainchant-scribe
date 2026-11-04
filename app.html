@@ -150,6 +150,11 @@
                 <button type="button" class="chip" data-device="tablet" aria-pressed="false" title="Tablet, 820 &times; 1180">Tablet</button>
                 <button type="button" id="deviceRotate" class="chip" aria-pressed="false" aria-label="Landscape" title="Turn the device to landscape">&#8635;</button>
             </div>
+            <div id="chapterNav" class="page-nav" role="group" aria-label="Chapters" hidden>
+                <button type="button" id="chapterPrev" class="chip" aria-label="Previous chapter" title="Previous chapter">&laquo;</button>
+                <button type="button" id="contentsBtn" class="chip" aria-expanded="false" aria-controls="contentsPanel" title="Table of contents">Contents</button>
+                <button type="button" id="chapterNext" class="chip" aria-label="Next chapter" title="Next chapter">&raquo;</button>
+            </div>
             <div id="pageNav" class="page-nav" role="group" aria-label="Pages" hidden>
                 <button type="button" id="pagePrev" class="chip" aria-label="Previous page" title="Previous page (Left arrow, Page Up)">&lsaquo;</button>
                 <output id="pageOut" aria-live="polite">Page 1 of 1</output>
@@ -217,6 +222,13 @@
 
     <div id="canvasBody" class="canvas-body" data-dock="bottom">
     <div id="render-target" class="stage-viewport">
+        <aside id="contentsPanel" class="contents-panel" aria-labelledby="contentsTitle" hidden>
+            <div class="contents-head">
+                <h3 id="contentsTitle">Contents</h3>
+                <button type="button" id="contentsClose" class="chip" aria-label="Close the contents">&times;</button>
+            </div>
+            <nav id="contentsList" aria-labelledby="contentsTitle"></nav>
+        </aside>
         <div id="stage-frame-wrap" class="stage-frame-wrap">
             <iframe id="stageFrame" title="WYSIWYG Stage" sandbox="allow-scripts allow-same-origin"></iframe>
         </div>
@@ -682,6 +694,7 @@
 <script src="src/app/stage-book.js"></script>
 <script src="src/app/reader-ui.js"></script>
 <script src="src/app/reader-device.js"></script>
+<script src="src/app/stage-nav.js"></script>
 <script src="src/app/inspector-ui.js"></script>
 <script src="src/app/parts-ui.js"></script>
 <script src="src/app/problems-ui.js"></script>

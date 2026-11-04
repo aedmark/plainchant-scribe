@@ -8,9 +8,9 @@
  * The book's own files are never changed.
  */
 (function (root, factory) {
-    if (typeof module === 'object' && module.exports) module.exports = factory(require('./xml-ast.js'), require('./book.js'));
-    else root.BookStage = factory(root.XmlAst, root.Book);
-})(typeof self !== 'undefined' ? self : this, function (XmlAst, Book) {
+    if (typeof module === 'object' && module.exports) module.exports = factory(require('./xml-ast.js'), require('./book.js'), require('./nav.js'));
+    else root.BookStage = factory(root.XmlAst, root.Book, root.Nav);
+})(typeof self !== 'undefined' ? self : this, function (XmlAst, Book, Nav) {
     'use strict';
 
     const XHTML = 'http://www.w3.org/1999/xhtml';
@@ -51,6 +51,50 @@
         const r = Book.read(entries, { assets: assets });
         if (!r.model) return [];
         return r.model.spine.itemrefs.map((ref) => ref.item).filter((it) => it && it.mediaType === 'application/xhtml+xml' && it.path && typeof entries[it.path] === 'string').map((it) => it.path);
+    }
+
+    // The spine's XHTML documents with their linear flag (EPUB 3.3 §5.7.2: linear="no" items are auxiliary).
+    function readingOrder(entries, assets) {
+        if (!isBook(entries)) return [];
+        const r = Book.read(entries, { assets: assets });
+        if (!r.model) return [];
+        return r.model.spine.itemrefs.filter((ref) => ref.item && ref.item.mediaType === 'application/xhtml+xml' && ref.item.path && typeof entries[ref.item.path] === 'string')
+            .map((ref) => ({ path: ref.item.path, linear: ref.linear }));
+    }
+
+    // The previous (dir -1) or next (dir 1) linear chapter from path, as a reader steps; null at either end. From a
+    // document outside the spine, next is the first chapter.
+    function neighbour(entries, path, dir, assets) {
+        const order = readingOrder(entries, assets);
+        const at = order.findIndex((o) => o.path === path);
+        if (at === -1) return dir > 0 && order.length ? (order.find((o) => o.linear) || order[0]).path : null;
+        for (let i = at + dir; i >= 0 && i < order.length; i += dir) if (order[i].linear) return order[i].path;
+        return null;
+    }
+
+    // What a link in a chapter leads to: { kind: 'fragment' | 'chapter' | 'external' | 'file' | 'missing' | 'invalid',
+    // path, fragment }. Chapters are XHTML documents in the book; a file is any other book file.
+    function linkTarget(entries, fromPath, href, assets) {
+        const raw = String(href == null ? '' : href).trim();
+        const r = Book.resolveHref(fromPath, raw);
+        let fragment = r.fragment;
+        try { fragment = fragment == null ? null : decodeURIComponent(fragment); } catch (e) { /* keep it as written */ }
+        if (r.remote) return { kind: 'external', path: null, fragment: null, href: raw };
+        if (r.outside || r.invalid || !r.path) return { kind: 'invalid', path: null, fragment: null, href: raw };
+        if (r.path === fromPath) return { kind: 'fragment', path: fromPath, fragment: fragment, href: raw };
+        if (typeof (entries || {})[r.path] === 'string' && /\.xhtml?$/i.test(r.path)) return { kind: 'chapter', path: r.path, fragment: fragment, href: raw };
+        if (has(entries, r.path) || (assets || []).indexOf(r.path) !== -1) return { kind: 'file', path: r.path, fragment: fragment, href: raw };
+        return { kind: 'missing', path: r.path, fragment: fragment, href: raw };
+    }
+
+    // The nav document's toc as a tree of { label, path, fragment, children }, or [] when there is none.
+    function contents(entries, assets) {
+        if (!isBook(entries)) return [];
+        const r = Book.read(entries, { assets: assets });
+        const nav = r.model ? Nav.read(entries, r.model).nav : null;
+        if (!nav || !nav.toc) return [];
+        const conv = (e) => ({ label: e.label, path: e.target && !e.target.remote ? e.target.path : null, fragment: e.target ? e.target.fragment : null, children: e.children.map(conv) });
+        return nav.toc.entries.map(conv);
     }
 
     // The chapter to show: the preferred path if it is an XHTML document of the book, else the first in the spine.
@@ -197,5 +241,5 @@
         return { ok: true, xhtml: XmlAst.applyEdits(text, edits) };
     }
 
-    return { CONTAINER: CONTAINER, READER: READER, isBook: isBook, chapters: chapters, chapterFor: chapterFor, assemble: assemble, rewriteCss: rewriteCss, readerPrefs: readerPrefs, readerCss: readerCss, deviceSize: deviceSize, fitScale: fitScale };
+    return { CONTAINER: CONTAINER, READER: READER, isBook: isBook, chapters: chapters, chapterFor: chapterFor, readingOrder: readingOrder, neighbour: neighbour, linkTarget: linkTarget, contents: contents, assemble: assemble, rewriteCss: rewriteCss, readerPrefs: readerPrefs, readerCss: readerCss, deviceSize: deviceSize, fitScale: fitScale };
 });

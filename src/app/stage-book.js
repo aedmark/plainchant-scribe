@@ -1,6 +1,6 @@
 // The Reading Stage for books (P2-01, D-018). A chapter is loaded as application/xhtml+xml from a Blob URL, so the
 // browser parses it as a reading system does. Stage selection and inline editing stay off for chapters until P2-06;
-// links do not navigate the frame until P2-05 follows them across chapters.
+// links never navigate the frame: stage-nav.js follows them (P2-05).
 
 let stageBookUrl = null;
 let stageBookScroll = { path: null, y: 0 };
@@ -75,16 +75,12 @@ stageFrame.addEventListener('load', () => {
     if (!doc) return;
     onBookStageLoad(doc);
     if (stageBookScroll.y) stageFrame.contentWindow.scrollTo(0, stageBookScroll.y);
-    // Links inside the chapter (#note-1) still jump; links to other files would load them as a bare page.
+    // Links go through the Stage's own navigation (P2-05): in-chapter targets turn to their page, other chapters
+    // open in the editor and on the Stage, and links that leave the book are shown, not opened.
     doc.addEventListener('click', (e) => {
         const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
         if (!a) return;
-        const href = a.getAttribute('href') || '';
-        if (href.charAt(0) === '#') {
-            if (turnToFragment(doc, href.slice(1))) e.preventDefault();
-            return;
-        }
         e.preventDefault();
-        showNotice('Following links between chapters comes with the contents sidebar (P2-05).');
+        followBookLink(a.getAttribute('href') || '');
     }, true);
 });
