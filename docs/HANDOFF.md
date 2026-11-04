@@ -23,11 +23,9 @@ _Last updated: 2026-11-03, session 4, on `master`: the web-only features are rem
 | Suite | Result |
 | --- | --- |
 | `npm test` | **89/89** |
-| `cargo build --manifest-path src-tauri/Cargo.toml` | passes |
+| `cargo test --manifest-path src-tauri/Cargo.toml`, `cargo build` | **7/7**, passes |
 | `python3 tools/check_docs.py` | `0 error(s), 0 warning(s)` |
 | `python3 tools/manual.py check docs/plainchant-scribe.manual.json`, `python3 -m unittest tools/test_manual.py` | 2 sections, 4 entries; 6/6 OK |
-
-`cargo test` (7 tests) last ran at the rename (`P0-03`); no Rust file changed since.
 
 **What works**
 - **The trimmed studio** (`P0-02`, `P0-04`, D-001, D-003): Design-mode editing, Inspector, Explorer, Assets, Problems, Parts, Format, find and replace, undo across files, versions, library, folder links, Prism colours, File and Edit menus, shortcut sheet, and the preview server. Not rewritten; see the lineage digest.
@@ -44,7 +42,7 @@ _Last updated: 2026-11-03, session 4, on `master`: the web-only features are rem
 - Read [archive/plainchant-web-lineage.md](archive/plainchant-web-lineage.md) first: what to keep, what to drop, and the traps (cache-first service worker, 500-line limit per app script, the HTML parser being too forgiving for XML).
 - Previews now always drop `<script>` (D-004), so the Stage cannot run book scripts.
 - `.console-row`, `.console-level`, `.console-msg`, `.console-src`, `.console-badge`, and `.css-state-bar` are CSS class names the Problems and Parts tabs still use; they are named for the removed Console and state bar. Rename them when those tabs are reworked (`P5-04`).
-- `inspector-ui.js` is still close to the 500-line limit; new Inspector behaviour needs a new file.
+- `inspector-ui.js` (447 lines) and `stage.js` (461) are the largest app scripts against the 500-line limit; new Inspector or Stage behaviour needs a new file.
 - In the agent's browser pane the service worker does not register for either app (an "unknown error occurred when fetching the script" console message); this is the pane, not the app.
 - `tools/check_docs.py` and `tools/manual.py` are the shared schemes' own files; replace them from their source repositories instead of editing (D-007).
 - IDs in the lineage digest are written so the checker ignores them on purpose. `icons/` and `fonts/` are still Plainchant Web's until `P0-06`.
