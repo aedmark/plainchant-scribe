@@ -97,8 +97,9 @@ const APP_FILES = [
     'icons/icon.svg'
 ];
 
+// cache: 'reload' skips the browser's HTTP cache, so the copy kept for offline use is the server's current one.
 self.addEventListener('install', (e) => {
-    e.waitUntil(caches.open(CACHE_NAME).then((c) => c.addAll(APP_FILES)).then(() => self.skipWaiting()));
+    e.waitUntil(caches.open(CACHE_NAME).then((c) => c.addAll(APP_FILES.map((f) => new Request(f, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -109,8 +110,20 @@ self.addEventListener('activate', (e) => {
     );
 });
 
+// Network first (P0-07, D-019): online, every file comes from the server, revalidated past the HTTP cache, and
+// refreshes the stored copy, so an update shows on the next load; offline, the stored copy answers. Copies are
+// keyed without the query string. caches.match() would search every cache on the origin, including another
+// app's, so only Scribe's own cache is read or written (D-013).
+const cacheKey = (url) => { const u = new URL(url); u.search = ''; u.hash = ''; return u.href; };
+
 self.addEventListener('fetch', (e) => {
-    if (e.request.method !== 'GET') return;
-    // caches.match() would search every cache on the origin, including another app's, so look only in Scribe's.
-    e.respondWith(caches.open(CACHE_NAME).then((c) => c.match(e.request)).then((hit) => hit || fetch(e.request)));
+    const req = e.request;
+    if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
+    const key = cacheKey(req.url);
+    const fromCache = () => caches.open(CACHE_NAME).then((c) => c.match(key)).then((hit) => hit || Response.error());
+    e.respondWith(fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }).then((res) => {
+        if (!res || !res.ok) return res;
+        const copy = res.clone();
+        return caches.open(CACHE_NAME).then((c) => c.put(key, copy)).catch(() => {}).then(() => res);
+    }, fromCache));
 });

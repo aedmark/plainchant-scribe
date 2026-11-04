@@ -11,6 +11,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 - **New makes an EPUB book**: the files of a reflowable EPUB 3 book (package document, contents, one chapter, a stylesheet), and **Load Example Book** opens a short three-chapter guide. The Stage shows the open chapter as a reading system parses it, with the book's own styles and images; a chapter that is not well-formed shows an error instead. Projects saved earlier still open as web pages (`P2-01`, `D-018`).
 - **A manuscript look with light and dark modes**: warm paper and ink in light, lamplight in dark, with serif headings (EB Garamond) and typewriter code. Settings has Match system (the default), Light, and Dark; the old Retro theme is gone. The home page is rewritten to match and says plainly where the project stands (`P0-05`, `P0-06`, `D-008`).
 
+### Fixed
+
+- **Updates show on the next load.** The offline copy used to keep serving the old app after an update until the browser's site data was cleared; now the app is fetched fresh whenever the server can be reached, and the offline copy is used only when it cannot (`P0-07`, `D-019`).
+
 ### Removed
 
 - Features the book tool will not use: the Live JS mode and Console, the Insert menu and drag-to-insert, the breakpoint switcher, flex and grid handles, and the pseudo-state bar. The Stage no longer runs scripts at all (`P0-04`).

@@ -139,6 +139,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** Editing a chapter means the code editor until `P2-06`. Books and old web projects follow two paths through the Studio, told apart by one file. The Stage iframe's sandbox (`allow-scripts allow-same-origin`, inherited) does not isolate scripts, so removing them from the copy is what keeps book content from running.
 **Review trigger:** `P2-06` brings editing to chapters, or the Tauri webview handles Blob URLs differently.
 
+## D-019 The offline cache is network first  (2026-11-04, status: accepted)
+**Context:** `sw.js` was cache-first under a fixed name (`plainchant-scribe-v1`), so an installed browser kept serving old app files until `sw.js` itself changed. Inherited from Plainchant Web, noted as an open weakness in the lineage digest, and seen in `P2-01` when an edit to `app.html` did not show. The maintainer chose network first on 2026-11-04.
+**Decision:** Online, every same-origin GET goes to the network with `cache: 'no-cache'` (revalidated past the HTTP cache), and an `ok` response replaces the stored copy, keyed by URL without query or fragment. Offline, or when the network fails, the stored copy answers, or a network error if there is none. Install stores every app file with `cache: 'reload'`. Other origins and non-GET requests are not handled. The cache name stays `plainchant-scribe-v1`, and only that cache is read or written (D-013).
+**Alternatives:** Cache first, refreshed in the background (rejected: every update shows one load late); cache first with a hash of every app file in `sw.js`, enforced by a test (rejected: one more step on every commit that touches the app).
+**Consequences:** Every load online makes a round trip per file, which is a revalidation and usually a 304 from the server. A file that fails on the network is served from the cache only if the request fails outright; a 404 or 500 passes through.
+**Review trigger:** Loads become slow on poor connections, or the app gains files the user should keep using offline while the server is changing them.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

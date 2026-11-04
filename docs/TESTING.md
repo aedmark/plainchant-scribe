@@ -1,6 +1,6 @@
 # Testing
 
-**Status:** the inherited Plainchant Web suites run (`npm test`, now 160 with the XML parser's, the template's, the book model's, the OPF edits', the nav's, the XHTML checker's, the Stage's, and EPUBCheck's, and 7 Rust tests), minus the tests of the features removed in `P0-04`. The first book-format suite is the XML parser and splicer (`test/xml-ast.test.js`, `P1-01`); the rest are planned below and arrive with their roadmap items.
+**Status:** the inherited Plainchant Web suites run (`npm test`, now 161 with the XML parser's, the template's, the book model's, the OPF edits', the nav's, the XHTML checker's, the Stage's, and EPUBCheck's, and 7 Rust tests), minus the tests of the features removed in `P0-04`. The first book-format suite is the XML parser and splicer (`test/xml-ast.test.js`, `P1-01`); the rest are planned below and arrive with their roadmap items.
 
 ## Commands
 
@@ -40,7 +40,7 @@ The full command is in `AGENTS.md`, Run and verify.
 - **Setting up EPUBCheck** (Linux, 2026-11-03, Java 27, EPUBCheck 5.4.0): `gh release download v5.4.0 --repo w3c/epubcheck --pattern 'epubcheck-*.zip'`, check the file's SHA-256 against the release asset's digest (`gh release view v5.4.0 --repo w3c/epubcheck --json assets`), and unzip it into `.tools/`, which git ignores. Any later release works the same way.
 - **Real reading systems are manual.** Per release, open the sample books in Calibre and record the result and date in HANDOFF. The legacy Kindle is reached through Calibre's conversion, so its results are labelled as such and trusted only once the model is known (D-010, Q-004). No other reader is available to the project. A passing unit suite says nothing about how a reader paginates.
 - **Theme tests** (`test/theme.test.js`) check contrast (4.5:1) for every text, button, and syntax pair in both modes, identical variable sets across themes, no colour outside the theme blocks, and that the home page palette matches the studio's.
-- **Structure tests** keep the inherited rules (no inline script, 500-line limit, no duplicate globals, offline cache list) and a rename guard that fails if the old product name returns (`P0-03`).
+- **Structure tests** keep the inherited rules (no inline script, 500-line limit, no duplicate globals, offline cache list), run `sw.js` against fake caches and network (only Scribe's cache, network first, offline fallback, install past the HTTP cache; D-013, D-019), and a rename guard that fails if the old product name returns (`P0-03`).
 
 ## Known pitfalls
 

@@ -304,29 +304,72 @@ test('structure: the product is named Plainchant Scribe everywhere the app, its 
     assert.includes(readRoot('src/app/persistence.js'), "'plainchant_scribe_emergency'");
 });
 
-test('offline: the service worker touches only Scribe\'s own caches, so an app on the same origin keeps its cache', () => {
-    // A synchronous stand-in for Promise: the harness runs tests synchronously, so every result must be ready at once.
-    const Sync = {
-        resolve: (v) => (v && typeof v.then === 'function' ? v : { then: (f) => Sync.resolve(f ? f(v) : v) }),
-        all: (list) => { const out = []; list.forEach((p, i) => Sync.resolve(p).then((v) => { out[i] = v; })); return Sync.resolve(out); }
-    };
-    const handlers = {};
-    const store = { 'plainchant-scribe-v0': {}, 'plainchant-scribe-v1': {}, 'plainchant-web-v1': { 'app.html': 'web' }, 'other-app': {} };
-    const opened = [];
+// Runs sw.js in a sandbox with fake caches and network. The harness is synchronous, so promises are a synchronous
+// stand-in that can also reject.
+function runServiceWorker(network) {
+    const settle = (ok, value) => ({
+        then(onOk, onBad) {
+            const f = ok ? onOk : onBad;
+            if (!f) return settle(ok, value);
+            try { return lift(f(value)); } catch (err) { return settle(false, err); }
+        },
+        catch(onBad) { return this.then(null, onBad); }
+    });
+    const lift = (v) => (v && typeof v.then === 'function' ? v : settle(true, v));
+    const Sync = { resolve: lift, reject: (e) => settle(false, e), all: (list) => { const out = []; list.forEach((p, i) => lift(p).then((v) => { out[i] = v; })); return lift(out); } };
+    const handlers = {}, opened = [], fetched = [], added = [];
+    const origin = 'http://localhost:8081';
+    const store = { 'plainchant-scribe-v0': {}, 'plainchant-scribe-v1': { [origin + '/app.html']: 'cached app' }, 'plainchant-web-v1': { [origin + '/app.html']: 'web app', [origin + '/missing.js']: 'web file' }, 'other-app': {} };
     const caches = {
         keys: () => Sync.resolve(Object.keys(store)),
         delete: (k) => { delete store[k]; return Sync.resolve(true); },
-        open: (k) => { opened.push(k); store[k] = store[k] || {}; return Sync.resolve({ match: () => Sync.resolve(undefined), addAll: () => Sync.resolve() }); },
+        open: (k) => {
+            opened.push(k);
+            store[k] = store[k] || {};
+            return Sync.resolve({ match: (key) => Sync.resolve(store[k][key]), put: (key, res) => { store[k][key] = res; return Sync.resolve(); }, addAll: (reqs) => { added.push.apply(added, reqs); return Sync.resolve(); } });
+        },
         match: () => { throw new Error('caches.match searches every app\'s cache on the origin'); }
     };
-    const self = { addEventListener: (type, fn) => { handlers[type] = fn; }, skipWaiting: () => {}, clients: { claim: () => Sync.resolve() } };
-    vm.runInNewContext(readRoot('sw.js'), { self: self, caches: caches, fetch: () => Sync.resolve('network'), Promise: Sync });
-    handlers.activate({ waitUntil: () => {} });
-    assert.deepEqual(Object.keys(store).sort(), ['other-app', 'plainchant-scribe-v1', 'plainchant-web-v1'], 'only an old Scribe cache is deleted');
-    let answer;
-    handlers.fetch({ request: { method: 'GET', url: 'app.html' }, respondWith: (p) => { p.then((v) => { answer = v; }); } });
-    assert.equal(answer, 'network', 'a miss in Scribe\'s cache goes to the network, not to another app\'s cache');
-    assert.deepEqual(opened, ['plainchant-scribe-v1']);
+    function Request(url, init) { this.url = url; this.cache = init && init.cache; }
+    const Response = { error: () => 'network error' };
+    const fetch = (url, init) => { fetched.push([url, init]); return network(url); };
+    const self = { location: { origin: origin }, addEventListener: (type, fn) => { handlers[type] = fn; }, skipWaiting: () => {}, clients: { claim: () => Sync.resolve() } };
+    vm.runInNewContext(readRoot('sw.js'), { self: self, caches: caches, fetch: fetch, Request: Request, Response: Response, URL: URL, Promise: Sync });
+    const get = (url, method) => {
+        let answer, intercepted = false;
+        handlers.fetch({ request: { method: method || 'GET', url: url }, respondWith: (p) => { intercepted = true; p.then((v) => { answer = v; }); } });
+        return { answer: answer, intercepted: intercepted };
+    };
+    return { handlers: handlers, store: store, opened: opened, fetched: fetched, added: added, get: get, origin: origin, Sync: Sync };
+}
+
+test('offline: the service worker touches only Scribe\'s own caches, so an app on the same origin keeps its cache', () => {
+    const sw = runServiceWorker((url) => { throw new Error('no network in this test: ' + url); });
+    sw.handlers.activate({ waitUntil: () => {} });
+    assert.deepEqual(Object.keys(sw.store).sort(), ['other-app', 'plainchant-scribe-v1', 'plainchant-web-v1'], 'only an old Scribe cache is deleted');
+    const offline = runServiceWorker(() => offline.Sync.reject(new Error('offline')));
+    assert.equal(offline.get(offline.origin + '/missing.js').answer, 'network error', 'a miss offline is not answered from another app\'s cache');
+    assert.ok(offline.opened.every((k) => k === 'plainchant-scribe-v1'), offline.opened.join());
+});
+
+test('offline: app files come from the network first and refresh the cache, so an update shows on the next load (P0-07)', () => {
+    const fresh = { ok: true, body: 'new app', clone: () => ({ ok: true, body: 'new app (copy)' }) };
+    const sw = runServiceWorker((url) => sw.Sync.resolve(/missing/.test(url) ? { ok: false, status: 404, clone: () => { throw new Error('a failed response is not stored'); } } : fresh));
+    const r = sw.get(sw.origin + '/app.html?fresh=2#top');
+    assert.ok(r.intercepted);
+    assert.equal(r.answer, fresh, 'online, the network answers even though a cached copy exists');
+    assert.deepEqual(sw.fetched[0], [sw.origin + '/app.html?fresh=2#top', { cache: 'no-cache', credentials: 'same-origin' }], 'revalidated past the browser\'s HTTP cache');
+    assert.deepEqual(sw.store['plainchant-scribe-v1'][sw.origin + '/app.html'], { ok: true, body: 'new app (copy)' }, 'the stored copy is refreshed, keyed without the query');
+    assert.equal(sw.store['plainchant-web-v1'][sw.origin + '/app.html'], 'web app', 'another app\'s cache is untouched');
+    assert.equal(sw.get(sw.origin + '/missing.js').answer.status, 404, 'a 404 passes through');
+    assert.equal(sw.store['plainchant-scribe-v1'][sw.origin + '/missing.js'], undefined);
+    assert.equal(sw.get('https://fonts.example.org/a.woff2').intercepted, false, 'other origins are not handled');
+    assert.equal(sw.get(sw.origin + '/app.html', 'POST').intercepted, false);
+    const offline = runServiceWorker(() => offline.Sync.reject(new Error('offline')));
+    assert.equal(offline.get(offline.origin + '/app.html?x=1').answer, 'cached app', 'offline, the stored copy answers');
+    offline.handlers.install({ waitUntil: () => {} });
+    assert.equal(offline.added.length, (readRoot('sw.js').match(/^    '[^']+',?$/gm) || []).length, 'install stores every app file');
+    assert.ok(offline.added.every((req) => req.cache === 'reload'), 'install skips the browser\'s HTTP cache');
 });
 
 test('offline: the dev server port is not Plainchant Web\'s 8080, so the two apps never share an origin', () => {
