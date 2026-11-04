@@ -10,7 +10,7 @@ A book is a set of files in the Studio's working copy: `mimetype`, `META-INF/con
 
 | Area | Files | Source | Delivers |
 | --- | --- | --- | --- |
-| XML parsing and splicing | `src/xml-ast.js` | New | `P1-01` |
+| XML parsing and splicing | `src/xml-ast.js` | New (done, D-011) | `P1-01` |
 | Book model (OPF, manifest, spine) | `src/book.js` | New | `P1-03`, `P1-04` |
 | Nav document | `src/nav.js` | New | `P1-05`, `P3-04` |
 | XHTML checks and normalising | `src/xhtml.js` | New | `P1-06` |
@@ -31,21 +31,22 @@ File names are proposals; the roadmap items own the interfaces.
 ## Interfaces and data flow
 
 ```text
-Reading Stage / code editor / Book panel -> XmlAst or CssAst byte-range splice -> working-copy files -> render + undo snapshot + IndexedDB auto-save
+Reading Stage / code editor / Book panel -> XmlAst or CssAst character-range splice -> working-copy files -> render + undo snapshot + IndexedDB auto-save
 Export: working-copy files -> Book.check() -> Epub.build() (mimetype first, stored) -> .epub
 Import: .epub -> Epub.read() (path and size checks) -> working-copy files
 ```
 
 | Interface | Producer | Consumer | Contract |
 | --- | --- | --- | --- |
-| `XmlAst.parse(text)` | `src/xml-ast.js` | Book, nav, XHTML checks, Stage bridge | Nodes carry start and end offsets; a document that is not well-formed returns errors with offsets and never throws; the original text is never modified |
+| `XmlAst.parse(text, options)` | `src/xml-ast.js` | Book, nav, XHTML checks, Stage bridge | Nodes carry string offsets into the text and namespace-resolved names; a document that is not well-formed returns every error (code, offset, line, column), a best-effort tree, and `wellFormed: false`, and never throws; the text is never modified (D-011) |
+| `XmlAst.setAttr`, `removeAttr`, `setText`, `insert`, `remove`, `applyEdits` | `src/xml-ast.js` | Book model edits (`P1-04`), nav (`P1-05`), Stage | Each returns `{ start, end, text }` splices for one parse; they refuse a document that is not well-formed or a node from another parse, escape what they write, and `insert` refuses markup that would break well-formedness |
 | `Book.read(files)` | `src/book.js` | Book panel, Problems, Export | Returns metadata, manifest, spine, cover, and problems from the OPF as it is on disk |
 | `Epub.build(files)` | `src/epub.js` | Export | Output opens in EPUBCheck without errors when `Book.check()` reports none |
 | `Epub.read(bytes)` | `src/epub.js` | Import | Refuses unsafe paths, absolute paths, duplicate names, and over-limit sizes (see SECURITY) |
 
 ## Invariants (target)
 
-- **The author's files are never reserialised.** A change touches only the bytes it must (D-002). Enforced by splice round-trip tests (`P1-01`).
+- **The author's files are never reserialised.** A change touches only the characters it must (D-002, D-011). Enforced by the round-trip and splice tests in `test/xml-ast.test.js` (`P1-01`).
 - **The Reading Stage never changes a file by displaying it**, and reader controls (font size, theme) are overrides, not edits (`P2-02`).
 - **Every file in the manifest exists, and every content file is in the manifest.** Enforced by `Book.check()` (`P5-04`) and by Export refusing a book with errors unless the author overrides.
 - **Scripts in imported content are kept but never executed in the Studio.** Enforced in the Stage assembler (`P2-01`).

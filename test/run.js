@@ -4,6 +4,7 @@ globalThis.test = harness.test;
 globalThis.assert = harness.assert;
 globalThis.HtmlAst = require('../src/html-ast.js');
 globalThis.CssAst = require('../src/css-ast.js');
+globalThis.XmlAst = require('../src/xml-ast.js');
 globalThis.CodeShade = require('../src/code-shade.js');
 globalThis.DomOutline = require('../src/dom-outline.js');
 globalThis.Project = require('../src/project.js');
@@ -27,6 +28,7 @@ globalThis.ProjectLink = require('../src/projectlink.js');
 
 require('./html-ast.test.js');
 require('./css-ast.test.js');
+require('./xml-ast.test.js');
 require('./hints.test.js');
 require('./preview.test.js');
 require('./format.test.js');
