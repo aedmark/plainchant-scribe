@@ -47,14 +47,13 @@ _Last updated: 2026-11-03, session 3, on `master` (commits `318b048` copy, then 
 
 ## Next steps (in order)
 
-1. Answer Q-004 (Kindle model, firmware, and how books reach it) when convenient; it only gates trusting Kindle results.
-2. `P0-04`: remove the web-only features (Live JS mode and Console, Insert palette, breakpoints, flex and grid handles, pseudo-state bar); keep the preview and shared parts (D-009). Each removal needs its tests, structure checks, and docs rows removed with it.
-3. `P0-05` and `P0-06`: Scribe copy and the manuscript look with light and dark modes (D-008).
-4. Start `P1-01`, the XML parser, which every later phase depends on.
+1. `P0-04`: remove the web-only features (Live JS mode and Console, Insert palette, breakpoints, flex and grid handles, pseudo-state bar); keep the preview and shared parts (D-009). Each removal needs its tests, structure checks, and docs rows removed with it.
+2. `P0-05` and `P0-06`: Scribe copy and the manuscript look with light and dark modes (D-008).
+3. Start `P1-01`, the XML parser, which every later phase depends on.
 
 ## Open questions for maintainers
 
-- Q-004 Kindle model and firmware, and how books reach it (gates Kindle results in P5-06).
+- Q-004 Kindle model and firmware, and how books reach it. Deferred by the maintainer as not important yet; ask again only when a Kindle result is wanted (P5-06).
 
 ## Session log
 
