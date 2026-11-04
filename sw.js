@@ -1,3 +1,4 @@
+const CACHE_PREFIX = 'plainchant-scribe-';
 const CACHE_NAME = 'plainchant-scribe-v1';
 const APP_FILES = [
     './',
@@ -94,12 +95,14 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
     e.waitUntil(
-        caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
+        // Only Scribe's own old caches: another app on the same origin keeps its cache.
+        caches.keys().then((keys) => Promise.all(keys.filter((k) => k.startsWith(CACHE_PREFIX) && k !== CACHE_NAME).map((k) => caches.delete(k))))
             .then(() => self.clients.claim())
     );
 });
 
 self.addEventListener('fetch', (e) => {
     if (e.request.method !== 'GET') return;
-    e.respondWith(caches.match(e.request).then((hit) => hit || fetch(e.request)));
+    // caches.match() would search every cache on the origin, including another app's, so look only in Scribe's.
+    e.respondWith(caches.open(CACHE_NAME).then((c) => c.match(e.request)).then((hit) => hit || fetch(e.request)));
 });

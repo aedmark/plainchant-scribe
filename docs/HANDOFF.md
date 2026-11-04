@@ -14,7 +14,7 @@ Changes: [CHANGELOG.md](CHANGELOG.md). Older sessions and the Plainchant Web his
 
 ## Current state
 
-_Last updated: 2026-11-03, session 7, on `master`: `P1-02` is done (the new-book template), and the repository is on GitHub._
+_Last updated: 2026-11-03, session 8, on `master`: storage and the offline cache are kept apart from Plainchant Web's (D-013); `P1-02` is done._
 
 **Where things stand, in one paragraph:** Phase 0 is done. Phase 1 has `src/xml-ast.js` (`P1-01`, D-011), the XML parser and splicer, and `src/book-template.js` (`P1-02`, D-012), which returns the files of a new, empty EPUB 3.3 book that passes EPUBCheck 5.4.0 with no messages. Neither module is loaded by `app.html` yet. The app is still the inherited Design-mode HTML and CSS editor in the manuscript look (D-008); no EPUB feature exists for the user yet. The repository is public at `https://github.com/aedmark/plainchant-scribe`, with `master` tracking `origin/master`. Next: `P1-03`, the book model.
 
@@ -22,7 +22,7 @@ _Last updated: 2026-11-03, session 7, on `master`: `P1-02` is done (the new-book
 
 | Suite | Result |
 | --- | --- |
-| `npm test` (EPUBCheck 5.4.0 on Java 27 included) | **114/114** |
+| `npm test` (EPUBCheck 5.4.0 on Java 27 included) | **116/116** |
 | `cargo test --manifest-path src-tauri/Cargo.toml`, `cargo build` | **7/7**, passes |
 | `python3 tools/check_docs.py` | `0 error(s), 0 warning(s)` |
 | `python3 tools/manual.py check docs/plainchant-scribe.manual.json`, `python3 -m unittest tools/test_manual.py` | 2 sections, 5 entries; 6/6 OK |
@@ -47,6 +47,7 @@ _Last updated: 2026-11-03, session 7, on `master`: `P1-02` is done (the new-book
 - `.console-row`, `.console-level`, `.console-msg`, `.console-src`, `.console-badge`, and `.css-state-bar` are CSS class names the Problems and Parts tabs still use; they are named for the removed Console and state bar. Rename them when those tabs are reworked (`P5-04`).
 - `inspector-ui.js` (447 lines) and `stage.js` (461) are the largest app scripts against the 500-line limit; new Inspector or Stage behaviour needs a new file.
 - In the agent's browser pane the service worker does not register for either app (an "unknown error occurred when fetching the script" console message); this is the pane, not the app.
+- Serve the browser app on port 8081 (`npm run serve`), not 8080, which is Plainchant Web's (D-013).
 - EPUBCheck lives in the git-ignored `.tools/` folder, so a fresh clone runs `npm test` without it and prints "not run"; see TESTING for the download. It validates against EPUB 3.4 rules.
 - `XmlAst` offsets are string indices, not bytes (D-011). Edits return `{ start, end, text }` lists for one parse: apply them with `XmlAst.applyEdits(ast.text, edits)` and re-parse before the next edit. Several edits from the same parse can be applied together if they do not overlap.
 - Internally declared entities stay as `&name;` in `XmlAst` values; HTML entities such as `&nbsp;` are `undeclared-entity` errors whose message gives the numeric form.
@@ -67,6 +68,15 @@ _Last updated: 2026-11-03, session 7, on `master`: `P1-02` is done (the new-book
 Newest first. Copy the template for each new session. Work done between sessions (a maintainer's commits, another
 agent) gets a short entry too, written by whoever notices it, so the log has no gaps. Past 10 entries, move the
 oldest to `docs/archive/` and leave a pointer here.
+
+### Session 8: 2026-11-03: separate storage from Plainchant Web
+
+**Contributor:** Claude (Opus 5.5), with the maintainer
+**Goal:** Make sure Scribe's cache and database are its own.
+**Done:** none on the roadmap (an incidental fix)
+**Changed:** `sw.js` (deletes and reads only Scribe's caches), `package.json` (serve on 8081), `test/structure.test.js` (two tests), `README.md`, `AGENTS.md`, `docs/DECISIONS.md`, `docs/ARCHITECTURE.md`, this file.
+**Decisions:** D-013.
+**Verified:** `npm test` 116/116; the new service worker test fails against the previous `sw.js` (it deleted `plainchant-web-v1`). Not checked in a real browser: the agent's browser pane does not register service workers.
 
 ### Session 7: 2026-11-03: the new-book template
 

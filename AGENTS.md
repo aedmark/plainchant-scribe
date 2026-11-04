@@ -132,7 +132,7 @@ Things an agent must not change without explicit permission. Every rule includes
 ## Run and verify
 
 - Setup: no npm install is needed for tests; the Rust toolchain is needed only for desktop builds.
-- Run in the browser: `python3 -m http.server 8080`, then open `http://localhost:8080/app.html`. Run the desktop app: `npm run tauri:dev`.
+- Run in the browser: `python3 -m http.server 8081`, then open `http://localhost:8081/app.html`. Port 8081, not Plainchant Web's 8080: one origin would share one service worker scope and one storage quota between the two apps (D-013). Run the desktop app: `npm run tauri:dev`.
 - EPUBCheck (optional, needs Java): unzip a release from `w3c/epubcheck` into the ignored `.tools/` folder and `npm test` runs it as the oracle; without it the suite prints "not run" ([docs/TESTING.md](docs/TESTING.md)).
 - Fast checks: `npm test`, `python3 tools/check_docs.py`, and `python3 tools/manual.py check docs/plainchant-scribe.manual.json`.
 - Rebuild the manual: `python3 tools/manual.py build docs/plainchant-scribe.manual.json --output docs/manual.html`.

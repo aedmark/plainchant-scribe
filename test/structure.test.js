@@ -303,6 +303,36 @@ test('structure: the product is named Plainchant Scribe everywhere the app, its 
     assert.includes(readRoot('src/app/persistence.js'), "'plainchant_scribe_emergency'");
 });
 
+test('offline: the service worker touches only Scribe\'s own caches, so an app on the same origin keeps its cache', () => {
+    // A synchronous stand-in for Promise: the harness runs tests synchronously, so every result must be ready at once.
+    const Sync = {
+        resolve: (v) => (v && typeof v.then === 'function' ? v : { then: (f) => Sync.resolve(f ? f(v) : v) }),
+        all: (list) => { const out = []; list.forEach((p, i) => Sync.resolve(p).then((v) => { out[i] = v; })); return Sync.resolve(out); }
+    };
+    const handlers = {};
+    const store = { 'plainchant-scribe-v0': {}, 'plainchant-scribe-v1': {}, 'plainchant-web-v1': { 'app.html': 'web' }, 'other-app': {} };
+    const opened = [];
+    const caches = {
+        keys: () => Sync.resolve(Object.keys(store)),
+        delete: (k) => { delete store[k]; return Sync.resolve(true); },
+        open: (k) => { opened.push(k); store[k] = store[k] || {}; return Sync.resolve({ match: () => Sync.resolve(undefined), addAll: () => Sync.resolve() }); },
+        match: () => { throw new Error('caches.match searches every app\'s cache on the origin'); }
+    };
+    const self = { addEventListener: (type, fn) => { handlers[type] = fn; }, skipWaiting: () => {}, clients: { claim: () => Sync.resolve() } };
+    vm.runInNewContext(readRoot('sw.js'), { self: self, caches: caches, fetch: () => Sync.resolve('network'), Promise: Sync });
+    handlers.activate({ waitUntil: () => {} });
+    assert.deepEqual(Object.keys(store).sort(), ['other-app', 'plainchant-scribe-v1', 'plainchant-web-v1'], 'only an old Scribe cache is deleted');
+    let answer;
+    handlers.fetch({ request: { method: 'GET', url: 'app.html' }, respondWith: (p) => { p.then((v) => { answer = v; }); } });
+    assert.equal(answer, 'network', 'a miss in Scribe\'s cache goes to the network, not to another app\'s cache');
+    assert.deepEqual(opened, ['plainchant-scribe-v1']);
+});
+
+test('offline: the dev server port is not Plainchant Web\'s 8080, so the two apps never share an origin', () => {
+    const serve = JSON.parse(readRoot('package.json')).scripts.serve;
+    assert.ok(/http\.server 8081$/.test(serve), serve);
+});
+
 test('structure: the features Scribe does not use are gone: flex/grid handles, breakpoints, pseudo-state bar, Insert palette, Live JS, Console (P0-04)', () => {
     ['src/layout.js', 'src/app/stage-layout.js', 'src/app/layout-ui.js', 'src/app/css-media.js', 'src/app/css-states.js', 'src/app/insert-drag.js', 'src/app/console-ui.js', 'src/app/stage-live.js'].forEach((f) => assert.ok(!fs.existsSync(path.join(root, f)), f + ' should have been removed'));
     ['id="cssLayoutGroup"', 'id="cssMediaBar"', 'id="cssStateBar"', 'id="insertMenuBtn"', 'id="ctxInsertTrigger"', 'id="modeLiveBtn"', 'id="consoleList"'].forEach((needle) => assert.excludes(html, needle));

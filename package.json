@@ -5,7 +5,7 @@
   "main": "index.html",
   "scripts": {
     "test": "node test/run.js",
-    "serve": "python3 -m http.server 8080",
+    "serve": "python3 -m http.server 8081",
     "tauri:dev": "cargo run --manifest-path src-tauri/Cargo.toml",
     "tauri:build": "cargo build --release --manifest-path src-tauri/Cargo.toml"
   },

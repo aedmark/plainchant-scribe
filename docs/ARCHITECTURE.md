@@ -66,7 +66,7 @@ Inherited structural invariants (global scope, line limits, offline cache list) 
 
 ## State and failure modes
 
-- **State:** working copy in IndexedDB (files, assets, tree), settings in `localStorage`, folder links per project (inherited). The OPF and nav are files like any other, so undo and versions cover them.
+- **State:** working copy in IndexedDB (files, assets, tree), settings in `localStorage`, folder links per project (inherited). Every store has a Scribe name (`plainchant_scribe`, `plainchant_scribe_settings`, `plainchant_scribe_emergency`, `plainchant-scribe-library`, `plainchant-scribe-v1`), the service worker touches only `plainchant-scribe-` caches, and the dev server uses port 8081, so nothing is shared with Plainchant Web (D-013). The OPF and nav are files like any other, so undo and versions cover them.
 - **A hand-edited OPF that is not well-formed:** the Book panel is disabled with the parser's message and offset; the code editor still works.
 - **An imported book with features Scribe does not support (fixed layout, scripts, media overlays):** the files are kept and exported unchanged; the Problems tab says what is not previewed.
 - **EPUBCheck missing:** only the built-in rules run, and the Problems tab says so (D-005).
