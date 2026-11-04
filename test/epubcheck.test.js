@@ -126,6 +126,16 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
+    test('epubcheck: a book edited through the Book panel passes EPUBCheck with no messages (P3-01)', () => {
+        let files = ExampleBook.create().files;
+        const ops = [].concat(BookMeta.setField('title', 'Ink & Ash'), BookMeta.setField('publisher', 'Small Press'), BookMeta.setField('date', '2026-11-04'),
+            BookMeta.setField('description', 'A short guide.'), BookMeta.setField('rights', 'CC BY 4.0'), BookMeta.setIsbn('978-0-306-40615-7'),
+            BookMeta.setCreator(0, 'role', 'aut'), BookMeta.addCreator('Ada Penrose', 'edt', 'Penrose, Ada'), BookMeta.touchModified(Date.UTC(2026, 10, 4)));
+        ops.forEach((op) => { files = Object.assign({}, files, { 'OEBPS/content.opf': XmlAst.applyEdits(files['OEBPS/content.opf'], op(Book.read(files).model)) }); });
+        const r = epubcheck(oracle.jar, files);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+    });
+
     test('epubcheck: a template with the modified date removed fails, so the oracle is really checking', () => {
         const files = BookTemplate.create().files;
         files['OEBPS/content.opf'] = files['OEBPS/content.opf'].replace(/ *<meta property="dcterms:modified">[^<]*<\/meta>\n/, '');

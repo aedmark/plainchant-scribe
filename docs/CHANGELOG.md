@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ### Added
 
+- **Book panel**: a Book tab in the Inspector edits the title, language, date, publisher, rights, description, ISBN, and creators with roles and sort names, writing only the lines of `content.opf` they change. The identifier is shown read-only, and Update now stamps the modified date (`P3-01`, `D-025`).
 - **Editing on the Stage for books**: click selects an element in a chapter, double-click edits its text, and dragging, the badge's buttons, the Inspector, and undo work as they do for web pages. Ctrl/Cmd+Click follows a link. An edit that would make a chapter invalid XHTML is refused with a notice (`P2-06`, `D-024`).
 - **Moving through a book on the Stage**: « and » step between chapters, paging past the end of a chapter goes on to the next, Contents opens the table of contents over the Stage, and links between chapters work. Links that leave the book show their address instead of opening (`P2-05`, `D-023`).
 - **Device presets for books**: Fit, Phone, E-ink 6", and Tablet on the Stage bar show the chapter at that screen's size, scaled to fit, with a rotate button for landscape; E-ink is greyscale with animation off (`P2-04`, `D-022`).

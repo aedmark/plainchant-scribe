@@ -994,6 +994,18 @@ body.shaded #editor {
 
 .modal-content.wide { max-width: 720px; }
 .ask-content { max-width: 440px; }
+/* Book panel (P3-01) */
+.insp-field textarea { padding: 0.3rem 0.45rem; background: var(--bg-sunken); color: var(--text-strong); border: 1px solid var(--border-mid); border-radius: 0.25rem; font: inherit; font-size: 0.78rem; resize: vertical; }
+.book-err { font-style: normal; color: var(--danger-soft-text); font-size: 0.72rem; }
+.book-err[hidden] { display: none; }
+.book-readonly { display: flex; align-items: center; gap: 0.4rem; min-width: 0; }
+.book-readonly code { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-strong); font-size: 0.74rem; }
+.book-sub { margin: 0.9rem 0 0.4rem; font-size: 0.78rem; color: var(--text-strong); }
+.book-creators { display: flex; flex-direction: column; gap: 0.4rem; }
+.book-creator { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 2fr) auto; gap: 0.4rem 0.5rem; align-items: end; }
+.book-creator .insp-field { min-width: 0; }
+.book-creator input, .book-creator select { width: 100%; min-width: 0; box-sizing: border-box; }
+.book-creator-new { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--border-mid); }
 .ask-hint { display: block; margin-bottom: 0.5rem; color: var(--text-void-muted); font-size: 0.85rem; }
 .ask-input { width: 100%; box-sizing: border-box; padding: 0.5rem 0.6rem; font: inherit; }
 .ask-error { margin: 0.5rem 0 0; color: var(--danger-soft-text); font-size: 0.85rem; }

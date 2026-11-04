@@ -181,6 +181,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** HtmlAst stays the addressing layer for chapters, so its quirks (D-011's reason for XmlAst) are caught by the guard rather than avoided. Inserts that write HTML-only void tags are refused for chapters until they write XHTML.
 **Review trigger:** The guard refuses edits authors expect to work, or a chapter feature needs XmlAst nodes in the Inspector.
 
+## D-025 The Book panel  (2026-11-04, status: accepted)
+**Context:** `P3-01` needed choices about where the Book panel lives, when its changes reach `content.opf` and what happens to `dcterms:modified`, how much the creators list does, and how the identifier is handled. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. A Book tab in the Inspector, shown only for books. 2. Each field is spliced into `content.opf` when you leave it or press Enter, one undo step per change; several ops for one change (a creator with its role and sort name) are applied to fresh reads and committed once. `dcterms:modified` is shown read-only with Update now, and Export (`P5-01`) will stamp it, as D-015 planned. 3. Creators have a name, a role (a MARC relator code as a `role` refinement with `scheme="marc:relators"`, EPUB 3.3 §5.5.3.2.3), and an optional sort name (`file-as`); they are added and removed, in the order added. Contributors and reordering are `P3-06`. 4. The unique identifier is read-only with a Copy button; a separate ISBN field adds, changes, or removes an extra `dc:identifier` holding `urn:isbn:` and a checked ISBN-10 or ISBN-13. Dates are checked against W3CDTF (EPUB 3.3 §5.5.3.2.2), languages as well-formed tags, and the title must not be empty; emptying an optional field removes its element.
+**Alternatives:** A Book details dialog from the File menu (rejected: not visible while editing); stamping `dcterms:modified` on every panel change (rejected: it would reflect only metadata edits, not chapter edits); a form with one Save (rejected: the Inspector applies as you go); names only, or reordering now (rejected: roles and sort names are what stores read; reordering needs a metadata move op); an editable unique identifier (rejected: readers would treat the book as a new one).
+**Consequences:** `dcterms:modified` can be older than the last edit until Export or Update now. The first creator stays first: changing who is listed first means removing and adding.
+**Review trigger:** Authors need to reorder creators, or a store needs another identifier scheme.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

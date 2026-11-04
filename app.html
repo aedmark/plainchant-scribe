@@ -242,6 +242,7 @@
                 <button type="button" class="insp-tab" data-insp="css" aria-selected="false">CSS Designer</button>
                 <button type="button" class="insp-tab" data-insp="parts" aria-selected="false">Parts <span id="partsCountBadge" class="console-badge" hidden>0</span></button>
                 <button type="button" class="insp-tab" data-insp="problems" aria-selected="false">Problems <span id="problemsCountBadge" class="console-badge" hidden>0</span></button>
+                <button type="button" class="insp-tab" data-insp="book" aria-selected="false" id="bookTabBtn" hidden>Book</button>
             </div>
             <div class="inspector-selection-badge">
                 <span id="inspSelectedTag">No element selected</span>
@@ -373,6 +374,31 @@
         <div id="inspPartsPane" class="inspector-body" hidden>
             <p class="parts-help">Shared parts are marked regions (<code>&lt;!-- pc:part src="parts/header.html" --&gt;</code>) kept in step with one part file. Editing the part file updates every page.</p>
             <div id="partsList" class="parts-list"></div>
+        </div>
+        <div id="inspBookPane" class="inspector-body" hidden>
+            <p id="bookUnreadable" class="parts-help" hidden></p>
+            <form id="bookForm" class="book-form" novalidate>
+                <div class="insp-grid">
+                    <label class="insp-field insp-wide"><span>Title</span><input type="text" data-book-field="title" autocomplete="off" aria-describedby="bookErr-title"><em class="book-err" id="bookErr-title" hidden></em></label>
+                    <label class="insp-field"><span>Language</span><input type="text" data-book-field="language" autocomplete="off" placeholder="en" aria-describedby="bookErr-language"><em class="book-err" id="bookErr-language" hidden></em></label>
+                    <label class="insp-field"><span>Date published</span><input type="text" data-book-field="date" autocomplete="off" placeholder="2026-11-04" aria-describedby="bookErr-date"><em class="book-err" id="bookErr-date" hidden></em></label>
+                    <label class="insp-field insp-wide"><span>Publisher</span><input type="text" data-book-field="publisher" autocomplete="off"></label>
+                    <label class="insp-field insp-wide"><span>Rights</span><input type="text" data-book-field="rights" autocomplete="off" placeholder="&copy; 2026 Your Name"></label>
+                    <label class="insp-field insp-wide"><span>Description</span><textarea data-book-field="description" rows="3"></textarea></label>
+                    <label class="insp-field"><span>ISBN</span><input type="text" data-book-field="isbn" autocomplete="off" placeholder="978-&hellip;" aria-describedby="bookErr-isbn"><em class="book-err" id="bookErr-isbn" hidden></em></label>
+                    <div class="insp-field insp-wide"><span>Identifier</span><div class="book-readonly"><code id="bookIdentifier"></code><button type="button" class="mini" id="bookCopyId">Copy</button></div></div>
+                    <div class="insp-field insp-wide"><span>Last modified</span><div class="book-readonly"><code id="bookModified"></code><button type="button" class="mini" id="bookTouch" title="Set dcterms:modified to now. Export will also do this.">Update now</button></div></div>
+                </div>
+                <h4 class="book-sub">Creators</h4>
+                <div id="bookCreators" class="book-creators"></div>
+                <div class="book-creator book-creator-new">
+                    <label class="insp-field"><span>Name</span><input type="text" id="bookNewName" autocomplete="off" placeholder="Ada Penrose"></label>
+                    <label class="insp-field"><span>Role</span><select id="bookNewRole"></select></label>
+                    <label class="insp-field"><span>Sort name</span><input type="text" id="bookNewFileAs" autocomplete="off" placeholder="Penrose, Ada"></label>
+                    <button type="button" class="mini" id="bookAddCreator">Add</button>
+                </div>
+                <em class="book-err" id="bookErr-creator" hidden></em>
+            </form>
         </div>
         <div id="inspProblemsPane" class="inspector-body" hidden>
             <div id="problemsFilterBar" class="css-state-bar" role="group" aria-label="Kinds of problems to show">
@@ -692,6 +718,7 @@
 <script src="src/nav.js"></script>
 <script src="src/book-stage.js"></script>
 <script src="src/example-book.js"></script>
+<script src="src/book-meta.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>
 <script src="src/app/layout.js"></script>
@@ -713,6 +740,7 @@
 <script src="src/app/reader-ui.js"></script>
 <script src="src/app/reader-device.js"></script>
 <script src="src/app/stage-nav.js"></script>
+<script src="src/app/book-ui.js"></script>
 <script src="src/app/inspector-ui.js"></script>
 <script src="src/app/parts-ui.js"></script>
 <script src="src/app/problems-ui.js"></script>

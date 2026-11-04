@@ -75,6 +75,8 @@ function switchInspectorTab(tab) {
     if (tab === 'parts') refreshPartsUi();
     inspProblemsPane.hidden = tab !== 'problems';
     if (tab === 'problems') runProblemsCheck();
+    inspBookPane.hidden = tab !== 'book';
+    if (tab === 'book') refreshBookPanel(true);
 }
 
 function defaultSelectorFor(node) {

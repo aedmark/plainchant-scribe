@@ -408,6 +408,7 @@ function render(typed) {
     refreshInspector();
     if (typeof refreshPartsUi === 'function') refreshPartsUi();
     if (typeof scheduleProblemsCheck === 'function') scheduleProblemsCheck();
+    if (typeof refreshBookPanel === 'function') refreshBookPanel(false);
     if (typeof schedulePreviewPush === 'function') schedulePreviewPush();
 }
 

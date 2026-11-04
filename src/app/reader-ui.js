@@ -135,6 +135,7 @@ function syncReaderUi() {
     if (!book) setReaderPanel(false);
     if (typeof layoutDevice === 'function') layoutDevice();
     if (typeof syncChapterNav === 'function') syncChapterNav();
+    if (typeof syncBookTab === 'function') syncBookTab();
     showPageNav();
 }
 
