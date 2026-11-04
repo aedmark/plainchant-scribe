@@ -228,6 +228,16 @@
                 }
             });
         });
+        // The Studio's own Stage script (the Design bridge) goes last in <body>, after every book script is gone, in a
+        // CDATA section so the XML parser leaves it alone.
+        const script = options && options.script;
+        if (script) {
+            const body = XmlAst.elementChildren(ast.documentElement).find((el) => el.local === 'body' && el.ns === XHTML);
+            if (body && !body.selfClosing) {
+                const name = body.prefix ? body.prefix + ':script' : 'script';
+                edits.push({ start: body.closeStart, end: body.closeStart, text: '<' + name + ' id="scribe-bridge">//<![CDATA[\n' + String(script).split(']]>').join(']]]]><![CDATA[>') + '\n//]]></' + name + '>' });
+            }
+        }
         const extra = options && options.css;
         if (extra) {
             const root = ast.documentElement;

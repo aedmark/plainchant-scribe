@@ -103,7 +103,7 @@ function turnPage(dir) {
 }
 
 function pageKey(e) {
-    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.altKey || e.ctrlKey || e.metaKey || (e.target && e.target.isContentEditable)) return;
     const dir = { ArrowLeft: -1, PageUp: -1, ArrowRight: 1, PageDown: 1 }[e.key];
     if (!dir || !pagedDoc()) return;
     e.preventDefault();

@@ -174,6 +174,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** Reading through a book opens each chapter in the editor and its tab strip. The nav document is read again each time the contents open, so edits to it show at once.
 **Review trigger:** Authors want to read ahead on the Stage without leaving the file they are editing.
 
+## D-024 Stage editing for chapters reuses the Design bridge, with every edit checked as XML  (2026-11-04, status: accepted)
+**Context:** `P2-06` needed choices about how Stage editing works for XHTML chapters, how links are followed once clicks select, and what a paste into an inline edit does. The agent checked that HtmlAst's stamps and edits keep the example chapters well-formed, and found that a few inherited inserts write HTML-only tags. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. Chapters reuse the inherited bridge and HtmlAst edits. The Stage copy is stamped with `data-pc-id` and carries the bridge script; the Inspector, outline, breadcrumbs, and undo work as for web pages. 2. `applyHtmlTransform` parses every chapter edit as XML first, and refuses one that would make a well-formed chapter ill-formed, with a notice naming the first error. A chapter that is already broken is not guarded: the code editor is where it gets fixed. 3. Clicks work as on web pages: click selects, double-click edits text, and Ctrl/Cmd+Click or the badge's Follow follows a link, which for books goes through the book's navigation. The page and chapter controls and the arrow and Page keys still turn pages, except while text is being edited. 4. A paste into an inline edit is plain text, as before. The bridge is the only script in the Stage copy: book scripts are removed first, and it is written last in `<body>` inside CDATA.
+**Alternatives:** New select and edit paths on XmlAst for chapters (rejected: the Inspector, outline, breadcrumbs, and undo all speak HtmlAst ids); a Read / Edit toggle (rejected: one more mode, while the web-page behaviour already has Ctrl/Cmd+Click); cleaned XHTML on paste (rejected for now: inline editing is for elements with no child elements).
+**Consequences:** HtmlAst stays the addressing layer for chapters, so its quirks (D-011's reason for XmlAst) are caught by the guard rather than avoided. Inserts that write HTML-only void tags are refused for chapters until they write XHTML.
+**Review trigger:** The guard refuses edits authors expect to work, or a chapter feature needs XmlAst nodes in the Inspector.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

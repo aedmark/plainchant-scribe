@@ -5,6 +5,7 @@ function projectLinkTarget(rawHref) {
 }
 
 function followProjectLink(rawHref) {
+    if (isBookProject()) { followBookLink(rawHref); return; }
     const target = projectLinkTarget(rawHref);
     if (target) {
         openFileInEditor(target);

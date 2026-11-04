@@ -1,5 +1,5 @@
 // The Reading Stage for books (P2-01, D-018). A chapter is loaded as application/xhtml+xml from a Blob URL, so the
-// browser parses it as a reading system does. Stage selection and inline editing stay off for chapters until P2-06;
+// browser parses it as a reading system does. The Design bridge runs in the copy for selection and editing (P2-06);
 // links never navigate the frame: stage-nav.js follows them (P2-05).
 
 let stageBookUrl = null;
@@ -52,7 +52,12 @@ function drawBookStage() {
     rememberBookScroll();
     const path = activeHtmlFile;
     syncReaderUi();
-    const res = BookStage.assemble(projectFiles.entries, path, projectAssetUrls, { css: BookStage.readerCss(readerPrefs()) });
+    // Stage editing (P2-06, D-024): the copy carries HtmlAst's data-pc-id stamps and the Design bridge, as web pages do.
+    const stamped = Object.assign({}, projectFiles.entries, { [path]: HtmlAst.stamp(projectFiles.entries[path], currentHtmlAst) });
+    const res = BookStage.assemble(stamped, path, projectAssetUrls, {
+        css: BookStage.readerCss(readerPrefs()) + '\n' + BRIDGE_CSS,
+        script: buildBridgeScript(selectedPcId)
+    });
     const old = stageBookUrl;
     if (!res.ok) {
         clearBookStage();
@@ -75,12 +80,17 @@ stageFrame.addEventListener('load', () => {
     if (!doc) return;
     onBookStageLoad(doc);
     if (stageBookScroll.y) stageFrame.contentWindow.scrollTo(0, stageBookScroll.y);
-    // Links go through the Stage's own navigation (P2-05): in-chapter targets turn to their page, other chapters
-    // open in the editor and on the Stage, and links that leave the book are shown, not opened.
-    doc.addEventListener('click', (e) => {
-        const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
-        if (!a) return;
-        e.preventDefault();
-        followBookLink(a.getAttribute('href') || '');
-    }, true);
+    // Clicks belong to the Design bridge: click selects, double-click edits text, Ctrl/Cmd+Click follows a link
+    // through followProjectLink, which hands books to followBookLink (D-024).
 });
+
+// Every HtmlAst edit to a chapter is parsed as XML first: one that would make a well-formed chapter ill-formed (an
+// HTML-only snippet such as <img ...>) is refused, so the Stage and Inspector never break a chapter (D-024).
+function bookEditRefused(nextHtml) {
+    if (!isBookProject() || !/\.xhtml?$/i.test(activeHtmlFile)) return false;
+    const after = XmlAst.parse(nextHtml);
+    if (after.wellFormed || !XmlAst.parse(projectFiles.html).wellFormed) return false;
+    const e = after.errors[0];
+    showNotice('Not changed: that edit would make the chapter invalid XHTML (line ' + (e.line + 1) + ': ' + e.message + ').', true);
+    return true;
+}

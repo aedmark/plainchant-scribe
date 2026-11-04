@@ -326,6 +326,7 @@ function applyHtmlTransform(newHtml, keepSelectId, options = {}) {
     ensureEntries();
     syncMirrors();
     if (newHtml === projectFiles.html) return;
+    if (bookEditRefused(newHtml)) return;
     if (options.coalesceHistory && typeof recordHistoryBurst === 'function') {
         recordHistoryBurst();
     } else if (typeof pushUndoState === 'function') {

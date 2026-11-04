@@ -216,3 +216,43 @@ test('book-stage: the contents tree comes from the nav toc, with nesting and hea
     assert.deepEqual(BookStage.contents(Object.assign({}, files, { 'OEBPS/nav.xhtml': '<broken' })), []);
     assert.deepEqual(BookStage.contents(Project.starter().entries), []);
 });
+
+test('book-stage: the Studio\'s Stage script goes last in <body>, in CDATA, while book scripts stay out (P2-06)', () => {
+    const files = bsTemplate();
+    files[BS_CH] = files[BS_CH].replace('</body>', '<script>steal()</script>\n</body>');
+    const bridge = 'var a = 1 < 2 && "]]>";';
+    const r = BookStage.assemble(files, BS_CH, {}, { script: bridge });
+    const ast = XmlAst.parse(r.xhtml);
+    assert.deepEqual(ast.errors, [], r.xhtml);
+    const scripts = XmlAst.findAll(ast, 'script');
+    assert.equal(scripts.length, 1, 'only the Studio\'s own script');
+    assert.equal(XmlAst.getAttr(scripts[0], 'id'), 'scribe-bridge');
+    assert.equal(XmlAst.textContent(scripts[0]), '//\n' + bridge + '\n//', 'the CDATA keeps the code exactly, "]]>" included');
+    const body = XmlAst.find(ast, 'body');
+    assert.equal(XmlAst.elementChildren(body).slice(-1)[0], scripts[0], 'last in the body');
+    assert.equal(r.xhtml.indexOf('steal'), -1);
+    const prefixed = '<?xml version="1.0"?>\n<h:html xmlns:h="http://www.w3.org/1999/xhtml"><h:head><h:title>T</h:title></h:head><h:body><h:p>x</h:p></h:body></h:html>';
+    assert.ok(BookStage.assemble({ [BS_CH]: prefixed }, BS_CH, {}, { script: 'x()' }).xhtml.indexOf('<h:script id="scribe-bridge">') !== -1);
+});
+
+test('book-stage: HtmlAst stamps and Stage edits keep every example chapter well-formed XHTML (P2-06, D-024)', () => {
+    const files = ExampleBook.create().files;
+    Object.keys(files).filter((p) => /\.xhtml$/.test(p)).forEach((path) => {
+        const text = files[path];
+        const ast = HtmlAst.parse(text);
+        const wf = (s, what) => assert.deepEqual(XmlAst.parse(s).errors, [], path + ' ' + what);
+        wf(HtmlAst.stamp(text, ast), 'stamped');
+        const body = ast.elements.filter((e) => ['p', 'li', 'h1', 'h2', 'blockquote', 'aside', 'a'].indexOf(e.tag) !== -1);
+        body.forEach((el) => {
+            wf(HtmlAst.setText(text, el.id, 'New < text & "quotes"'), 'setText ' + el.tag);
+            wf(HtmlAst.setAttr(text, el.id, 'class', 'a"b<c'), 'setAttr ' + el.tag);
+            const removed = HtmlAst.removeElement(text, el.id);
+            wf(typeof removed === 'string' ? removed : removed.html, 'remove ' + el.tag);
+            const dup = HtmlAst.duplicateElement(text, el.id);
+            wf(typeof dup === 'string' ? dup : dup.html, 'duplicate ' + el.tag);
+            ['up', 'down'].forEach((dir) => { const m = HtmlAst.moveElement(text, el.id, dir); if (m.moved) wf(m.html, 'move ' + dir + ' ' + el.tag); });
+        });
+        // An HTML-only void tag is what the Studio's guard refuses for chapters.
+        assert.equal(XmlAst.parse(text.replace('</h1>', '</h1><img src="a.png">')).wellFormed, false);
+    });
+});
