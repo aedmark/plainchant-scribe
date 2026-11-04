@@ -13,7 +13,7 @@ Scribe is a local web and desktop application. It opens books the user made and 
 5. **Fonts carry licences.** Embedding a font in a book redistributes it; the Studio reminds the author (`P4-03`) but cannot check the licence.
 6. **Vendored third-party code:** Prism, unmodified, tokenize only, never used for HTML output (inherited, D-001).
 7. **Send to reader (`D-009`, `P5-07`)** is the inherited opt-in preview server: off until started, an unguessable path token, read-only, plain HTTP on the local network, stopped on request or quit. Serving the exported `.epub` for download is new; it must serve only the book the user chose to share and nothing else from the working copy.
-8. **The optional EPUBCheck run** (`P5-05`) executes a local Java process on a book the user chose. It must be passed the path as an argument, never through a shell, and must show what it runs.
+8. **The optional EPUBCheck run** (`P5-05`) executes a local Java process on a book the user chose. It must be passed the path as an argument, never through a shell, and must show what it runs. The test oracle (`test/epubcheck.test.js`, D-012) already does this with `execFileSync`, on books it writes to a fresh temporary folder. The jar in `.tools/` is downloaded by hand from the `w3c/epubcheck` GitHub releases and checked against the release's SHA-256; it is never committed.
 
 ## Secrets and configuration
 

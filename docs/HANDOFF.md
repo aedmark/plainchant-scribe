@@ -14,15 +14,15 @@ Changes: [CHANGELOG.md](CHANGELOG.md). Older sessions and the Plainchant Web his
 
 ## Current state
 
-_Last updated: 2026-11-03, session 6, on `master`: `P1-01` is done (the XML parser and splicer)._
+_Last updated: 2026-11-03, session 7, on `master`: `P1-02` is done (the new-book template), and the repository is on GitHub._
 
-**Where things stand, in one paragraph:** Phase 0 is done (`P0-01` to `P0-06`), and phase 1 has its foundation: `src/xml-ast.js` (`P1-01`, D-011) parses XML 1.0 with namespaces into a tree of string offsets, reports every well-formedness error without throwing, and builds splices that change only their range. Nothing in the app uses it yet; `app.html` does not load it. The rest of the app is the inherited Design-mode HTML and CSS editor (Inspector, Explorer, Assets, Problems, Parts, folder links, send-to-reader preview) in the manuscript look (D-008). No EPUB feature exists for the user yet. Next: `P1-02` (new-book template) and `P1-03` (book model), which builds on `XmlAst`.
+**Where things stand, in one paragraph:** Phase 0 is done. Phase 1 has `src/xml-ast.js` (`P1-01`, D-011), the XML parser and splicer, and `src/book-template.js` (`P1-02`, D-012), which returns the files of a new, empty EPUB 3.3 book that passes EPUBCheck 5.4.0 with no messages. Neither module is loaded by `app.html` yet. The app is still the inherited Design-mode HTML and CSS editor in the manuscript look (D-008); no EPUB feature exists for the user yet. The repository is public at `https://github.com/aedmark/plainchant-scribe`, with `master` tracking `origin/master`. Next: `P1-03`, the book model.
 
 **Verified** (2026-11-03, Linux, Node, Python 3, Rust/Cargo; browser pane for the load check)
 
 | Suite | Result |
 | --- | --- |
-| `npm test` | **106/106** |
+| `npm test` (EPUBCheck 5.4.0 on Java 27 included) | **114/114** |
 | `cargo test --manifest-path src-tauri/Cargo.toml`, `cargo build` | **7/7**, passes |
 | `python3 tools/check_docs.py` | `0 error(s), 0 warning(s)` |
 | `python3 tools/manual.py check docs/plainchant-scribe.manual.json`, `python3 -m unittest tools/test_manual.py` | 2 sections, 5 entries; 6/6 OK |
@@ -33,12 +33,13 @@ _Last updated: 2026-11-03, session 6, on `master`: `P1-01` is done (the XML pars
 - **Removal guard** (`P0-04`): a structure test fails if a removed file, element, or identifier returns.
 - **Manuscript look** (`P0-06`, D-008): light and dark palettes, EB Garamond headings, Match system / Light / Dark in Settings; contrast and palette-parity tests. New home page (`P0-05`).
 - **Documentation schemes** (`P0-01`, D-007).
+- **New-book template** (`P1-02`, D-012): `BookTemplate.create()`; EPUBCheck runs on it in `npm test` when `.tools/` has the jar.
 - **XML parser and splicer** (`P1-01`, D-011): `XmlAst.parse` plus `applyEdits`, `setAttr`, `removeAttr`, `setText`, `insert`, `remove`; tested on the fixtures in `test/fixtures/xml/`; expat agreed on 45 verdicts.
 
 **Not verified**
 - The desktop window was not opened; the maintainer tested desktop paths by hand in Plainchant Web only.
 - EPUB rules in the plan come from memory of EPUB 3.3 (D-004), except XML conformance (§3.9) and the XHTML requirements (§6.1.2), re-read on w3.org for `P1-01`. Re-read the relevant section before each later item.
-- Nothing has run against EPUBCheck or Calibre yet (D-010).
+- Only the template has run against EPUBCheck; nothing has been opened in Calibre yet (D-010).
 
 **Gotchas for the next session**
 - Read [archive/plainchant-web-lineage.md](archive/plainchant-web-lineage.md) first: what to keep, what to drop, and the traps (cache-first service worker, 500-line limit per app script, the HTML parser being too forgiving for XML).
@@ -46,6 +47,7 @@ _Last updated: 2026-11-03, session 6, on `master`: `P1-01` is done (the XML pars
 - `.console-row`, `.console-level`, `.console-msg`, `.console-src`, `.console-badge`, and `.css-state-bar` are CSS class names the Problems and Parts tabs still use; they are named for the removed Console and state bar. Rename them when those tabs are reworked (`P5-04`).
 - `inspector-ui.js` (447 lines) and `stage.js` (461) are the largest app scripts against the 500-line limit; new Inspector or Stage behaviour needs a new file.
 - In the agent's browser pane the service worker does not register for either app (an "unknown error occurred when fetching the script" console message); this is the pane, not the app.
+- EPUBCheck lives in the git-ignored `.tools/` folder, so a fresh clone runs `npm test` without it and prints "not run"; see TESTING for the download. It validates against EPUB 3.4 rules.
 - `XmlAst` offsets are string indices, not bytes (D-011). Edits return `{ start, end, text }` lists for one parse: apply them with `XmlAst.applyEdits(ast.text, edits)` and re-parse before the next edit. Several edits from the same parse can be applied together if they do not overlap.
 - Internally declared entities stay as `&name;` in `XmlAst` values; HTML entities such as `&nbsp;` are `undeclared-entity` errors whose message gives the numeric form.
 - `tools/check_docs.py` and `tools/manual.py` are the shared schemes' own files; replace them from their source repositories instead of editing (D-007).
@@ -53,8 +55,8 @@ _Last updated: 2026-11-03, session 6, on `master`: `P1-01` is done (the XML pars
 
 ## Next steps (in order)
 
-1. `P1-02`, the new-book template. Its acceptance needs EPUBCheck (`P5-01`), so decide with the maintainer whether to check it by hand with a local EPUBCheck jar first.
-2. `P1-03`, the book model on top of `XmlAst`; it is the first feature to load `src/xml-ast.js` in `app.html` (add it to `sw.js` `APP_FILES` and the load-order test at the same time).
+1. `P1-03`, the book model (`src/book.js`) on top of `XmlAst`, tested on `BookTemplate.create()` output and the `test/fixtures/xml/` files. It is the first feature to load `src/xml-ast.js` in `app.html`: add the script to `sw.js` `APP_FILES` and the load-order test at the same time.
+2. `P1-04` (OPF edits by splicing), then `P1-05` (nav).
 
 ## Open questions for maintainers
 
@@ -65,6 +67,15 @@ _Last updated: 2026-11-03, session 6, on `master`: `P1-01` is done (the XML pars
 Newest first. Copy the template for each new session. Work done between sessions (a maintainer's commits, another
 agent) gets a short entry too, written by whoever notices it, so the log has no gaps. Past 10 entries, move the
 oldest to `docs/archive/` and leave a pointer here.
+
+### Session 7: 2026-11-03: the new-book template
+
+**Contributor:** Claude (Opus 5.5), with the maintainer
+**Goal:** Push `P1-01`; `P1-02`.
+**Done:** P1-02
+**Changed:** created the public GitHub repository and pushed `master`; new `src/book-template.js`, `test/book-template.test.js`, `test/epubcheck.test.js`; `test/run.js`; `.gitignore` (`.tools/`); `AGENTS.md`, `ROADMAP.md`, `docs/DECISIONS.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, `docs/TESTING.md`, this file. EPUBCheck 5.4.0 downloaded into `.tools/` (not committed).
+**Decisions:** D-012 (scope, layout, defaults, content, no accessibility metadata yet, EPUBCheck as a local oracle), each chosen by the maintainer.
+**Verified:** `npm test` 114/114 with EPUBCheck, 112/112 with `SCRIBE_SKIP_EPUBCHECK=1`; `check_docs.py` result in the table above.
 
 ### Session 6: 2026-11-03: the XML parser and splicer
 

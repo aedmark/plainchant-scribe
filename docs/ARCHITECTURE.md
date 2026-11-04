@@ -11,6 +11,7 @@ A book is a set of files in the Studio's working copy: `mimetype`, `META-INF/con
 | Area | Files | Source | Delivers |
 | --- | --- | --- | --- |
 | XML parsing and splicing | `src/xml-ast.js` | New (done, D-011) | `P1-01` |
+| New-book template | `src/book-template.js` | New (done, D-012) | `P1-02` |
 | Book model (OPF, manifest, spine) | `src/book.js` | New | `P1-03`, `P1-04` |
 | Nav document | `src/nav.js` | New | `P1-05`, `P3-04` |
 | XHTML checks and normalising | `src/xhtml.js` | New | `P1-06` |
@@ -40,6 +41,7 @@ Import: .epub -> Epub.read() (path and size checks) -> working-copy files
 | --- | --- | --- | --- |
 | `XmlAst.parse(text, options)` | `src/xml-ast.js` | Book, nav, XHTML checks, Stage bridge | Nodes carry string offsets into the text and namespace-resolved names; a document that is not well-formed returns every error (code, offset, line, column), a best-effort tree, and `wellFormed: false`, and never throws; the text is never modified (D-011) |
 | `XmlAst.setAttr`, `removeAttr`, `setText`, `insert`, `remove`, `applyEdits` | `src/xml-ast.js` | Book model edits (`P1-04`), nav (`P1-05`), Stage | Each returns `{ start, end, text }` splices for one parse; they refuse a document that is not well-formed or a node from another parse, escape what they write, and `insert` refuses markup that would break well-formedness |
+| `BookTemplate.create(options)` | `src/book-template.js` | New-book command (after `P1-03`), tests | Returns `{ files, dirs, paths, identifier, modified }`; `files` lists `mimetype` first; the files pass EPUBCheck with no messages (`test/epubcheck.test.js`, D-012) |
 | `Book.read(files)` | `src/book.js` | Book panel, Problems, Export | Returns metadata, manifest, spine, cover, and problems from the OPF as it is on disk |
 | `Epub.build(files)` | `src/epub.js` | Export | Output opens in EPUBCheck without errors when `Book.check()` reports none |
 | `Epub.read(bytes)` | `src/epub.js` | Import | Refuses unsafe paths, absolute paths, duplicate names, and over-limit sizes (see SECURITY) |
