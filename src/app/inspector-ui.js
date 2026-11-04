@@ -371,19 +371,14 @@ cssBgPicker.addEventListener('input', () => {
 
 const contextMenu = document.getElementById('contextMenu');
 const ctxHeaderLabel = document.getElementById('ctxHeaderLabel');
-const ctxInsertTrigger = document.getElementById('ctxInsertTrigger');
 
 function closeContextMenu() {
     if (!contextMenu || contextMenu.hidden) return;
     contextMenu.hidden = true;
-    const subWrap = contextMenu.querySelector('.ctx-has-sub');
-    if (subWrap) subWrap.classList.remove('sub-open');
-    if (ctxInsertTrigger) ctxInsertTrigger.setAttribute('aria-expanded', 'false');
 }
 
 function openContextMenuAt(clientX, clientY) {
     if (!contextMenu) return;
-    if (typeof setInsertMenuOpen === 'function') setInsertMenuOpen(false);
     const node = selectedPcId ? HtmlAst.findById(currentHtmlAst, selectedPcId) : null;
     const hasNode = Boolean(node && node.tag !== 'html' && node.tag !== 'head');
     const isMovable = Boolean(hasNode && node.tag !== 'body');
@@ -417,24 +412,7 @@ function openContextMenuAt(clientX, clientY) {
 }
 
 if (contextMenu) {
-    if (ctxInsertTrigger) {
-        ctxInsertTrigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const wrap = ctxInsertTrigger.closest('.ctx-has-sub');
-            if (!wrap) return;
-            const next = !wrap.classList.contains('sub-open');
-            wrap.classList.toggle('sub-open', next);
-            ctxInsertTrigger.setAttribute('aria-expanded', String(next));
-        });
-    }
-
     contextMenu.addEventListener('click', (e) => {
-        const ins = e.target.closest('[data-insert]');
-        if (ins && ins.dataset.insert) {
-            closeContextMenu();
-            insertSnippet(ins.dataset.insert);
-            return;
-        }
         const act = e.target.closest('[data-ctx-cmd]');
         if (!act || act.disabled) return;
         const cmd = act.dataset.ctxCmd;

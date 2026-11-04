@@ -45,7 +45,6 @@ const APP_FILES = [
     'src/app/dock-ui.js',
     'src/app/stage.js',
     'src/app/stage-live.js',
-    'src/app/insert-drag.js',
     'src/app/inspector-ui.js',
     'src/app/console-ui.js',
     'src/app/parts-ui.js',

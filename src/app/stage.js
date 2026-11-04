@@ -422,7 +422,6 @@ window.addEventListener('message', (e) => {
         selectElementById(data.id, { revealCode: true, focusEditor: false });
     } else if (data.type === 'pc-dismiss-menus') {
         if (typeof closeContextMenu === 'function') closeContextMenu();
-        if (typeof setInsertMenuOpen === 'function') setInsertMenuOpen(false);
     } else if (data.type === 'pc-contextmenu') {
         if (data.computed) setStageComputedStyle(data.computed);
         if (data.id) selectElementById(data.id, { revealCode: true, focusEditor: false });

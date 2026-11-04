@@ -459,61 +459,6 @@ body.explorer-dragging, body.explorer-dragging * { user-select: none; cursor: gr
     font-weight: 600;
 }
 
-.insert-dropdown-wrap {
-    position: relative;
-    display: inline-flex;
-}
-
-#insertMenuBtn[aria-expanded="true"] {
-    background-color: var(--btn-primary-bg);
-    color: var(--btn-primary-text);
-    font-weight: 600;
-}
-
-.insert-dropdown {
-    position: absolute;
-    top: calc(100% + 0.35rem);
-    left: 0;
-    z-index: 800;
-    min-width: 260px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.3rem;
-    padding: 0.5rem;
-    background-color: var(--bg-raised);
-    border: 1px solid var(--border-strong);
-    border-radius: 0.45rem;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
-}
-
-.ins-btn {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.4rem;
-    padding: 0.35rem 0.55rem;
-    background: var(--bg-sunken);
-    color: var(--text-void);
-    border: 1px solid var(--border-void);
-    border-radius: 0.28rem;
-    font-size: 0.75rem;
-    cursor: pointer;
-    white-space: nowrap;
-    text-align: left;
-}
-
-.ins-btn code {
-    font-family: var(--font-code);
-    font-size: 0.68rem;
-    color: var(--sh-tag);
-}
-
-.ins-btn:hover {
-    background: var(--btn-hover);
-    color: var(--text-strong);
-    border-color: var(--border-mid);
-}
-
 .editor-wrap {
     position: relative;
     flex: 1;
@@ -1087,10 +1032,6 @@ body.shaded #editor {
     white-space: nowrap;
 }
 
-.ctx-item-wrap {
-    position: relative;
-}
-
 .ctx-item {
     width: 100%;
     display: flex;
@@ -1109,10 +1050,6 @@ body.shaded #editor {
 }
 
 .ctx-item:hover:not(:disabled),
-.ctx-has-sub:hover > .ctx-item {
-    background: var(--btn-hover);
-}
-
 .ctx-item:disabled {
     opacity: 0.4;
     cursor: not-allowed;
@@ -1133,32 +1070,6 @@ body.shaded #editor {
     height: 1px;
     background: var(--border-void);
     margin: 0.2rem 0.25rem;
-}
-
-.ctx-submenu {
-    position: absolute;
-    top: -0.25rem;
-    left: calc(100% + 0.2rem);
-    min-width: 250px;
-    display: none;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.3rem;
-    padding: 0.45rem;
-    background-color: var(--bg-raised);
-    border: 1px solid var(--border-strong);
-    border-radius: 0.45rem;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
-    z-index: 1410;
-}
-
-.ctx-menu.flip-left .ctx-submenu {
-    left: auto;
-    right: calc(100% + 0.2rem);
-}
-
-.ctx-has-sub:hover > .ctx-submenu,
-.ctx-has-sub.sub-open > .ctx-submenu {
-    display: grid;
 }
 
 .notice {
@@ -1378,27 +1289,6 @@ body.shaded #editor {
 .fr-text mark { background-color: rgba(245, 158, 11, 0.55); color: inherit; border-radius: 2px; }
 .fr-more { padding: 0.2rem 0.85rem; color: var(--text-void-muted); font-style: italic; }
 .find-bar .mini:disabled { opacity: 0.45; cursor: not-allowed; }
-
-.insert-ghost {
-    position: fixed;
-    z-index: 1500;
-    max-width: 14rem;
-    padding: 0.25rem 0.55rem;
-    font: 600 0.74rem var(--font-code);
-    color: #1c1100;
-    background: #f59e0b;
-    border-radius: 0.3rem;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
-    pointer-events: none;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.insert-ghost[hidden] { display: none; }
-.insert-ghost.no-drop { color: var(--text-strong); background: var(--bg-raised); border: 1px solid var(--border-strong); }
-body.insert-dragging, body.insert-dragging * { cursor: grabbing !important; user-select: none !important; }
-.ins-btn { touch-action: none; }
 
 .css-state-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; margin-bottom: 0.55rem; }
 .css-state-btn[aria-pressed="true"] { background: var(--text-strong); color: var(--bg-void); }

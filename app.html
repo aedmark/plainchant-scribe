@@ -57,23 +57,6 @@
                     <button id="menuFindProjectBtn" type="button" class="menu-item" role="menuitem" title="Find and replace across the project"><span>Find in project&hellip;</span><kbd>Ctrl/Cmd+Shift+F</kbd></button>
                 </div>
             </div>
-            <div class="insert-dropdown-wrap">
-                <button id="insertMenuBtn" type="button" class="btn" aria-haspopup="true" aria-expanded="false" title="Insert HTML5 Element (click an item, or drag it onto the Design Stage)">Insert &#9662;</button>
-                <div id="insertMenu" class="insert-bar insert-dropdown" role="menu" aria-label="Insert HTML5 Element" hidden>
-                    <button type="button" class="ins-btn" role="menuitem" data-insert="section" title="Insert &lt;section&gt;"><span>Section</span><code>&lt;section&gt;</code></button>
-                    <button type="button" class="ins-btn" role="menuitem" data-insert="article" title="Insert &lt;article class='card'&gt;"><span>Card</span><code>&lt;article&gt;</code></button>
-                    <button type="button" class="ins-btn" role="menuitem" data-insert="flex" title="Insert Flex Row"><span>Flex Row</span><code>.flex-row</code></button>
-                    <button type="button" class="ins-btn" role="menuitem" data-insert="grid" title="Insert 3-Column Grid"><span>3-Col Grid</span><code>.grid-3</code></button>
-                    <button type="button" class="ins-btn" role="menuitem" data-insert="div" title="Insert &lt;div&gt;"><span>Container</span><code>&lt;div&gt;</code></button>
-                    <button type="button" class="ins-btn" role="menuitem" data-insert="heading" title="Insert &lt;h2&gt;"><span>Heading</span><code>&lt;h2&gt;</code></button>
-                    <button type="button" class="ins-btn" role="menuitem" data-insert="paragraph" title="Insert &lt;p&gt;"><span>Paragraph</span><code>&lt;p&gt;</code></button>
-                    <button type="button" class="ins-btn" role="menuitem" data-insert="button" title="Insert &lt;button&gt;"><span>Button</span><code>&lt;button&gt;</code></button>
-                    <button type="button" class="ins-btn" role="menuitem" data-insert="link" title="Insert &lt;a&gt;"><span>Link</span><code>&lt;a&gt;</code></button>
-                    <button type="button" class="ins-btn" role="menuitem" data-insert="image" title="Insert &lt;img&gt;"><span>Image</span><code>&lt;img&gt;</code></button>
-                    <button type="button" class="ins-btn" role="menuitem" data-insert="list" title="Insert &lt;ul&gt;"><span>List</span><code>&lt;ul&gt;</code></button>
-                    <button type="button" class="ins-btn" role="menuitem" data-insert="form" title="Insert &lt;form&gt;"><span>Form</span><code>&lt;form&gt;</code></button>
-                </div>
-            </div>
             <button id="assetsBtn" type="button" class="btn" title="Browse and add the project's images">Assets</button>
             <button id="saveBtn" type="button" class="btn" title="Save project to Studio workspace (Ctrl/Cmd+S)">Save</button>
             <button id="settingsBtn" type="button" class="btn help-btn" aria-label="Settings" title="Settings">
@@ -604,29 +587,8 @@
     <button type="button" class="ctx-item" role="menuitemradio" aria-checked="false" data-dock="float"><span>Floating window</span></button>
 </div>
 
-<div id="contextMenu" class="ctx-menu" role="menu" aria-label="Element and Insert Menu" hidden>
+<div id="contextMenu" class="ctx-menu" role="menu" aria-label="Element Menu" hidden>
     <div id="ctxHeaderLabel" class="ctx-header">&lt;body&gt;</div>
-    <div class="ctx-item-wrap ctx-has-sub">
-        <button type="button" id="ctxInsertTrigger" class="ctx-item" role="menuitem" aria-haspopup="true" aria-expanded="false">
-            <span>Insert Element</span>
-            <span class="ctx-arrow">&#9656;</span>
-        </button>
-        <div id="ctxInsertSubmenu" class="ctx-submenu" role="menu" aria-label="Insert HTML5 Element">
-            <button type="button" class="ins-btn" role="menuitem" data-insert="section"><span>Section</span><code>&lt;section&gt;</code></button>
-            <button type="button" class="ins-btn" role="menuitem" data-insert="article"><span>Card</span><code>&lt;article&gt;</code></button>
-            <button type="button" class="ins-btn" role="menuitem" data-insert="flex"><span>Flex Row</span><code>.flex-row</code></button>
-            <button type="button" class="ins-btn" role="menuitem" data-insert="grid"><span>3-Col Grid</span><code>.grid-3</code></button>
-            <button type="button" class="ins-btn" role="menuitem" data-insert="div"><span>Container</span><code>&lt;div&gt;</code></button>
-            <button type="button" class="ins-btn" role="menuitem" data-insert="heading"><span>Heading</span><code>&lt;h2&gt;</code></button>
-            <button type="button" class="ins-btn" role="menuitem" data-insert="paragraph"><span>Paragraph</span><code>&lt;p&gt;</code></button>
-            <button type="button" class="ins-btn" role="menuitem" data-insert="button"><span>Button</span><code>&lt;button&gt;</code></button>
-            <button type="button" class="ins-btn" role="menuitem" data-insert="link"><span>Link</span><code>&lt;a&gt;</code></button>
-            <button type="button" class="ins-btn" role="menuitem" data-insert="image"><span>Image</span><code>&lt;img&gt;</code></button>
-            <button type="button" class="ins-btn" role="menuitem" data-insert="list"><span>List</span><code>&lt;ul&gt;</code></button>
-            <button type="button" class="ins-btn" role="menuitem" data-insert="form"><span>Form</span><code>&lt;form&gt;</code></button>
-        </div>
-    </div>
-    <div class="ctx-sep" role="separator"></div>
     <button type="button" class="ctx-item" role="menuitem" data-ctx-cmd="move-up"><span>Move Up</span><kbd>Alt+&uarr;</kbd></button>
     <button type="button" class="ctx-item" role="menuitem" data-ctx-cmd="move-down"><span>Move Down</span><kbd>Alt+&darr;</kbd></button>
     <button type="button" class="ctx-item" role="menuitem" data-ctx-cmd="duplicate"><span>Duplicate</span><code>&#10697;</code></button>
@@ -681,7 +643,6 @@
 <script src="src/app/dock-ui.js"></script>
 <script src="src/app/stage.js"></script>
 <script src="src/app/stage-live.js"></script>
-<script src="src/app/insert-drag.js"></script>
 <script src="src/app/inspector-ui.js"></script>
 <script src="src/app/console-ui.js"></script>
 <script src="src/app/parts-ui.js"></script>

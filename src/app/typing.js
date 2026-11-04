@@ -3,8 +3,6 @@ let tabReleased = false;
 let shiftDown = false;
 const elementBar = document.querySelector('.element-bar');
 const breadcrumbBar = document.getElementById('breadcrumbBar');
-const insertBar = document.querySelector('.insert-bar');
-const insertMenuBtn = document.getElementById('insertMenuBtn');
 const suggestBox = elementBar.querySelector('.suggestions');
 const suggestSay = document.getElementById('suggestSay');
 const undoBtn = document.getElementById('undoBtn');
@@ -232,15 +230,6 @@ function updateBreadcrumbs() {
     });
 }
 
-function insertSnippet(kind) {
-    const snippet = Editing.SNIPPETS[kind];
-    if (!snippet) return;
-    if (activeTab !== 'html') switchFileTab('html');
-    const nextHtml = HtmlAst.insertElement(projectFiles.html, selectedPcId, 'inside-end', snippet);
-    applyHtmlTransform(nextHtml, selectedPcId);
-    showNotice('Inserted <' + kind + '>');
-}
-
 function suggestionKey(hit) {
     return activeTab + ':' + caretLine() + ':' + editor.value.slice(hit.from, hit.to);
 }
@@ -303,39 +292,6 @@ function scheduleSync() {
     syncQueued = true;
     requestAnimationFrame(syncElementState);
 }
-
-function setInsertMenuOpen(open) {
-    if (!insertBar || !insertMenuBtn) return;
-    insertBar.hidden = !open;
-    insertMenuBtn.setAttribute('aria-expanded', String(Boolean(open)));
-}
-
-if (insertMenuBtn) {
-    insertMenuBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        setInsertMenuOpen(insertBar.hidden);
-    });
-}
-
-insertBar.addEventListener('click', (e) => {
-    const btn = e.target.closest('.ins-btn');
-    if (btn && btn.dataset.insert) {
-        setInsertMenuOpen(false);
-        insertSnippet(btn.dataset.insert);
-    }
-});
-
-document.addEventListener('click', (e) => {
-    if (insertBar && !insertBar.hidden && !e.target.closest('.insert-dropdown-wrap')) {
-        setInsertMenuOpen(false);
-    }
-});
-
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && insertBar && !insertBar.hidden) {
-        setInsertMenuOpen(false);
-    }
-});
 
 suggestBox.addEventListener('mousedown', (e) => e.preventDefault());
 suggestBox.addEventListener('click', (e) => {

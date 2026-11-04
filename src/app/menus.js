@@ -18,7 +18,6 @@ appMenus.forEach((menu) => {
         e.stopPropagation();
         const open = menu.panel.hidden;
         closeAppMenus(menu);
-        if (typeof setInsertMenuOpen === 'function') setInsertMenuOpen(false);
         setAppMenu(menu, open);
         if (open) menu.panel.querySelector('.menu-item:not(:disabled)').focus({ preventScroll: true });
     });
@@ -41,7 +40,6 @@ appMenus.forEach((menu) => {
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.menu-wrap')) closeAppMenus();
 });
-document.getElementById('insertMenuBtn').addEventListener('click', () => closeAppMenus());
 
 document.getElementById('menuFindBtn').addEventListener('click', () => openFind(false));
 document.getElementById('menuReplaceBtn').addEventListener('click', () => openFind(true));

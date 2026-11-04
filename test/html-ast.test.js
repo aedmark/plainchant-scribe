@@ -141,20 +141,3 @@ test('html-ast: insertElementAt reports where the snippet landed and which eleme
     assert.equal(noBody.html, '<p>x</p>');
     assert.equal(noBody.offset, 0);
 });
-
-test('dom-outline: dropPlacement chooses before, after, or inside from the pointer position', () => {
-    const div = { tag: 'div', selfClosing: false };
-    const p = { tag: 'p', selfClosing: false };
-    const img = { tag: 'img', selfClosing: true };
-    assert.deepEqual(DomOutline.dropPlacement(div, 0.1), { zone: 'before', position: 'before' });
-    assert.deepEqual(DomOutline.dropPlacement(div, 0.5), { zone: 'inside', position: 'inside-end' });
-    assert.deepEqual(DomOutline.dropPlacement(div, 0.9), { zone: 'after', position: 'after' });
-    assert.deepEqual(DomOutline.dropPlacement(p, 0.5).position, 'after', 'a paragraph cannot hold blocks, so it splits into before and after');
-    assert.deepEqual(DomOutline.dropPlacement(p, 0.49).position, 'before');
-    assert.deepEqual(DomOutline.dropPlacement(img, 0.2).position, 'before');
-    assert.deepEqual(DomOutline.dropPlacement({ tag: 'ul', selfClosing: false }, 0.5).position, 'after', 'lists accept only items');
-    assert.deepEqual(DomOutline.dropPlacement({ tag: 'body' }, 0.1), { zone: 'inside', position: 'inside-end' });
-    assert.deepEqual(DomOutline.dropPlacement(null, 0.5), { zone: 'inside', position: 'inside-end' });
-    assert.equal(DomOutline.dropPlacement(div, -3).zone, 'before');
-    assert.equal(DomOutline.dropPlacement(div, 7).zone, 'after');
-});

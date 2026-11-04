@@ -97,21 +97,7 @@
         );
     }
 
-    const DROP_CONTAINERS = { div: true, section: true, article: true, main: true, header: true, footer: true, nav: true, aside: true, form: true, li: true, blockquote: true, figure: true, fieldset: true, details: true };
-
-    function dropPlacement(node, ratio) {
-        if (!node || node.tag === 'body' || node.tag === 'html' || node.tag === 'head') return { zone: 'inside', position: 'inside-end' };
-        const r = Math.max(0, Math.min(1, Number(ratio)));
-        if (!node.selfClosing && DROP_CONTAINERS[node.tag]) {
-            if (r < 0.25) return { zone: 'before', position: 'before' };
-            if (r > 0.75) return { zone: 'after', position: 'after' };
-            return { zone: 'inside', position: 'inside-end' };
-        }
-        return r < 0.5 ? { zone: 'before', position: 'before' } : { zone: 'after', position: 'after' };
-    }
-
     return {
-        dropPlacement: dropPlacement,
         formatLabel: formatLabel,
         breadcrumbs: breadcrumbs,
         build: build,

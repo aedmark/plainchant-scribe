@@ -4,22 +4,6 @@
 })(typeof self !== 'undefined' ? self : this, function (HtmlAst) {
     'use strict';
 
-    const SNIPPETS = {
-        section: '<section class="section">\n  <h2>Section Heading</h2>\n  <p>Section content goes here.</p>\n</section>',
-        article: '<article class="card">\n  <h3>Card Title</h3>\n  <p>Card description text.</p>\n</article>',
-        div: '<div class="box">\n  <p>Container content</p>\n</div>',
-        flex: '<div class="flex-row" style="display: flex; gap: 1rem; align-items: center;">\n  <div>Item 1</div>\n  <div>Item 2</div>\n</div>',
-        grid: '<div class="grid-layout" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">\n  <div class="card">Column 1</div>\n  <div class="card">Column 2</div>\n  <div class="card">Column 3</div>\n</div>',
-        header: '<header class="site-header">\n  <div class="brand">Brand</div>\n  <nav class="site-nav">\n    <a href="#home">Home</a>\n    <a href="#about">About</a>\n  </nav>\n</header>',
-        heading: '<h2>New Heading</h2>',
-        paragraph: '<p>New paragraph text.</p>',
-        button: '<button type="button" class="btn-primary">Click Me</button>',
-        link: '<a href="https://example.com" class="link">Learn more</a>',
-        image: '<img src="https://placehold.co/600x360/e2e8f0/1e293b?text=Image" alt="Placeholder image" style="max-width: 100%; height: auto; border-radius: 0.5rem;">',
-        list: '<ul>\n  <li>First item</li>\n  <li>Second item</li>\n  <li>Third item</li>\n</ul>',
-        form: '<form class="contact-form" style="display: flex; flex-direction: column; gap: 0.75rem; max-width: 400px;">\n  <label>Email\n    <input type="email" placeholder="you@example.com" style="width: 100%; padding: 0.5rem;">\n  </label>\n  <button type="submit" class="btn-primary">Subscribe</button>\n</form>'
-    };
-
     function lineInfo(text, caret) {
         const before = text.slice(0, caret);
         const idx = before.split('\n').length - 1;
@@ -157,7 +141,6 @@
     }
 
     return {
-        SNIPPETS: SNIPPETS,
         lineInfo: lineInfo,
         diffEdit: diffEdit,
         enter: enter,
