@@ -73,14 +73,17 @@ stageFrame.addEventListener('load', () => {
     let doc;
     try { doc = stageFrame.contentDocument; } catch (e) { return; }
     if (!doc) return;
-    applyReaderSize(doc);
+    onBookStageLoad(doc);
     if (stageBookScroll.y) stageFrame.contentWindow.scrollTo(0, stageBookScroll.y);
     // Links inside the chapter (#note-1) still jump; links to other files would load them as a bare page.
     doc.addEventListener('click', (e) => {
         const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
         if (!a) return;
         const href = a.getAttribute('href') || '';
-        if (href.charAt(0) === '#') return;
+        if (href.charAt(0) === '#') {
+            if (turnToFragment(doc, href.slice(1))) e.preventDefault();
+            return;
+        }
         e.preventDefault();
         showNotice('Following links between chapters comes with the contents sidebar (P2-05).');
     }, true);

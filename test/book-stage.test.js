@@ -98,9 +98,9 @@ test('project: a book saves and reloads without web-page files, keeps its folder
 });
 
 test('book-stage: reader settings fall back to defaults, write forced margins and theme colours, and keep book link colours (P2-02)', () => {
-    assert.deepEqual(BookStage.readerPrefs(), { size: 100, margins: 'normal', theme: 'light' });
-    assert.deepEqual(BookStage.readerPrefs({ size: 120, margins: 'huge', theme: 'sepia' }), { size: 100, margins: 'normal', theme: 'sepia' }, 'only listed sizes and names');
-    const css = BookStage.readerCss({ size: 150, margins: 'wide', theme: 'dark' });
+    assert.deepEqual(BookStage.readerPrefs(), { size: 100, margins: 'normal', theme: 'light', mode: 'paged' });
+    assert.deepEqual(BookStage.readerPrefs({ size: 120, margins: 'huge', theme: 'sepia', mode: 'flip' }), { size: 100, margins: 'normal', theme: 'sepia', mode: 'paged' }, 'only listed sizes and names');
+    const css = BookStage.readerCss({ size: 150, margins: 'wide', theme: 'dark', mode: 'scroll' });
     assert.ok(css.indexOf('html, body { background-color: #121212 !important; color: #e0e0e0 !important; }') !== -1, css);
     assert.ok(css.indexOf('body { margin: 0 !important; padding: 1.5em 3em !important; }') !== -1);
     assert.ok(/a:link, a:visited \{ color: #8ab4f8; \}/.test(css), 'the theme\'s link colour, without !important, so a book\'s own wins');
@@ -138,4 +138,20 @@ test('book-stage: the reader style goes last in <head>, after the book\'s inline
     const headless = BookStage.assemble({ [BS_CH]: '<html xmlns="http://www.w3.org/1999/xhtml"><body><p>x</p></body></html>' }, BS_CH, {}, { css: 'a < b' });
     assert.ok(headless.xhtml.indexOf('<html xmlns="http://www.w3.org/1999/xhtml"><style id="scribe-reader">a &lt; b</style><body>') !== -1, headless.xhtml);
     assert.deepEqual(XmlAst.parse(headless.xhtml).errors, []);
+});
+
+test('book-stage: paged mode lays the body out in columns exactly one viewport wide; scroll mode has none (P2-03)', () => {
+    const paged = BookStage.readerCss({ margins: 'wide', mode: 'paged' });
+    assert.ok(paged.indexOf('html { height: 100% !important; overflow: hidden !important; }') !== -1, paged);
+    // Column width plus gap is 100vw, so page n starts at n viewport widths.
+    assert.ok(paged.indexOf('column-width: calc(100vw - calc(2 * 3em)) !important; column-gap: calc(2 * 3em) !important;') !== -1, paged);
+    assert.ok(paged.indexOf('height: 100vh !important') !== -1 && paged.indexOf('column-fill: auto') !== -1);
+    assert.ok(paged.indexOf('max-height: calc(100vh - 2 * 1.5em)') !== -1, 'media fit within one page');
+    assert.ok(BookStage.readerCss({ margins: 'none' }).indexOf('padding: 0 !important; }') !== -1);
+    assert.ok(BookStage.readerCss({ margins: 'none' }).indexOf('column-gap: calc(2 * 0em)') !== -1);
+    const scroll = BookStage.readerCss({ mode: 'scroll' });
+    assert.equal(/column|overflow|100vh/.test(scroll), false, scroll);
+    assert.ok(scroll.indexOf('padding: 1em 1.5em !important;') !== -1);
+    const r = BookStage.assemble(bsTemplate(), BS_CH, {}, { css: paged });
+    assert.deepEqual(XmlAst.parse(r.xhtml).errors, []);
 });

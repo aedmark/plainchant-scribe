@@ -23,13 +23,15 @@
     // (stage-book.js does it on load, from the computed value), so em and rem follow and px does not.
     const READER = {
         sizes: [75, 90, 100, 115, 130, 150, 175, 200],
-        margins: { none: '0', narrow: '0.5em 0.75em', normal: '1em 1.5em', wide: '1.5em 3em' },
+        // Vertical and horizontal page margins, in the book's body em.
+        margins: { none: [0, 0], narrow: [0.5, 0.75], normal: [1, 1.5], wide: [1.5, 3] },
+        modes: ['paged', 'scroll'],
         themes: {
             light: { page: '#ffffff', text: '#000000', link: null },
             sepia: { page: '#f4ecd8', text: '#5b4636', link: '#8a3b12' },
             dark: { page: '#121212', text: '#e0e0e0', link: '#8ab4f8' }
         },
-        defaults: { size: 100, margins: 'normal', theme: 'light' }
+        defaults: { size: 100, margins: 'normal', theme: 'light', mode: 'paged' }
     };
 
     const has = (o, k) => Object.prototype.hasOwnProperty.call(o || {}, k);
@@ -78,20 +80,32 @@
         return {
             size: READER.sizes.indexOf(p.size) !== -1 ? p.size : d.size,
             margins: has(READER.margins, p.margins) ? p.margins : d.margins,
-            theme: has(READER.themes, p.theme) ? p.theme : d.theme
+            theme: has(READER.themes, p.theme) ? p.theme : d.theme,
+            mode: READER.modes.indexOf(p.mode) !== -1 ? p.mode : d.mode
         };
     }
 
     // Margins and the theme's page and text colours are forced on html and body, as a reading system does; colours
     // the book sets on particular elements stay, and its link colours win over the theme's.
+    // Paged mode (P2-03, D-021) lays the body out in columns one viewport wide: each column's width plus the gap is
+    // exactly 100vw, so page n starts at scrollLeft = n * viewport width. Media are kept within one page.
     function readerCss(prefs) {
         const p = readerPrefs(prefs), t = READER.themes[p.theme];
+        const v = READER.margins[p.margins][0] + 'em', h = READER.margins[p.margins][1] + 'em';
         const lines = [
             '/* Scribe reader settings: on the Stage only, never written to the book (P2-02). */',
             'html, body { background-color: ' + t.page + ' !important; color: ' + t.text + ' !important; }',
-            'body { margin: 0 !important; padding: ' + READER.margins[p.margins] + ' !important; }'
+            'body { margin: 0 !important; padding: ' + (v === '0em' && h === '0em' ? '0' : v + ' ' + h) + ' !important; }'
         ];
         if (t.link) lines.push('a:link, a:visited { color: ' + t.link + '; }');
+        if (p.mode === 'paged') {
+            const gap = 'calc(2 * ' + h + ')';
+            lines.push(
+                'html { height: 100% !important; overflow: hidden !important; }',
+                'body { box-sizing: border-box !important; height: 100vh !important; overflow: visible !important; column-width: calc(100vw - ' + gap + ') !important; column-gap: ' + gap + ' !important; column-fill: auto !important; }',
+                'img, svg, video { max-width: 100% !important; max-height: calc(100vh - 2 * ' + v + ') !important; object-fit: contain; }'
+            );
+        }
         return lines.join('\n');
     }
 

@@ -15,7 +15,7 @@ A book is a set of files in the Studio's working copy: `mimetype`, `META-INF/con
 | Book model (OPF, manifest, spine) | `src/book.js`, `src/opf-edit.js` | New (reading done, D-014; edits done, D-015) | `P1-03`, `P1-04` |
 | Nav document | `src/nav.js` | New (read and edit done, D-016) | `P1-05`, `P3-04` |
 | XHTML checks and normalising | `src/xhtml.js` | New (done, D-017) | `P1-06` |
-| Reading Stage and reader controls | `src/book-stage.js`, `src/app/stage-book.js`, `src/app/reader-ui.js` | Chapter display (D-018) and reader settings (D-020) done; adapted from Plainchant Web's Stage | `P2-01` to `P2-06` |
+| Reading Stage and reader controls | `src/book-stage.js`, `src/app/stage-book.js`, `src/app/reader-ui.js` | Chapter display (D-018), reader settings (D-020), and paged mode (D-021) done; adapted from Plainchant Web's Stage | `P2-01` to `P2-06` |
 | Example book | `src/example-book.js` | New (done, D-018) | `P2-01` |
 | Book panel, spine organiser, cover | `src/app/book-ui.js`, `src/app/spine-ui.js` | New | `P3-01` to `P3-06` |
 | Style presets, fonts, footnotes | `src/styles-book.js`, `src/app/layout-ui.js` | New | `P4-01` to `P4-06` |

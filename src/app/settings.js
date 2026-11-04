@@ -11,7 +11,8 @@ const SETTING_DEFAULTS = {
     problemsFilter: 'all',
     readerSize: 100,
     readerMargins: 'normal',
-    readerTheme: 'light'
+    readerTheme: 'light',
+    readerMode: 'paged'
 };
 const SETTING_CHOICES = {
     panes: ['both', 'write', 'preview'],
@@ -21,7 +22,8 @@ const SETTING_CHOICES = {
     problemsFilter: ['all', 'links', 'accessibility', 'markup'],
     readerSize: BookStage.READER.sizes,
     readerMargins: Object.keys(BookStage.READER.margins),
-    readerTheme: Object.keys(BookStage.READER.themes)
+    readerTheme: Object.keys(BookStage.READER.themes),
+    readerMode: BookStage.READER.modes
 };
 const TEXT_SCALE = { small: 0.875, normal: 1, large: 1.15, larger: 1.3 };
 const settingsModal = document.getElementById('settings-modal');

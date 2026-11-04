@@ -700,6 +700,9 @@ body.shaded #editor {
 .reader-step, .reader-choice { display: inline-flex; align-items: center; gap: 0.25rem; }
 .reader-step output { min-width: 3rem; text-align: center; font-variant-numeric: tabular-nums; }
 .reader-reset { align-self: flex-end; }
+.page-nav { display: inline-flex; align-items: center; gap: 0.3rem; }
+.page-nav[hidden] { display: none; }
+.page-nav output { min-width: 6.5rem; text-align: center; font-size: 0.76rem; color: var(--text-strong); font-variant-numeric: tabular-nums; }
 
 .stage-frame-wrap[data-vp="tablet"] { max-width: 768px; }
 .stage-frame-wrap[data-vp="mobile"] { max-width: 375px; }

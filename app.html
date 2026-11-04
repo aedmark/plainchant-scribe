@@ -143,9 +143,21 @@
                 <button type="button" class="vp-btn" data-vp="tablet" aria-pressed="false" title="Tablet (768px)">768px</button>
                 <button type="button" class="vp-btn" data-vp="mobile" aria-pressed="false" title="Mobile (375px)">375px</button>
             </div>
+            <div id="pageNav" class="page-nav" role="group" aria-label="Pages" hidden>
+                <button type="button" id="pagePrev" class="chip" aria-label="Previous page" title="Previous page (Left arrow, Page Up)">&lsaquo;</button>
+                <output id="pageOut" aria-live="polite">Page 1 of 1</output>
+                <button type="button" id="pageNext" class="chip" aria-label="Next page" title="Next page (Right arrow, Page Down)">&rsaquo;</button>
+            </div>
             <div id="readerWrap" class="reader-wrap" hidden>
                 <button type="button" id="readerBtn" class="chip" aria-haspopup="true" aria-expanded="false" aria-controls="readerPanel" title="Reader settings for the Stage: text size, margins, theme. They never change the book.">Reader</button>
                 <div id="readerPanel" class="reader-panel" role="group" aria-label="Reader settings" hidden>
+                    <div class="reader-row">
+                        <span class="reader-label" id="readerModeLabel">Layout</span>
+                        <div class="reader-choice" role="group" aria-labelledby="readerModeLabel">
+                            <button type="button" class="chip" data-reader-mode="paged" aria-pressed="true">Paged</button>
+                            <button type="button" class="chip" data-reader-mode="scroll" aria-pressed="false">Scroll</button>
+                        </div>
+                    </div>
                     <div class="reader-row">
                         <span class="reader-label" id="readerSizeLabel">Text size</span>
                         <div class="reader-step" role="group" aria-labelledby="readerSizeLabel">

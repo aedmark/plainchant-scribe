@@ -153,6 +153,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** The Stage never shows the bare book CSS; checking that needs the code. Scaling on load means a brief reflow when the size is not 100%. Paged mode and device presets (`P2-03`, `P2-04`) build on the same Stage copy.
 **Review trigger:** Authors need to see the book with no reader overrides, or a target reader is found to override differently.
 
+## D-021 Paged mode on the Stage: columns, the page count, and how pages turn  (2026-11-04, status: accepted)
+**Context:** `P2-03` needed choices about the default layout, what the page indicator counts, two-page spreads, and how pages turn. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. Paged is the default layout and Scroll the alternative, chosen in the Reader panel and saved with the other reader settings (`readerMode`). 2. Pages are counted within the open chapter. 3. One page at a time at every width; spreads may come with the device presets (`P2-04`). 4. Pages turn with ‹ and › on the Stage bar and with Left, Right, Page Up, and Page Down when the Stage has focus; clicking the page edges does not turn pages, so it cannot clash with Stage editing (`P2-06`). How it works: CSS columns on `body`, each column's width plus gap exactly one viewport, `html` not scrollable by the user; a turn sets `scrollLeft` to a whole number of viewport widths. A 1px marker in the Stage copy makes the scroll width whole pages, an in-chapter link turns to its target's page, and other scrolls snap to a page.
+**Alternatives:** Scroll by default (rejected: the Stage should look like the target reader); a page count for the whole book (rejected: every chapter laid out on every change); spreads on wide Stages (rejected for now: simpler, and the device presets will choose); edge clicks (rejected: they clash with clicking text once Stage editing returns).
+**Consequences:** Page numbers depend on the Stage's size, the reader settings, and the fonts, as on a device. Mouse-wheel and touch paging are not handled.
+**Review trigger:** `P2-04` adds spreads, or a whole-book page count is needed for the page list (`P6-02`).
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are
