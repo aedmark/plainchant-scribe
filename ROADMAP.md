@@ -19,8 +19,9 @@ Goal: a green, renamed copy of Plainchant Web with the features Scribe does not 
 - [x] P0-01 Create the repository with the Manifold and 3x documentation schemes, the roadmap, the decisions, and a digest of the Plainchant Web history (D-003, D-007). Evidence: `python3 tools/check_docs.py` and `python3 -m unittest tools/test_manual.py` (2026-11-03). Size S.
 - [ ] P0-02 Copy the Plainchant Web source (`app.html`, `src/`, `src-tauri/`, `sw.js`, `test/`, `fonts/`, `icons/`, `package.json`) from the commit named in D-003 without its git history. Done when `npm test` and `cargo build` pass unchanged. Size S.
 - [ ] P0-03 Rename everything: product name, bundle id `io.plainchant.scribe`, IndexedDB and localStorage names, service worker cache name, manifest, titles, window title, and the in-app copy. Done when no test or search finds "Plainchant Web" outside the lineage digest and the licence. Size M.
-- [ ] P0-04 Remove what Scribe will not use: Live JS mode and the Console, the Insert palette of web components, breakpoints, flex and grid handles, pseudo-state bar, shared page parts (kept as a candidate for P3), and the network preview (kept as a candidate for P5-05's "send to my reader" if wanted, Q-002). Done when tests are green and `check_docs.py` agrees with the new structure. Size M.
-- [ ] P0-05 Replace the home page, Help guide, and shortcut sheet with Scribe copy (placeholder text is acceptable until P2). Size S.
+- [ ] P0-04 Remove what Scribe will not use: Live JS mode and the Console, the Insert palette of web components, breakpoints, flex and grid handles, and the pseudo-state bar. Keep the shared page parts (candidate for P3-07) and the network preview (D-009, adapted in P5-07). Done when tests are green and `check_docs.py` agrees with the new structure. Size M.
+- [ ] P0-05 Replace the home page, Help guide, and shortcut sheet with Scribe copy (placeholder text is acceptable until P2), in the manuscript look (D-008). Size S.
+- [ ] P0-06 The manuscript look (D-008): one set of CSS custom properties for colour and type, a light and a dark mode that follows the system setting with a manual switch, open-licensed fonts in `fonts/`, and a light palette for the syntax colours. Done when every studio surface is checked in both modes and the structure tests find no hard-coded colours outside the variables. Size M.
 
 ## Phase 1: The book format
 
@@ -76,7 +77,8 @@ Goal: books go in and out cleanly, and the author knows whether a book is valid.
 - [ ] P5-03 Import Markdown and plain text into chapters (import only, D-002). Size M.
 - [ ] P5-04 Book Problems tab: manifest and spine integrity, media types, unique ids, nav present, cover marked, links and anchors, missing alt text, heading order, chapter size. Reuses Plainchant Web's Problems tab. Size L.
 - [ ] P5-05 Optional EPUBCheck run in the desktop app when Java and the jar are found, with its messages parsed into the Problems tab (D-005). Size M.
-- [ ] P5-06 Round-trip evidence: import a corpus of public-domain EPUBs, export them, and compare EPUBCheck results before and after. Size M.
+- [ ] P5-06 Round-trip evidence: import a corpus of public-domain EPUBs, export them, and compare EPUBCheck results before and after, then open the exports in Calibre; a legacy Kindle check goes through Calibre's conversion and is reported as such (D-010, Q-004). Size M.
+- [ ] P5-07 Send to reader: adapt the opt-in preview server (D-009) to serve the reading view and the exported `.epub` for download over the local network, with the inherited token and off-by-default rules, and a SECURITY note for the download. Size M.
 
 ## Phase 6: Accessibility and publishing
 
@@ -84,7 +86,7 @@ Goal: books that meet current accessibility expectations and the stores' require
 
 - [ ] P6-01 Accessibility metadata wizard (EPUB Accessibility 1.1: access modes, features, hazards, summary). Size M.
 - [ ] P6-02 Page list, landmarks, an alt-text pass, a reading-order check, and per-element language. Size M.
-- [ ] P6-03 A publishing checklist per store (Kobo, Apple Books, Amazon through EPUB upload, Google Play), written from each store's current published requirements on the day it is written. Documentation only. Size S.
+- [ ] P6-03 A publishing checklist per store (Kobo, Apple Books, Amazon through EPUB upload, Google Play), written from each store's current published requirements on the day it is written. Documentation only, and no compatibility claim for a reader the project cannot test (D-010). Size S.
 
 ## Phase 7: Later
 

@@ -12,7 +12,8 @@ Scribe is a local web and desktop application. It opens books the user made and 
 4. **Export never writes outside the target folder and never deletes** (inherited, web D24).
 5. **Fonts carry licences.** Embedding a font in a book redistributes it; the Studio reminds the author (`P4-03`) but cannot check the licence.
 6. **Vendored third-party code:** Prism, unmodified, tokenize only, never used for HTML output (inherited, D-001).
-7. **The optional EPUBCheck run** (`P5-05`) executes a local Java process on a book the user chose. It must be passed the path as an argument, never through a shell, and must show what it runs.
+7. **Send to reader (`D-009`, `P5-07`)** is the inherited opt-in preview server: off until started, an unguessable path token, read-only, plain HTTP on the local network, stopped on request or quit. Serving the exported `.epub` for download is new; it must serve only the book the user chose to share and nothing else from the working copy.
+8. **The optional EPUBCheck run** (`P5-05`) executes a local Java process on a book the user chose. It must be passed the path as an argument, never through a shell, and must show what it runs.
 
 ## Secrets and configuration
 

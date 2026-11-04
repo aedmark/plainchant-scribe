@@ -22,6 +22,8 @@ A book is a set of files in the Studio's working copy: `mimetype`, `META-INF/con
 | Problems (book rules, EPUBCheck) | `src/book-checks.js`, `src/app/problems-ui.js` | Adapted | `P5-04`, `P5-05` |
 | Accessibility metadata | `src/a11y.js`, `src/app/a11y-ui.js` | New | `P6-01`, `P6-02` |
 | CSS splicing, colours, find, formatter, undo, library, versions, assets, folder links, menus | as in Plainchant Web | Inherited | `P0-02` |
+| Send to reader (preview server) | `src-tauri/src/preview.rs`, `src/app/preview-ui.js` | Inherited, adapted | `P5-07` |
+| Manuscript look (colour and type variables, light and dark) | `src/styles.css`, `fonts/` | Rewritten | `P0-06` |
 | Desktop shell | `src-tauri/` | Inherited, renamed | `P0-02`, `P0-03` |
 
 File names are proposals; the roadmap items own the interfaces.
@@ -47,7 +49,7 @@ Import: .epub -> Epub.read() (path and size checks) -> working-copy files
 - **The Reading Stage never changes a file by displaying it**, and reader controls (font size, theme) are overrides, not edits (`P2-02`).
 - **Every file in the manifest exists, and every content file is in the manifest.** Enforced by `Book.check()` (`P5-04`) and by Export refusing a book with errors unless the author overrides.
 - **Scripts in imported content are kept but never executed in the Studio.** Enforced in the Stage assembler (`P2-01`).
-- **No network access at runtime**, except the opt-in preview server if kept (Q-002).
+- **No network access at runtime**, except the opt-in send-to-reader server (D-009, `P5-07`).
 
 Inherited structural invariants (global scope, line limits, offline cache list) come with the port and are enforced by `test/structure.test.js` (D-001).
 

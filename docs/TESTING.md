@@ -26,7 +26,7 @@ After `P0-02`: `npm test` (Node, no install) and `cargo build --manifest-path sr
 - **Unit tests in Node** for every pure module: the XML splicer (round trip and every splice operation on OPF, nav, and XHTML samples), the book model, the zip and EPUB code, the checks, and the importers.
 - **Golden books** in `test/fixtures/`: small hand-written EPUBs, valid and deliberately broken, each with the expected findings.
 - **EPUBCheck as the oracle** where Java is available: every exported fixture must pass, and a deliberately broken one must fail. When EPUBCheck is not available the test report says "not run", never "passed" (D-005).
-- **Real reading systems are manual.** Per release, open the sample books in the readers named in Q-003 and record the result and date in HANDOFF. A passing unit suite says nothing about how a reader paginates.
+- **Real reading systems are manual.** Per release, open the sample books in Calibre and record the result and date in HANDOFF. The legacy Kindle is reached through Calibre's conversion, so its results are labelled as such and trusted only once the model is known (D-010, Q-004). No other reader is available to the project. A passing unit suite says nothing about how a reader paginates.
 - **Structure tests** keep Plainchant Web's rules (no inline script, 500-line limit, offline cache list) once ported.
 
 ## Known pitfalls

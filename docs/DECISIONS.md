@@ -66,6 +66,24 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Decision:** 1. `AGENTS.md`, `CLAUDE.md`, `ROADMAP.md`, and `docs/*` follow `the-manifold`; `tools/check_docs.py` is that repository's checker, unmodified. 2. The 3x manual is `docs/plainchant-scribe.manual.json`, built to `docs/manual.html` with `3x-documentation-scheme`'s `manual.py`, unmodified, and validated by `docs/manual.schema.json`. 3. Plainchant Web's history is not copied into the live documents (D-003).
 **Consequences:** Updating either tool means replacing the file from its source repository. The manual must describe only what exists; planned features appear in the roadmap, not as manual entries, until they ship.
 
+## D-008 A manuscript look with light and dark modes  (2026-11-03, status: accepted)
+**Context:** Q-001 asked whether Scribe keeps Plainchant Web's dark studio chrome and the sister sites' paper-on-an-EGA-desk style, or gets its own look. The maintainer chose a manuscript look with a light and a dark mode (2026-11-03).
+**Decision:** 1. Scribe has its own visual identity, about written pages rather than code: warm paper, ink, and serif type for the page surfaces, with restrained accents. 2. Every surface has a light and a dark variant, switchable by the user and defaulting to the system setting; the Reading Stage's own reader themes (light, sepia, dark) are separate and never change the studio chrome (`P2-02`). 3. Colours and fonts are CSS custom properties defined once, so the Stage themes, the home page, and the manual share them. 4. The inherited dark studio theme and the EGA home page are replaced, not kept as options, so there is one look to test (`P0-06`). 5. Any fonts used must be open-licensed files shipped with the app and listed in `fonts/`, as in Plainchant Web.
+**Alternatives:** Keep the Plainchant Web chrome (rejected by the maintainer); offer several themes (rejected: more surface to test and nothing in the product needs it).
+**Consequences:** Every inherited colour and the syntax-colour palette need a light variant with checked contrast. The Reading Stage must read as a page on a desk in both modes without looking like the book's own theme.
+
+## D-009 Keep the network preview as "send to reader"  (2026-11-03, status: accepted)
+**Context:** Q-002 asked whether to keep Plainchant Web's opt-in network preview. The maintainer chose to keep it as "send to reader" (2026-11-03).
+**Decision:** 1. The inherited preview server (opt-in, token-gated, read-only, desktop only) stays and is renamed and adapted: it serves the book's reading view and the exported `.epub` for download, so a phone, tablet, or e-reader browser on the same network can open or fetch the book (`P5-07`). 2. Its inherited security rules apply unchanged: off until started, unguessable path token, no directory listing, stops on request or on quit. 3. Serving the `.epub` is an addition to the inherited behaviour and is recorded as such in SECURITY when built.
+**Alternatives:** Drop it and rely on Export (rejected by the maintainer); a QR code (still deferred: a generator is a library-sized job under D-001).
+**Consequences:** Plain HTTP on the local network, as in Plainchant Web: anyone with the link can read the book while sharing is on. It cannot help a device whose browser cannot download files.
+
+## D-010 Test devices: Calibre, and a legacy Kindle through Calibre's conversion  (2026-11-03, status: accepted)
+**Context:** Q-003 asked which reading systems the maintainer can test on. The answer (2026-11-03): Calibre and a legacy Kindle.
+**Decision:** 1. Calibre (viewer and `ebook-convert`) is the first real-reader check for every release. 2. The Kindle is tested by sending a converted book, which means the result reflects Calibre's conversion and the Kindle's renderer, not Scribe's EPUB read directly. Reports must say so. 3. Scribe still does not produce Kindle formats (D-006); the test route does not change that. 4. EPUBCheck remains the validity oracle (D-005); Calibre is a rendering check, not a validator. 5. The maintainer's exact Kindle model and how books reach it are needed before Kindle results are trusted (Q-004).
+**Alternatives:** Test only against EPUBCheck (rejected: validity is not rendering); buy more devices (not our call).
+**Consequences:** No check on iOS, Android, Kobo, or Thorium is available to the project yet; the store checklist (`P6-03`) stays documentation and makes no compatibility claim for those. Fixes found only on the Kindle path are recorded with their conversion step.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are
@@ -76,6 +94,7 @@ permanent; an answered question stays, with the answer and its date.
 - **Q-NNN** ~~The question.~~ Answered YYYY-MM-DD: the answer, D-NNN.
 ```
 
-- **Q-001** What should Scribe look like: keep Plainchant Web's dark studio chrome and the sister sites' paper-on-an-EGA-desk home page, or give the book tool its own manuscript look? (asked 2026-11-03, by the agent; blocks P0-05; recommendation: keep the studio chrome, and give the home page and the Reading Stage a quieter paper look.)
-- **Q-002** Keep the desktop network preview as "send to my reader" (a phone or e-reader browser opening the book over the LAN)? (asked 2026-11-03, by the agent; blocks P0-04; recommendation: keep it, because testing on a real device is the best check available and the code already exists.)
-- **Q-003** Which reading systems and devices does the maintainer own or want tested (for example Calibre, Thorium, Apple Books, Kobo, KOReader, a physical e-ink reader)? (asked 2026-11-03, by the agent; blocks P5-06 and P6-03; recommendation: Calibre or Thorium on the desktop, plus one phone app, plus the e-ink device if there is one.)
+- **Q-001** ~~What should Scribe look like: keep Plainchant Web's dark studio chrome and the sister sites' paper-on-an-EGA-desk home page, or give the book tool its own manuscript look?~~ Answered 2026-11-03: its own manuscript look with a light and a dark mode, D-008.
+- **Q-002** ~~Keep the desktop network preview as "send to my reader"?~~ Answered 2026-11-03: keep it, D-009.
+- **Q-003** ~~Which reading systems and devices does the maintainer own or want tested?~~ Answered 2026-11-03: Calibre and a legacy Kindle, D-010.
+- **Q-004** Which Kindle model and firmware is it, and how do books reach it (USB with a Calibre-converted file, Send to Kindle, email)? (asked 2026-11-03, by the agent; blocks trusting any Kindle result in P5-06; recommendation: note the model and firmware version from the device's About screen, and say which route you use.)

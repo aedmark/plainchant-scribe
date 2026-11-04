@@ -16,7 +16,7 @@ Changes: [CHANGELOG.md](CHANGELOG.md). Older sessions and the Plainchant Web his
 
 _Last updated: 2026-11-03, session 1, on `master`: the repository was created from a plan agreed in conversation; the first commit holds everything._
 
-**Where things stand, in one paragraph:** Plainchant Scribe exists as a planning repository only. It holds the roadmap (phases 0 to 7), seven recorded decisions, three open questions, the Manifold and 3x documentation schemes, and a digest of the Plainchant Web history. There is no application code. The next real work is copying Plainchant Web's source (`P0-02`) and renaming it (`P0-03`).
+**Where things stand, in one paragraph:** Plainchant Scribe exists as a planning repository only. It holds the roadmap (phases 0 to 7), ten recorded decisions, one open question (Q-004), the Manifold and 3x documentation schemes, and a digest of the Plainchant Web history. There is no application code. The next real work is copying Plainchant Web's source (`P0-02`) and renaming it (`P0-03`).
 
 **Verified** (2026-11-03, Linux, Python 3)
 
@@ -39,17 +39,16 @@ _Last updated: 2026-11-03, session 1, on `master`: the repository was created fr
 
 ## Next steps (in order)
 
-1. Answer Q-001 (look and feel), Q-002 (keep the network preview), and Q-003 (which readers to test on) when convenient; Q-001 and Q-002 block `P0-05` and `P0-04`.
+1. Answer Q-004 (Kindle model, firmware, and how books reach it) when convenient; it only gates trusting Kindle results.
 2. `P0-02`: copy the Plainchant Web source at the commit named in D-003; run `npm test` and `cargo build` unchanged.
 3. `P0-03`: rename the product, bundle id, storage names, cache name, and in-app copy.
-4. `P0-04`: remove the web-only features once Q-002 is answered.
-5. Start `P1-01`, the XML parser, which every later phase depends on.
+4. `P0-04`: remove the web-only features; keep the preview and shared parts (D-009).
+5. `P0-05` and `P0-06`: Scribe copy and the manuscript look with light and dark modes (D-008).
+6. Start `P1-01`, the XML parser, which every later phase depends on.
 
 ## Open questions for maintainers
 
-- Q-001 Look and feel (blocks P0-05).
-- Q-002 Keep the network preview as "send to my reader" (blocks P0-04).
-- Q-003 Which reading systems and devices to test on (blocks P5-06 and P6-03).
+- Q-004 Kindle model and firmware, and how books reach it (gates Kindle results in P5-06).
 
 ## Session log
 
@@ -64,4 +63,13 @@ oldest to `docs/archive/` and leave a pointer here.
 **Done:** P0-01
 **Changed:** new repository `plainchant-scribe`: `AGENTS.md`, `CLAUDE.md`, `README.md`, `ROADMAP.md`, `LICENSE`, `docs/*`, the lineage digest in `docs/archive/`, the shared tools in `tools/`, and the 3x manual source and build.
 **Decisions:** D-001 to D-007; questions Q-001 to Q-003.
+
+### Session 2: 2026-11-03: the maintainer answers Q-001 to Q-003
+
+**Contributor:** Claude (Sonnet 5.5), with the maintainer
+**Goal:** Record the answers so phase 0 is unblocked.
+**Done:** none closed; P0-06 added, P5-07 added, P0-04 and P5-06 reworded
+**Changed:** `docs/DECISIONS.md`, `ROADMAP.md`, `docs/HANDOFF.md`, `docs/TESTING.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md`
+**Decisions:** D-008 (manuscript look, light and dark), D-009 (keep the preview as send to reader), D-010 (Calibre and a legacy Kindle); question Q-004 added.
+**Verified:** `python3 tools/check_docs.py` and `python3 -m unittest tools/test_manual.py`, results in the table above.
 **Verified:** `python3 tools/check_docs.py` (0 errors, 0 warnings); `python3 tools/manual.py check` (2 sections, 4 entries); `python3 -m unittest tools/test_manual.py` (6/6).
