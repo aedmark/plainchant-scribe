@@ -14,15 +14,15 @@ Changes: [CHANGELOG.md](CHANGELOG.md). Older sessions and the Plainchant Web his
 
 ## Current state
 
-_Last updated: 2026-11-03, session 8, on `master`: storage and the offline cache are kept apart from Plainchant Web's (D-013); `P1-02` is done._
+_Last updated: 2026-11-03, session 8, on `master`: `P1-03` is done (the book model); storage is kept apart from Plainchant Web's (D-013)._
 
-**Where things stand, in one paragraph:** Phase 0 is done. Phase 1 has `src/xml-ast.js` (`P1-01`, D-011), the XML parser and splicer, and `src/book-template.js` (`P1-02`, D-012), which returns the files of a new, empty EPUB 3.3 book that passes EPUBCheck 5.4.0 with no messages. Neither module is loaded by `app.html` yet. The app is still the inherited Design-mode HTML and CSS editor in the manuscript look (D-008); no EPUB feature exists for the user yet. The repository is public at `https://github.com/aedmark/plainchant-scribe`, with `master` tracking `origin/master`. Next: `P1-03`, the book model.
+**Where things stand, in one paragraph:** Phase 0 is done. Phase 1 has three pure modules, none of them loaded by `app.html` yet: `src/xml-ast.js` (`P1-01`, D-011) parses and splices XML; `src/book-template.js` (`P1-02`, D-012) makes a new book that passes EPUBCheck 5.4.0; `src/book.js` (`P1-03`, D-014) reads a package document into a model with its XmlAst nodes and reports package-rule problems. The app is still the inherited Design-mode HTML and CSS editor in the manuscript look (D-008), served on port 8081 with storage and cache of its own (D-013); no EPUB feature exists for the user yet. The repository is public at `https://github.com/aedmark/plainchant-scribe`. Next: `P1-04`, OPF edits by splicing.
 
 **Verified** (2026-11-03, Linux, Node, Python 3, Rust/Cargo; browser pane for the load check)
 
 | Suite | Result |
 | --- | --- |
-| `npm test` (EPUBCheck 5.4.0 on Java 27 included) | **116/116** |
+| `npm test` (EPUBCheck 5.4.0 on Java 27 included) | **124/124** (122 without EPUBCheck) |
 | `cargo test --manifest-path src-tauri/Cargo.toml`, `cargo build` | **7/7**, passes |
 | `python3 tools/check_docs.py` | `0 error(s), 0 warning(s)` |
 | `python3 tools/manual.py check docs/plainchant-scribe.manual.json`, `python3 -m unittest tools/test_manual.py` | 2 sections, 5 entries; 6/6 OK |
@@ -33,6 +33,7 @@ _Last updated: 2026-11-03, session 8, on `master`: storage and the offline cache
 - **Removal guard** (`P0-04`): a structure test fails if a removed file, element, or identifier returns.
 - **Manuscript look** (`P0-06`, D-008): light and dark palettes, EB Garamond headings, Match system / Light / Dark in Settings; contrast and palette-parity tests. New home page (`P0-05`).
 - **Documentation schemes** (`P0-01`, D-007).
+- **Book model** (`P1-03`, D-014): `Book.read(files, { assets })`; problems are package rules only.
 - **New-book template** (`P1-02`, D-012): `BookTemplate.create()`; EPUBCheck runs on it in `npm test` when `.tools/` has the jar.
 - **XML parser and splicer** (`P1-01`, D-011): `XmlAst.parse` plus `applyEdits`, `setAttr`, `removeAttr`, `setText`, `insert`, `remove`; tested on the fixtures in `test/fixtures/xml/`; expat agreed on 45 verdicts.
 
@@ -48,6 +49,7 @@ _Last updated: 2026-11-03, session 8, on `master`: storage and the offline cache
 - `inspector-ui.js` (447 lines) and `stage.js` (461) are the largest app scripts against the 500-line limit; new Inspector or Stage behaviour needs a new file.
 - In the agent's browser pane the service worker does not register for either app (an "unknown error occurred when fetching the script" console message); this is the pane, not the app.
 - Serve the browser app on port 8081 (`npm run serve`), not 8080, which is Plainchant Web's (D-013).
+- `Book.read` takes text files keyed by container path; binary files (images, fonts) are passed as `options.assets` paths, because the working copy keeps them as Blobs.
 - EPUBCheck lives in the git-ignored `.tools/` folder, so a fresh clone runs `npm test` without it and prints "not run"; see TESTING for the download. It validates against EPUB 3.4 rules.
 - `XmlAst` offsets are string indices, not bytes (D-011). Edits return `{ start, end, text }` lists for one parse: apply them with `XmlAst.applyEdits(ast.text, edits)` and re-parse before the next edit. Several edits from the same parse can be applied together if they do not overlap.
 - Internally declared entities stay as `&name;` in `XmlAst` values; HTML entities such as `&nbsp;` are `undeclared-entity` errors whose message gives the numeric form.
@@ -56,8 +58,8 @@ _Last updated: 2026-11-03, session 8, on `master`: storage and the offline cache
 
 ## Next steps (in order)
 
-1. `P1-03`, the book model (`src/book.js`) on top of `XmlAst`, tested on `BookTemplate.create()` output and the `test/fixtures/xml/` files. It is the first feature to load `src/xml-ast.js` in `app.html`: add the script to `sw.js` `APP_FILES` and the load-order test at the same time.
-2. `P1-04` (OPF edits by splicing), then `P1-05` (nav).
+1. `P1-04`, OPF edits by splicing (set or add metadata, add, rename, or remove a manifest item, reorder the spine), built on `Book.read` model nodes and the `XmlAst` edit builders, with `dcterms:modified` kept current.
+2. `P1-05`, the nav document; then `P1-06`, the XHTML checks and normaliser.
 
 ## Open questions for maintainers
 
@@ -69,7 +71,7 @@ Newest first. Copy the template for each new session. Work done between sessions
 agent) gets a short entry too, written by whoever notices it, so the log has no gaps. Past 10 entries, move the
 oldest to `docs/archive/` and leave a pointer here.
 
-### Session 8: 2026-11-03: separate storage from Plainchant Web
+### Session 8: 2026-11-03: separate storage from Plainchant Web, then the book model
 
 **Contributor:** Claude (Opus 5.5), with the maintainer
 **Goal:** Make sure Scribe's cache and database are its own.
@@ -77,6 +79,7 @@ oldest to `docs/archive/` and leave a pointer here.
 **Changed:** `sw.js` (deletes and reads only Scribe's caches), `package.json` (serve on 8081), `test/structure.test.js` (two tests), `README.md`, `AGENTS.md`, `docs/DECISIONS.md`, `docs/ARCHITECTURE.md`, this file.
 **Decisions:** D-013.
 **Verified:** `npm test` 116/116; the new service worker test fails against the previous `sw.js` (it deleted `plainchant-web-v1`). Not checked in a real browser: the agent's browser pane does not register service workers.
+**Then:** `P1-03` in the same session. Done: P1-03. Changed: new `src/book.js`, `test/book.test.js`; `test/run.js`; `ROADMAP.md` (P1-03, a P5-04 note), `docs/DECISIONS.md` (D-014), `docs/ARCHITECTURE.md`, `docs/TESTING.md`, this file. Verified: `npm test` 124/124; the EPUBCheck cross-check (45 of 49 agree, the rest explained in TESTING).
 
 ### Session 7: 2026-11-03: the new-book template
 
