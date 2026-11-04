@@ -49,6 +49,28 @@ if (!oracle.jar) {
         });
     });
 
+    test('epubcheck: a book edited with OpfEdit passes EPUBCheck with no messages (P1-04)', () => {
+        let files = BookTemplate.create({ title: 'Draft' }).files;
+        files['OEBPS/text/chapter-2.xhtml'] = files['OEBPS/text/chapter-1.xhtml'].replace(/Chapter 1/g, 'Chapter 2').replace(/chapter-1/g, 'chapter-2');
+        [
+            (m) => OpfEdit.addItem(m, { id: 'chapter-2', path: 'OEBPS/text/chapter-2.xhtml', mediaType: 'application/xhtml+xml' }),
+            (m) => OpfEdit.addItemref(m, 'chapter-2', { index: 0 }),
+            (m) => OpfEdit.moveItemref(m, 'chapter-1', 0),
+            (m) => OpfEdit.renameItem(m, 'chapter-2', 'ch-2'),
+            (m) => OpfEdit.setTitle(m, 'Ink & Ash'),
+            (m) => OpfEdit.addDc(m, 'creator', 'Ada Penrose', { id: 'creator' }),
+            (m) => OpfEdit.setRefinement(m, m.metadata.creators[0], 'role', 'aut', { scheme: 'marc:relators' }),
+            (m) => OpfEdit.setRefinement(m, m.metadata.creators[0], 'file-as', 'Penrose, Ada'),
+            (m) => OpfEdit.addDc(m, 'publisher', 'Small Press'),
+            (m) => OpfEdit.touchModified(m, Date.UTC(2026, 11, 1))
+        ].forEach((op) => {
+            const model = Book.read(files).model;
+            files = Object.assign({}, files, { 'OEBPS/content.opf': XmlAst.applyEdits(files['OEBPS/content.opf'], op(model)) });
+        });
+        const r = epubcheck(oracle.jar, files);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+    });
+
     test('epubcheck: a template with the modified date removed fails, so the oracle is really checking', () => {
         const files = BookTemplate.create().files;
         files['OEBPS/content.opf'] = files['OEBPS/content.opf'].replace(/ *<meta property="dcterms:modified">[^<]*<\/meta>\n/, '');

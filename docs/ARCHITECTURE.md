@@ -12,7 +12,7 @@ A book is a set of files in the Studio's working copy: `mimetype`, `META-INF/con
 | --- | --- | --- | --- |
 | XML parsing and splicing | `src/xml-ast.js` | New (done, D-011) | `P1-01` |
 | New-book template | `src/book-template.js` | New (done, D-012) | `P1-02` |
-| Book model (OPF, manifest, spine) | `src/book.js` | New (reading done, D-014) | `P1-03`, `P1-04` |
+| Book model (OPF, manifest, spine) | `src/book.js`, `src/opf-edit.js` | New (reading done, D-014; edits done, D-015) | `P1-03`, `P1-04` |
 | Nav document | `src/nav.js` | New | `P1-05`, `P3-04` |
 | XHTML checks and normalising | `src/xhtml.js` | New | `P1-06` |
 | Reading Stage and reader controls | `src/app/reader-*.js` | Adapted from Plainchant Web's Stage | `P2-01` to `P2-06` |
@@ -43,6 +43,7 @@ Import: .epub -> Epub.read() (path and size checks) -> working-copy files
 | `XmlAst.setAttr`, `removeAttr`, `setText`, `insert`, `remove`, `applyEdits` | `src/xml-ast.js` | Book model edits (`P1-04`), nav (`P1-05`), Stage | Each returns `{ start, end, text }` splices for one parse; they refuse a document that is not well-formed or a node from another parse, escape what they write, and `insert` refuses markup that would break well-formedness |
 | `BookTemplate.create(options)` | `src/book-template.js` | New-book command (after `P1-03`), tests | Returns `{ files, dirs, paths, identifier, modified }`; `files` lists `mimetype` first; the files pass EPUBCheck with no messages (`test/epubcheck.test.js`, D-012) |
 | `Book.read(files, { assets })` | `src/book.js` | Book panel, Problems, Export, OPF edits (`P1-04`) | Finds the OPF through `container.xml` and returns `{ model, problems }`: metadata (with refinements), manifest, spine, nav, cover, and EPUB 2 leftovers, each entry with its XmlAst node; `model` is null when the container or OPF cannot be read. Problems are package rules only, each `{ severity, code, message, path, start, end, line }` (D-014) |
+| `OpfEdit.*(model, ...)` | `src/opf-edit.js` | Book panel, spine organiser, importers | Each op takes a fresh `Book.read` model and returns XmlAst edits for the OPF; nothing outside the edited ranges changes; structural breakage throws an Error with a `.code`, rule gaps are left for `Book.read` to report; only `touchModified` changes `dcterms:modified` (D-015) |
 | `Epub.build(files)` | `src/epub.js` | Export | Output opens in EPUBCheck without errors when `Book.check()` reports none |
 | `Epub.read(bytes)` | `src/epub.js` | Import | Refuses unsafe paths, absolute paths, duplicate names, and over-limit sizes (see SECURITY) |
 
