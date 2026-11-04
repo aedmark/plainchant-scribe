@@ -14,15 +14,15 @@ Changes: [CHANGELOG.md](CHANGELOG.md). Older sessions and the Plainchant Web his
 
 ## Current state
 
-_Last updated: 2026-11-04, session 9, on `master`: `P1-04` and `P1-05` are done (OPF edits; the nav document)._
+_Last updated: 2026-11-04, session 9, on `master`: `P1-04`, `P1-05`, and `P1-06` are done; Phase 1 is complete._
 
-**Where things stand, in one paragraph:** Phase 0 is done. Phase 1 has five pure modules, none of them loaded by `app.html` yet: `src/xml-ast.js` (`P1-01`, D-011) parses and splices XML; `src/book-template.js` (`P1-02`, D-012) makes a new book that passes EPUBCheck 5.4.0; `src/book.js` (`P1-03`, D-014) reads a package document into a model with its XmlAst nodes and reports package-rule problems; `src/opf-edit.js` (`P1-04`, D-015) turns metadata, manifest, and spine changes into splices of that OPF; `src/nav.js` (`P1-05`, D-016) reads and edits the nav document the same way. The app is still the inherited Design-mode HTML and CSS editor in the manuscript look (D-008), served on port 8081 with storage and cache of its own (D-013); no EPUB feature exists for the user yet. The repository is public at `https://github.com/aedmark/plainchant-scribe`. Next: `P1-06`, the XHTML checks and normaliser.
+**Where things stand, in one paragraph:** Phase 0 is done. Phase 1 is done: six pure modules, none of them loaded by `app.html` yet: `src/xml-ast.js` (`P1-01`, D-011) parses and splices XML; `src/book-template.js` (`P1-02`, D-012) makes a new book that passes EPUBCheck 5.4.0; `src/book.js` (`P1-03`, D-014) reads a package document into a model with its XmlAst nodes and reports package-rule problems; `src/opf-edit.js` (`P1-04`, D-015) turns metadata, manifest, and spine changes into splices of that OPF; `src/nav.js` (`P1-05`, D-016) reads and edits the nav document the same way; `src/xhtml.js` (`P1-06`, D-017) checks chapters, fixes HTML entities, and cleans pasted HTML. The app is still the inherited Design-mode HTML and CSS editor in the manuscript look (D-008), served on port 8081 with storage and cache of its own (D-013); no EPUB feature exists for the user yet. The repository is public at `https://github.com/aedmark/plainchant-scribe`. Next: `P2-01`, which also makes New open a real book.
 
 **Verified** (2026-11-04 for `npm test` and the docs checks, otherwise 2026-11-03; Linux, Node, Python 3, Rust/Cargo; browser pane for the load check)
 
 | Suite | Result |
 | --- | --- |
-| `npm test` (EPUBCheck 5.4.0 on Java 27 included) | **144/144** (141 without EPUBCheck) |
+| `npm test` (EPUBCheck 5.4.0 on Java 27 included) | **153/153** (148 without EPUBCheck) |
 | `cargo test --manifest-path src-tauri/Cargo.toml`, `cargo build` | **7/7**, passes |
 | `python3 tools/check_docs.py` | `0 error(s), 0 warning(s)` |
 | `python3 tools/manual.py check docs/plainchant-scribe.manual.json`, `python3 -m unittest tools/test_manual.py` | 2 sections, 5 entries; 6/6 OK |
@@ -33,6 +33,7 @@ _Last updated: 2026-11-04, session 9, on `master`: `P1-04` and `P1-05` are done 
 - **Removal guard** (`P0-04`): a structure test fails if a removed file, element, or identifier returns.
 - **Manuscript look** (`P0-06`, D-008): light and dark palettes, EB Garamond headings, Match system / Light / Dark in Settings; contrast and palette-parity tests. New home page (`P0-05`).
 - **Documentation schemes** (`P0-01`, D-007).
+- **XHTML checks** (`P1-06`, D-017): `Xhtml.check`, `fixEntities`, and the paste normaliser `normalize`/`fromHtml`; a chapter with a normalised paste passes EPUBCheck.
 - **Nav document** (`P1-05`, D-016): `Nav.read(files, bookModel)` and its edit ops; an edited nav passes EPUBCheck with no messages.
 - **OPF edits** (`P1-04`, D-015): `OpfEdit` ops return XmlAst edits for a fresh model; an edited book passes EPUBCheck with no messages.
 - **Book model** (`P1-03`, D-014): `Book.read(files, { assets })`; problems are package rules only.
@@ -55,6 +56,8 @@ _Last updated: 2026-11-04, session 9, on `master`: `P1-04` and `P1-05` are done 
 - `OpfEdit` ops are for one fresh model each: apply the edits, `Book.read` again, then run the next op. Only `touchModified` changes `dcterms:modified`, so whatever saves or exports must call it. `setItemPath` changes the href only; the file and the links to it are not moved.
 - New and Load Example Page still make a Plainchant Web page: no screen uses the book modules yet. Opening books in the Studio is part of `P2-01` (maintainer, 2026-11-04).
 - `Nav` follows EPUBCheck 5.4.0 where it is stricter than EPUB 3.3 §7 (four rules, D-016); their messages name EPUBCheck. Recheck them when EPUBCheck is updated.
+- `Xhtml.normalize` needs a DOM-like tree: in the app, `Xhtml.fromHtml(html)` uses the browser's `DOMParser`; in Node it throws `no-parser`, so tests build trees by hand. Chromium's real parse was checked once by hand in the browser pane (TESTING).
+- The agent's file-writing tool turns `\u` escapes in JavaScript into the raw characters, invisible ones included. Write such strings with a script, or check afterwards with `grep -P '[^\x00-\x7F]'`.
 - EPUBCheck lives in the git-ignored `.tools/` folder, so a fresh clone runs `npm test` without it and prints "not run"; see TESTING for the download. It validates against EPUB 3.4 rules.
 - `XmlAst` offsets are string indices, not bytes (D-011). Edits return `{ start, end, text }` lists for one parse: apply them with `XmlAst.applyEdits(ast.text, edits)` and re-parse before the next edit. Several edits from the same parse can be applied together if they do not overlap.
 - Internally declared entities stay as `&name;` in `XmlAst` values; HTML entities such as `&nbsp;` are `undeclared-entity` errors whose message gives the numeric form.
@@ -63,8 +66,8 @@ _Last updated: 2026-11-04, session 9, on `master`: `P1-04` and `P1-05` are done 
 
 ## Next steps (in order)
 
-1. `P1-06`, the XHTML checks (well-formedness, HTML named entities, EPUB 3.3 §6.1.2) and a pasted-HTML to XHTML normaliser. Re-read §6.1 first.
-2. Phase 2, the Reading Stage, starting with `P2-01`, which now also makes New and Load Example Page open a real book.
+1. `P2-01`: render the open chapter on the Stage with the book's CSS, images, and fonts, and make New and Load Example Page open a real book. This is where `app.html` first loads the book modules (they must then also go in `sw.js` `APP_FILES`).
+2. `P2-02` to `P2-06`, the rest of the Reading Stage.
 
 ## Open questions for maintainers
 
@@ -79,11 +82,11 @@ oldest to `docs/archive/` and leave a pointer here.
 ### Session 9: 2026-11-04: OPF edits by splicing
 
 **Contributor:** Claude (Opus 5.5), with the maintainer
-**Goal:** Commit and push `P1-03`; `P1-04`; `P1-05`.
-**Done:** P1-04, P1-05
+**Goal:** Commit and push `P1-03`; `P1-04`; `P1-05`; `P1-06`.
+**Done:** P1-04, P1-05, P1-06
 **Changed:** pushed `P1-03` (`6d13fb2`); new `src/opf-edit.js`, `test/opf-edit.test.js`; `test/run.js`, `test/epubcheck.test.js` (an edited book); `ROADMAP.md` (P1-04, a P5-04 note on PKG-010), `docs/DECISIONS.md` (D-015), `docs/ARCHITECTURE.md`, `docs/TESTING.md`, this file.
-**Decisions:** D-015 and D-016, each point chosen by the maintainer.
-**Verified:** `npm test` 133/133 (130 with `SCRIBE_SKIP_EPUBCHECK=1`); four deliberate bugs each failed a test. EPUBCheck first warned PKG-010 on a test file name with a space, which is how the P5-04 note was found. Then `P1-05` (pushed `P1-04` as `a0257c5` first): new `src/nav.js`, `test/nav.test.js`; `Book.hrefFor` moved from `OpfEdit` into `src/book.js`; `test/run.js`, `test/epubcheck.test.js`; ROADMAP (P1-05, P5-04 notes), DECISIONS (D-016), ARCHITECTURE, TESTING, this file. Verified: `npm test` 144/144 (141 without EPUBCheck); five deliberate bugs each failed a test; the EPUBCheck cross-check (43 of 64 agree, the rest stand-in content).
+**Decisions:** D-015, D-016, and D-017, each point chosen by the maintainer.
+**Verified:** `npm test` 133/133 (130 with `SCRIBE_SKIP_EPUBCHECK=1`); four deliberate bugs each failed a test. EPUBCheck first warned PKG-010 on a test file name with a space, which is how the P5-04 note was found. Then `P1-05` (pushed `P1-04` as `a0257c5` first): new `src/nav.js`, `test/nav.test.js`; `Book.hrefFor` moved from `OpfEdit` into `src/book.js`; `test/run.js`, `test/epubcheck.test.js`; ROADMAP (P1-05, P5-04 notes), DECISIONS (D-016), ARCHITECTURE, TESTING, this file. Verified: `npm test` 144/144 (140 without EPUBCheck); five deliberate bugs each failed a test; the EPUBCheck cross-check (43 of 64 agree, the rest stand-in content). Then `P1-06` (pushed `P1-05` as `4718c8a` first): new `src/xhtml.js`, `test/xhtml.test.js`; `test/run.js`, `test/epubcheck.test.js`; ROADMAP (P1-06, P5-04 note), DECISIONS (D-017), ARCHITECTURE, SECURITY (pasted HTML), TESTING, this file; corrected the P1-05 count without EPUBCheck to 140. Verified: `npm test` 153/153 (148 without EPUBCheck); six deliberate bugs each failed a test; EPUBCheck agreed on 25 of 26 documents; three pastes through Chromium's `DOMParser` in the browser pane. A `.claude/launch.json` for the browser pane's dev server (port 8081) was added and left untracked.
 
 ### Session 8: 2026-11-03: separate storage from Plainchant Web, then the book model
 

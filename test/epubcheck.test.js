@@ -97,6 +97,30 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
+    test('epubcheck: a chapter with fixed entities and a normalised paste passes EPUBCheck with no messages (P1-06)', () => {
+        const files = BookTemplate.create({ title: 'Paste' }).files;
+        const el = (name, attrs, ...kids) => ({ nodeType: 1, localName: name, attributes: Object.keys(attrs).map((k) => ({ name: k, value: attrs[k] })), childNodes: kids.map((k) => (typeof k === 'string' ? { nodeType: 3, data: k } : k)) });
+        const pasted = Xhtml.normalize({ nodeType: 11, childNodes: [
+            el('b', { style: 'font-weight:normal', id: 'docs-internal-guid-1' },
+                el('h2', { style: 'x' }, 'A ', el('span', { style: 'font-style:italic' }, 'pasted'), ' part'),
+                el('p', { class: 'MsoNormal' }, 'Caf\u00E9\u00A0time ', el('span', { style: 'font-weight:700' }, 'bold'), el('o:p', {}, '\u00A0')),
+                el('ul', {}, el('li', {}, 'One'), el('li', {}, el('p', {}, 'Two'))),
+                el('table', {}, el('tbody', {}, el('tr', {}, el('td', { colspan: '1' }, 'Cell')))),
+                el('blockquote', {}, el('p', {}, 'Quote')),
+                el('script', {}, 'x()'))
+        ] });
+        const path = 'OEBPS/text/chapter-1.xhtml';
+        let text = files[path].replace('<p>Begin writing here.</p>', '<p>Entities&nbsp;&mdash;&rsquo;s here.</p>');
+        text = XmlAst.applyEdits(text, Xhtml.fixEntities(text));
+        const ast = XmlAst.parse(text);
+        const section = XmlAst.find(ast, 'section', XmlAst.find(ast, 'html').ns);
+        text = XmlAst.applyEdits(text, XmlAst.insert(ast, section, 'append', pasted.xhtml));
+        files[path] = text;
+        assert.deepEqual(Xhtml.check(text, { path: path }).problems, []);
+        const r = epubcheck(oracle.jar, files);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+    });
+
     test('epubcheck: a template with the modified date removed fails, so the oracle is really checking', () => {
         const files = BookTemplate.create().files;
         files['OEBPS/content.opf'] = files['OEBPS/content.opf'].replace(/ *<meta property="dcterms:modified">[^<]*<\/meta>\n/, '');
