@@ -19,7 +19,7 @@
     const START = '/* Scribe layout: written by the Layout tab. Edit it here or there; the rest of this file is yours. */';
     const END = '/* End of Scribe layout */';
     const OPENERS = { headingAlign: '', headingDrop: 'none', firstLineCaps: false, dropCap: 0, sceneBreak: 'none', smallCaps: false,
-        fonts: [], bodyFont: '', bodyFallback: 'serif', headingFont: '', headingFallback: 'serif' };
+        fonts: [], bodyFont: '', bodyFallback: 'serif', headingFont: '', headingFallback: 'serif', notes: 'footnotes', noteStyle: false };
     const FALLBACKS = ['serif', 'sans-serif'];
     const quoteFamily = (f) => '"' + String(f).replace(/["\\]/g, '') + '"';
     const PRESETS = {
@@ -56,7 +56,9 @@
             bodyFont: typeof v.bodyFont === 'string' ? v.bodyFont.replace(/["\\]/g, '').trim() : '',
             bodyFallback: FALLBACKS.indexOf(v.bodyFallback) !== -1 ? v.bodyFallback : 'serif',
             headingFont: typeof v.headingFont === 'string' ? v.headingFont.replace(/["\\]/g, '').trim() : '',
-            headingFallback: FALLBACKS.indexOf(v.headingFallback) !== -1 ? v.headingFallback : 'serif'
+            headingFallback: FALLBACKS.indexOf(v.headingFallback) !== -1 ? v.headingFallback : 'serif',
+            notes: v.notes === 'endnotes' ? 'endnotes' : 'footnotes',
+            noteStyle: !!v.noteStyle
         };
     }
 
@@ -95,6 +97,12 @@
             if (BREAKS[s.sceneBreak]) rule('hr::after', ['  content: ' + BREAKS[s.sceneBreak] + ';', '  display: block;']);
         }
         if (s.smallCaps) rule('.small-caps', ['  font-variant: small-caps;', '  letter-spacing: 0.05em;']);
+        // Notes (P4-04): the book-wide placement is a marker the Layout tab reads back; the styling is plain CSS.
+        if (s.noteStyle) {
+            rule('a.noteref', ['  vertical-align: super;', '  font-size: 0.75em;', '  line-height: 0;', '  text-decoration: none;']);
+            rule('aside.footnote, li.endnote', ['  font-size: 0.9em;']);
+        }
+        if (s.notes === 'endnotes') rules.unshift('/* notes: endnotes */');
         return rules.join('\n\n');
     }
 
@@ -145,7 +153,9 @@
             dropCap: letter ? (declIn(letter, 'font-size') === DROP_SIZES[3] ? 3 : 2) : 0,
             sceneBreak: !hr ? 'none' : (Object.keys(BREAKS).find((k) => BREAKS[k] === content) || (content ? 'asterism' : 'space')),
             smallCaps: !!ruleOf('.small-caps'),
-            fonts: faces, bodyFont: bodyF[0], bodyFallback: bodyF[1], headingFont: headF[0], headingFallback: headF[1]
+            fonts: faces, bodyFont: bodyF[0], bodyFallback: bodyF[1], headingFont: headF[0], headingFallback: headF[1],
+            notes: /\/\*\s*notes:\s*endnotes\s*\*\//.test(body) ? 'endnotes' : 'footnotes',
+            noteStyle: !!ruleOf('a.noteref')
         });
     }
 

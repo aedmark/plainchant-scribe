@@ -504,6 +504,20 @@
                 <div class="insp-field"><span>&nbsp;</span><button type="button" class="mini" id="sceneBreakBtn" title="Put a scene break (&lt;hr/&gt;) after the paragraph selected on the Stage">Insert scene break</button></div>
                 <label class="layout-check"><input type="checkbox" data-layout="smallCaps"> Small caps class (.small-caps)</label>
             </div>
+            <h4 class="book-sub">Notes</h4>
+            <div class="insp-grid layout-grid">
+                <label class="insp-field"><span>Notes go</span>
+                    <select data-layout="notes">
+                        <option value="footnotes">At the end of each chapter</option>
+                        <option value="endnotes">In a Notes chapter</option>
+                    </select>
+                </label>
+                <label class="layout-check"><input type="checkbox" data-layout="noteStyle"> Style note references</label>
+            </div>
+            <div class="font-actions">
+                <button type="button" class="mini" id="noteAddBtn" title="Add a numbered note to the paragraph selected on the Stage">Add note&hellip;</button>
+                <button type="button" class="mini" id="noteRemoveBtn" title="Remove the note whose reference is selected on the Stage">Remove note</button>
+            </div>
             <h4 class="book-sub">Fonts</h4>
             <div id="fontList" class="font-list"></div>
             <div class="insp-grid layout-grid">
@@ -930,6 +944,7 @@
 <script src="src/book-style.js"></script>
 <script src="src/font-info.js"></script>
 <script src="src/book-fonts.js"></script>
+<script src="src/book-notes.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>
 <script src="src/app/layout.js"></script>
@@ -957,6 +972,7 @@
 <script src="src/app/cover-ui.js"></script>
 <script src="src/app/style-ui.js"></script>
 <script src="src/app/fonts-ui.js"></script>
+<script src="src/app/notes-ui.js"></script>
 <script src="src/app/inspector-ui.js"></script>
 <script src="src/app/parts-ui.js"></script>
 <script src="src/app/problems-ui.js"></script>

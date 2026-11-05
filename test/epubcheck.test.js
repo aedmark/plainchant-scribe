@@ -189,6 +189,18 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
+    test('epubcheck: a book with footnotes and endnotes passes EPUBCheck with no messages (P4-04)', () => {
+        let files = ExampleBook.create().files;
+        const p = (path, k) => XmlAst.parse(files[path]).elements.filter((e) => e.local === 'p')[k].start;
+        files = BookNotes.add(files, 'OEBPS/text/chapter-1.xhtml', p('OEBPS/text/chapter-1.xhtml', 0), 'A footnote.', 'footnotes').entries;
+        files = BookNotes.add(files, 'OEBPS/text/chapter-2.xhtml', p('OEBPS/text/chapter-2.xhtml', 0), 'An endnote.', 'endnotes').entries;
+        files = BookNotes.add(files, 'OEBPS/text/chapter-1.xhtml', p('OEBPS/text/chapter-1.xhtml', 1), 'Another endnote.', 'endnotes').entries;
+        const s = Object.assign(BookStyle.read(files['OEBPS/css/book.css']) || BookStyle.normalise(BookStyle.PRESETS.plain.settings), { notes: 'endnotes', noteStyle: true });
+        files['OEBPS/css/book.css'] = BookStyle.apply(files['OEBPS/css/book.css'], s, 'en');
+        const r = epubcheck(oracle.jar, files);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+    });
+
     test('epubcheck: a template with the modified date removed fails, so the oracle is really checking', () => {
         const files = BookTemplate.create().files;
         files['OEBPS/content.opf'] = files['OEBPS/content.opf'].replace(/ *<meta property="dcterms:modified">[^<]*<\/meta>\n/, '');

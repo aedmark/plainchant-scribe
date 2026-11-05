@@ -244,6 +244,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** The licence check is the author's statement plus a flag many fonts do not set correctly; Scribe cannot verify a licence. Fonts are stored unobfuscated, which is valid EPUB; some stores' terms ask for obfuscation, which would come with export.
 **Review trigger:** A store requires obfuscation, or authors need font subsetting to keep books small.
 
+## D-034 Footnotes and endnotes  (2026-11-04, status: accepted)
+**Context:** `P4-04` needed choices about where notes go, how they are added, how they are numbered, and what else the first version does. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. One book-wide setting: footnotes at the end of each chapter (`aside epub:type="footnote"`), or endnotes in one Notes chapter (`section epub:type="endnotes"` with `li epub:type="endnote"`), made with the first endnote and added to the spine and contents. References are `a epub:type="noteref"` (EPUB 3 Structural Semantics Vocabulary 1.1). 2. Add note works on the block selected on the Stage, with the reference at its end; a mid-sentence position is a code-editor move. 3. Numbering is automatic in reading order, per chapter for footnotes and book-wide for endnotes, renumbered on every add and remove; footnote and endnote ids have different prefixes. 4. Remove note deletes the selected reference and its note; the layout block gets optional note styling. Converting existing notes between kinds is not part of this item.
+**Alternatives:** A per-note choice of kind (rejected: books use one convention); a caret-position reference (rejected: the Stage selects elements, not text positions); author-entered numbers or symbols (rejected: renumbering by hand breaks easily; a hand-made symbol marker is still kept); converting on mode change (deferred: it rewrites many files at once and needs its own review).
+**Consequences:** Changing the setting affects new notes only; existing notes stay where they are and keep their numbering. Notes not made by Scribe are renumbered only when they use `epub:type` noteref and a note type. Reading systems differ in how they show footnotes (pop-up or link).
+**Review trigger:** Authors ask to convert notes between kinds, or a target reading system mishandles the `aside` footnotes.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are
