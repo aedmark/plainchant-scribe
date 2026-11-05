@@ -134,6 +134,7 @@ function refreshBookPanel(force) {
     document.getElementById('bookModified').textContent = f.modified || '(none)';
     bookCreators.textContent = '';
     f.creators.forEach((c) => bookCreators.appendChild(creatorRow(c)));
+    if (typeof refreshCover === 'function') refreshCover();
     const newRole = document.getElementById('bookNewRole');
     if (!newRole.options.length) roleOptions(newRole, 'aut');
 }

@@ -190,6 +190,13 @@ function openAssetManager(options) {
     openModal(assetsModal, { focus: '#assetSearch', onClose: () => { assetPicker = null; releaseAssetTempUrls(); } });
 }
 
+// A book keeps its images beside its package document (OEBPS/images); a web project uses images/ (P3-05, D-029).
+function assetImageFolder() {
+    if (!isBookProject()) return 'images';
+    const model = Book.read(projectFiles.entries).model;
+    return model ? model.opfPath.slice(0, model.opfPath.lastIndexOf('/') + 1) + 'images' : 'images';
+}
+
 function addImageFiles(files) {
     ensureEntries();
     const taken = Object.keys(projectFiles.entries).concat(Object.keys(projectAssets), (projectFiles.tree || []).map((t) => t.path));
@@ -199,7 +206,7 @@ function addImageFiles(files) {
     Array.from(files).forEach((file) => {
         if (!ImageLib.isImage(file.name)) { skipped.push(file.name); return; }
         if (file.size > ASSET_MAX_FILE_BYTES || total + file.size > ASSET_MAX_TOTAL_BYTES) { skipped.push(file.name + ' (too large)'); return; }
-        const path = ImageLib.uniquePath(taken, file.name, 'images');
+        const path = ImageLib.uniquePath(taken, file.name, assetImageFolder());
         taken.push(path);
         if (!added.length) beginAssetChange();
         addProjectAsset(path, file);

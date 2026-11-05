@@ -209,6 +209,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** Generated labels are plain text: inline markup in headings is not carried into the contents. Running it again after editing headings is the way to refresh the toc.
 **Review trigger:** Authors want hand edits kept across regeneration, or labels that differ from headings.
 
+## D-029 The cover: cover-image, a cover page, and a generated PNG  (2026-11-04, status: accepted)
+**Context:** `P3-05` needed choices about where the cover is set, whether a cover page is added, what Generate makes, and where a book's images go. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. A Cover section in the Book tab: a thumbnail, Choose image… (the Assets picker, which can also add an image), Generate…, and Remove. 2. Besides `properties="cover-image"` (EPUB 3.3 D.6.1, on exactly one item), Scribe keeps a cover page, `cover.xhtml`, first in the spine, with the image full-page, `epub:type="cover"`, and a cover landmark. Changing the cover updates it; removing the cover deletes it and keeps the image. An EPUB 2 `<meta name="cover">`, when present, follows the cover and goes with it. 3. Generate makes a 1600 × 2560 PNG, since stores take JPEG and PNG covers. It shows the title and first creator in EB Garamond in one of three colour schemes, drawn on a canvas in the browser and saved in the book's images folder. 4. For a book, Assets imports go to the images folder beside the package document (`OEBPS/images`); web projects keep `images/`.
+**Alternatives:** A Cover tab (rejected: the cover belongs with the metadata); only marking the image (rejected: the cover would never show inside the book); an SVG cover (rejected: many stores and readers want a raster cover, and the font would have to travel with it); leaving imports in `images/` (rejected: they would sit outside the publication).
+**Consequences:** The cover page is a spine item, so it appears in the Chapters tab and is the first page read; Generate contents leaves it out of the toc. Generated covers depend on EB Garamond having loaded in the browser.
+**Review trigger:** A store rejects the generated cover's size or format, or authors want more cover designs.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

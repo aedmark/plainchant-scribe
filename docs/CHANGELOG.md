@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ### Added
 
+- **Cover**: the Book tab chooses a cover image from the book's images or generates a typographic one (title and author in EB Garamond, three colour schemes), marks it as the cover, and keeps a cover page first in the book; Remove takes both away. Images added to a book now go into its own images folder (`P3-05`, `D-029`).
 - **Generate contents**: on the Chapters tab, Generate contents… previews a table of contents built from the chapters' headings (one, two, or three levels) and the landmarks, then replaces the contents in one undo step, adding ids to headings that need them (`P3-04`, `D-028`).
 - **Split and merge chapters**: select a heading on the Stage and Split at heading makes it the start of a new chapter; Merge joins a chapter with the next one. Links across the book and the table of contents follow, and undo reverses either in one step (`P3-03`, `D-027`).
 - **Chapters organiser**: a Chapters tab in the Inspector adds a chapter after the one on the Stage, renames a chapter's title, deletes a chapter after asking, and moves chapters by drag or arrows. The table of contents follows each change, and undo reverses it in one step (`P3-02`, `D-026`).

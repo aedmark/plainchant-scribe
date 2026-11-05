@@ -156,6 +156,15 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
+    test('epubcheck: a book with a cover image and cover page passes EPUBCheck with no messages (P3-05)', () => {
+        // A real 1 x 1 PNG, so EPUBCheck can read the image.
+        const png = Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'));
+        const files = BookCover.set(ExampleBook.create().files, 'OEBPS/images/cover.png', ['OEBPS/images/cover.png']).entries;
+        files['OEBPS/images/cover.png'] = png;
+        const r = epubcheck(oracle.jar, files);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+    });
+
     test('epubcheck: a template with the modified date removed fails, so the oracle is really checking', () => {
         const files = BookTemplate.create().files;
         files['OEBPS/content.opf'] = files['OEBPS/content.opf'].replace(/ *<meta property="dcterms:modified">[^<]*<\/meta>\n/, '');

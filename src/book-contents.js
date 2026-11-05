@@ -88,8 +88,10 @@
             const path = ref.item.path;
             const ast = XmlAst.parse(entries[path] || '');
             if (!ast.wellFormed) { skipped.push(path); return; }
-            tree.push.apply(tree, chapterEntries(path, ast, d, ids));
-            chapterTypes(ast).forEach((type) => {
+            const types = chapterTypes(ast);
+            // A cover page is reached through its landmark, not listed in the contents (P3-05).
+            if (types.indexOf('cover') === -1) tree.push.apply(tree, chapterEntries(path, ast, d, ids));
+            types.forEach((type) => {
                 if (seenType.has(type)) return;
                 seenType.add(type);
                 landmarks.push({ type: type, path: path, label: LANDMARKS[type] });

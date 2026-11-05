@@ -390,6 +390,18 @@
                     <div class="insp-field insp-wide"><span>Identifier</span><div class="book-readonly"><code id="bookIdentifier"></code><button type="button" class="mini" id="bookCopyId">Copy</button></div></div>
                     <div class="insp-field insp-wide"><span>Last modified</span><div class="book-readonly"><code id="bookModified"></code><button type="button" class="mini" id="bookTouch" title="Set dcterms:modified to now. Export will also do this.">Update now</button></div></div>
                 </div>
+                <h4 class="book-sub">Cover</h4>
+                <div class="book-cover">
+                    <img id="coverThumb" class="cover-thumb" alt="" hidden>
+                    <div class="book-cover-side">
+                        <p id="coverStatus" class="parts-help">No cover yet.</p>
+                        <div class="book-cover-actions">
+                            <button type="button" class="mini" id="coverChooseBtn">Choose image&hellip;</button>
+                            <button type="button" class="mini" id="coverGenerateBtn">Generate&hellip;</button>
+                            <button type="button" class="mini" id="coverRemoveBtn" disabled>Remove</button>
+                        </div>
+                    </div>
+                </div>
                 <h4 class="book-sub">Creators</h4>
                 <div id="bookCreators" class="book-creators"></div>
                 <div class="book-creator book-creator-new">
@@ -486,6 +498,28 @@
         <div class="modal-footer ask-footer">
             <button type="button" class="btn" data-close>Cancel</button>
             <button type="submit" class="btn primary" id="tocApplyBtn">Replace the contents</button>
+        </div>
+    </form>
+</div>
+
+<div id="cover-modal" class="modal-overlay">
+    <form class="modal-content" role="dialog" aria-modal="true" aria-labelledby="cover-title" id="coverForm">
+        <div class="modal-header">
+            <h2 id="cover-title">Generate a cover</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body cover-gen">
+            <canvas id="coverCanvas" width="1600" height="2560" class="cover-canvas" aria-label="Preview of the generated cover"></canvas>
+            <div class="cover-gen-side">
+                <p class="ask-hint">A 1600 &times; 2560 PNG with the book&rsquo;s title and first creator, set in EB Garamond. It is saved in the book&rsquo;s images folder and becomes the cover.</p>
+                <label class="toc-depth">Colours
+                    <select id="coverPalette"></select>
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer ask-footer">
+            <button type="button" class="btn" data-close>Cancel</button>
+            <button type="submit" class="btn primary">Use as cover</button>
         </div>
     </form>
 </div>
@@ -775,6 +809,7 @@
 <script src="src/book-meta.js"></script>
 <script src="src/book-chapters.js"></script>
 <script src="src/book-contents.js"></script>
+<script src="src/book-cover.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>
 <script src="src/app/layout.js"></script>
@@ -799,6 +834,7 @@
 <script src="src/app/book-ui.js"></script>
 <script src="src/app/spine-ui.js"></script>
 <script src="src/app/contents-ui.js"></script>
+<script src="src/app/cover-ui.js"></script>
 <script src="src/app/inspector-ui.js"></script>
 <script src="src/app/parts-ui.js"></script>
 <script src="src/app/problems-ui.js"></script>
