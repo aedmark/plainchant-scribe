@@ -47,6 +47,7 @@ const APP_FILES = [
     'src/book-blocks.js',
     'src/css-lint.js',
     'src/book-export.js',
+    'src/epub.js',
     'src/importing.js',
     'src/app/core.js',
     'src/app/layout.js',

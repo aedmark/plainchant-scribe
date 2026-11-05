@@ -37,7 +37,7 @@
                 <button id="fileMenuBtn" type="button" class="btn" aria-haspopup="true" aria-expanded="false" aria-controls="fileMenuPanel" title="Projects, folders, export, and preview">File &#9662;</button>
                 <div id="fileMenuPanel" class="menu-panel" role="menu" aria-label="File" hidden>
                     <button id="newBtn" type="button" class="menu-item" role="menuitem" title="Start a new EPUB book"><span>New book</span></button>
-                    <button id="openFileBtn" type="button" class="menu-item" role="menuitem" title="Open a single .html, .css, or .js file as its own project"><span>Open file&hellip;</span></button>
+                    <button id="openFileBtn" type="button" class="menu-item" role="menuitem" title="Open an .epub book, or .html, .css, or .js files, as a new project"><span>Open file&hellip;</span></button>
                     <button id="folderBtn" type="button" class="menu-item" role="menuitem" title="Open a folder as a project (a folder that is already a project opens that project)"><span>Open folder&hellip;</span></button>
                     <button id="libraryBtn" type="button" class="menu-item" role="menuitem" title="Open a project from your library"><span>Open project&hellip;</span></button>
                     <button id="exportBtn" type="button" class="menu-item" role="menuitem" title="Export project to disk or bundle"><span>Export&hellip;</span></button>
@@ -726,7 +726,7 @@
             </div>
             <button type="button" class="chip" id="libStarterBtn">Load Example Book</button>
             <button type="button" class="chip" id="libImport">Open file&hellip;</button>
-            <input type="file" id="importInput" accept=".html,.htm,.css,.js" multiple hidden>
+            <input type="file" id="importInput" accept=".epub,application/epub+zip,.html,.htm,.css,.js" multiple hidden>
         </div>
         <div id="library-list" class="modal-body"></div>
         <div id="library-status" role="status" aria-live="polite"></div>
@@ -968,7 +968,7 @@
     <button type="button" class="ctx-item ctx-danger" role="menuitem" data-ctx-cmd="delete"><span>Delete Element</span><kbd>Del</kbd></button>
 </div>
 
-<div id="dropHint" class="drop-hint" hidden>Drop HTML, CSS, or JS files here to import</div>
+<div id="dropHint" class="drop-hint" hidden>Drop an .epub book, or HTML, CSS, or JS files, here to open them</div>
 <div id="notice" class="notice" role="status" aria-live="polite"></div>
 
 <script src="src/html-ast.js"></script>
@@ -1011,6 +1011,7 @@
 <script src="src/book-blocks.js"></script>
 <script src="src/css-lint.js"></script>
 <script src="src/book-export.js"></script>
+<script src="src/epub.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>
 <script src="src/app/layout.js"></script>

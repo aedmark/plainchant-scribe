@@ -272,6 +272,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** Export changes the working copy (the date), which undo reverts. A browser without `CompressionStream` stores everything, which is valid but larger. Because EPUBCheck 5.4.0 does not report a deflated `mimetype`, that rule rests on Scribe's own byte-level test. The desktop Save dialog is checked by `cargo build` and a file-name test, not in a real window from agent sessions.
 **Review trigger:** A store or reader rejects deflated entries, authors want unlisted files kept, or font obfuscation is needed (it would join export).
 
+## D-038 Import .epub  (2026-11-04, status: accepted)
+**Context:** `P5-02` needed choices about how an imported book opens, the limits, what a bad entry does, and DRM. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. Open file… and drag-and-drop accept `.epub` and open it as a new book in Your Projects; the current book is untouched. 2. The asset limits apply: 25 MB per file once decompressed, 200 MB per book, and at most 10,000 files, checked on declared sizes before inflating and enforced while inflating. 3. An unsafe or damaged entry (path traversal, absolute path, duplicate name, bad checksum, ZIP encryption, a method other than stored or deflate) refuses the whole book, naming the entry; known junk is skipped quietly. 4. DRM-protected books are refused with an explanation; font obfuscation is not DRM and imports normally.
+**Alternatives:** A separate Import button (rejected: Open file and drop already open files); stricter limits (rejected: image-heavy books would not open); skipping bad entries (rejected: a half-imported book hides the problem, and a hostile name is reason to distrust the rest); importing DRM books as they are (rejected: their chapters would be unreadable ciphertext).
+**Consequences:** One bad name refuses an otherwise good book; the message names it so the author can fix the archive. Duplicates are found with NFC plus `toLowerCase`, a close approximation of full case folding. Text that is not UTF-8 or UTF-16 becomes a non-editable file. ZIP64 central-directory records (needed only past 65,535 files or 4 GB) are refused as too large.
+**Review trigger:** Real books from `P5-06`'s corpus are refused for reasons authors cannot fix, or the limits prove too tight.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

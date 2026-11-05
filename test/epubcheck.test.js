@@ -230,6 +230,15 @@ if (!oracle.jar) {
         }
     });
 
+    test('epubcheck: a book exported, imported, and exported again still passes EPUBCheck with no messages (P5-02)', async () => {
+        const png = Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'));
+        const files = BookCover.set(ExampleBook.create().files, 'OEBPS/images/cover.png', ['OEBPS/images/cover.png']).entries;
+        const back = await Epub.read((await BookExport.pack(files, { 'OEBPS/images/cover.png': png })).bytes);
+        Object.keys(files).forEach((p) => assert.equal(back.entries[p], files[p], p));
+        const r = epubcheckBytes(oracle.jar, (await BookExport.pack(back.entries, back.binaries)).bytes);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+    });
+
     test('epubcheck: a book whose mimetype is not first, has an extra field, or holds more than the media type fails, so the container rule is checked (P5-01)', () => {
         const files = ExampleBook.create().files;
         const order = Object.keys(files).filter((p) => p !== 'mimetype');

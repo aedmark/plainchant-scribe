@@ -19,7 +19,7 @@ A book is a set of files in the Studio's working copy: `mimetype`, `META-INF/con
 | Example book | `src/example-book.js` | New (done, D-018) | `P2-01` |
 | Book panel, spine organiser, cover | `src/book-meta.js`, `src/app/book-ui.js`, `src/book-chapters.js`, `src/app/spine-ui.js`, `src/book-cover.js`, `src/app/cover-ui.js` | Book panel (D-025), chapters organiser (D-026), split and merge (D-027), cover (D-029), and series and contributors (D-030) done | `P3-01` to `P3-06` |
 | Style presets, fonts, footnotes | `src/book-style.js`, `src/app/style-ui.js`, `src/font-info.js`, `src/book-fonts.js`, `src/app/fonts-ui.js`, `src/book-notes.js`, `src/app/notes-ui.js`, `src/book-blocks.js`, `src/app/blocks-ui.js` | Layout presets (D-031), openers, breaks, small caps (D-032), embedded fonts (D-033), notes (D-034), and figures, tables, poems, and quotes (D-035) done | `P4-01` to `P4-06` |
-| Export and import of `.epub` | `src/epub.js`, `src/zip.js` | New, on Plainchant Web's zip code | `P5-01`, `P5-02` |
+| Export and import of `.epub` | `src/book-export.js`, `src/epub.js`, `src/zip.js`, `src/app/epub-export-ui.js`, `src/app/import.js` | Export (D-037) and import (D-038) done | `P5-01`, `P5-02` |
 | Markdown import | `src/markdown-import.js` | New | `P5-03` |
 | Problems (book rules, EPUBCheck) | `src/book-checks.js`, `src/app/problems-ui.js` | Adapted | `P5-04`, `P5-05` |
 | Accessibility metadata | `src/a11y.js`, `src/app/a11y-ui.js` | New | `P6-01`, `P6-02` |
@@ -35,7 +35,7 @@ File names are proposals; the roadmap items own the interfaces.
 ```text
 Reading Stage / code editor / Book panel -> XmlAst or CssAst character-range splice -> working-copy files -> render + undo snapshot + IndexedDB auto-save
 Export: working-copy files -> Book.check() -> Epub.build() (mimetype first, stored) -> .epub
-Import: .epub -> Epub.read() (path and size checks) -> working-copy files
+Import: .epub -> Epub.read() (directory, name, size, DRM checks; capped inflate; CRC) -> new project (text entries + binary assets)
 ```
 
 | Interface | Producer | Consumer | Contract |
@@ -61,7 +61,7 @@ Import: .epub -> Epub.read() (path and size checks) -> working-copy files
 | `BookBlocks.insert(entries, path, start, kind, opts, assets)`, `figure`, `table`, `poem`, `quote` | `src/book-blocks.js` | Layout tab's blocks section and the Assets panel's Insert in a book (`src/app/blocks-ui.js`) | `insert` splices a figure, table, poem, or quote after the block at `start` (or into a selected section or body), adding a figure's image to the manifest; the builders escape all text (D-035) |
 | `ExampleBook.create(options)` | `src/example-book.js` | Load Example Book, first run | The three-chapter guide, made with `BookTemplate`, `OpfEdit`, and `Nav`; passes `Book`, `Nav`, `Xhtml`, and EPUBCheck with no problems |
 | `Epub.build(files)` | `src/epub.js` | Export | Output opens in EPUBCheck without errors when `Book.check()` reports none |
-| `Epub.read(bytes)` | `src/epub.js` | Import | Refuses unsafe paths, absolute paths, duplicate names, and over-limit sizes (see SECURITY) |
+| `Epub.read(bytes, { limits })` (async) | `src/epub.js` | Open file… and drag-and-drop (`src/app/import.js`) | Returns `{ entries, binaries, skipped, warnings, title, problems }`, or throws an error with a `code` and the entry's name: unsafe or duplicate names, limits, damage, ZIP encryption, DRM, not a book (D-038, SECURITY) |
 
 ## Invariants (target)
 
