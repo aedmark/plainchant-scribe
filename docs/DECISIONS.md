@@ -258,6 +258,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** The rules style the inserted classes and plain `blockquote` and `figcaption`, so hand-made figures and tables without the classes keep the book's own styling. Tables still depend on the reading system for width. Attributions follow the HTML standard (`figure` and `figcaption` around the quote), not a `footer` inside it.
 **Review trigger:** Authors ask for figure sizes or float placement, or a target reading system breaks figures across pages despite the rules.
 
+## D-036 CSS lint for books  (2026-11-04, status: accepted)
+**Context:** `P4-06` needed choices about where lint results appear, which checks run, whether style attributes count, and whether the lint fixes things. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. A Stylesheets category in the Problems panel, for books only, beside Links, Accessibility, and Markup. 2. Three groups of warnings: layout breakers, overrides of the reader's settings, and poorly supported features; plus the specification's rule as an error (EPUB 3.3 §6.3.1.2: no `direction` or `unicode-bidi`). 3. Chapters' `style` attributes are checked as well as stylesheets. 4. Report only: each message explains the problem and the alternative, and the author edits the CSS.
+**Alternatives:** A list in the Layout tab (rejected: problems already have a home that jumps to the line); fewer groups (rejected: all three cause real failures on common readers); stylesheets only (rejected: pasted and imported text brings inline sizes and colours); one-click fixes (rejected for now: a px-to-em conversion depends on context, and the stylesheet is the author's, D-002).
+**Consequences:** Warnings are advice, not validity: a book with warnings can pass EPUBCheck, and a deliberate design (a coloured heading, a fixed-width image with `max-width`) may stay. The text-colour check looks only at the selector's subject element, so a coloured `p.note` is reported and a coloured `h2` is not. Scribe's own output must lint clean, which a test enforces.
+**Review trigger:** Authors ask for fixes, a reader in the test set (D-010) handles a warned feature well enough to drop it, or `<style>` elements in chapters become common.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

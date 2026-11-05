@@ -45,6 +45,7 @@ const APP_FILES = [
     'src/book-fonts.js',
     'src/book-notes.js',
     'src/book-blocks.js',
+    'src/css-lint.js',
     'src/importing.js',
     'src/app/core.js',
     'src/app/layout.js',

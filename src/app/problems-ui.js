@@ -6,6 +6,7 @@ const linkChecker = Links.createChecker();
 const hintChecker = Hints.createChecker();
 const problemsFilterButtons = Array.from(document.querySelectorAll('.problems-filter-btn'));
 let problemsTimer = null;
+const cssLintChecker = CssLint.createChecker();
 let problemsResult = { problems: [], errors: 0, warnings: 0 };
 let problemsFilter = settings.problemsFilter;
 
@@ -22,8 +23,10 @@ function runProblemsCheck() {
     if (activeFile in entries) entries[activeFile] = editor.value;
     const links = linkChecker.check(entries, knownProjectPaths());
     const hints = hintChecker.check(entries);
+    // Book stylesheets and style attributes get the ebook CSS lint (P4-06, D-036).
+    const lint = isBookProject() ? cssLintChecker.check(entries).problems : [];
     const order = Object.keys(entries);
-    const problems = links.problems.map((p) => Object.assign({ category: 'links' }, p)).concat(hints.problems)
+    const problems = links.problems.map((p) => Object.assign({ category: 'links' }, p)).concat(hints.problems, lint)
         .sort((a, b) => (order.indexOf(a.file) - order.indexOf(b.file)) || (a.start - b.start));
     problemsResult = { problems: problems };
     renderProblems();
