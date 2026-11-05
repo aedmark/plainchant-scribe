@@ -101,15 +101,31 @@
         return { entries: next, path: path };
     }
 
-    // Adds a note to the block at `start` in chapter `path`. mode: 'footnotes' | 'endnotes'.
+    // Adds a note to the block at `start` in chapter `path`, its reference at the end of the block.
+    // mode: 'footnotes' | 'endnotes'.
     function add(entries, path, start, text, mode) {
+        const ast = XmlAst.parse(entries[path] || '');
+        if (!ast.wellFormed) throw fail('not-well-formed', path + ' is not well-formed; fix it in the code editor first.');
+        return insertAt(entries, path, blockAt(ast, start).closeStart, text, mode);
+    }
+
+    let sequence = 0;
+
+    // Adds a note whose reference goes at text offset `offset` of chapter `path`, which must be inside an element in
+    // <body> (between tags, not inside one). options.renumber === false leaves numbering for one renumber() later,
+    // as Markdown import does after adding many notes (P5-03).
+    function insertAt(entries, path, offset, text, mode, options) {
         const body = String(text || '').trim();
         if (!body) throw fail('no-text', 'Enter the note\'s text.');
         const ast = XmlAst.parse(entries[path] || '');
         if (!ast.wellFormed) throw fail('not-well-formed', path + ' is not well-formed; fix it in the code editor first.');
-        const block = blockAt(ast, start);
-        // A temporary number; renumbering gives the real one.
-        const tmp = 'n' + Date.now().toString(36);
+        const bodyEl = ast.elements.find((e) => e.local === 'body' && e.ns === XHTML);
+        const inText = bodyEl && ast.elements.some((e) => e.type === 'element' && !e.selfClosing && e.openEnd <= offset && offset <= e.closeStart && e.start >= bodyEl.start && e.end <= bodyEl.end)
+            && !ast.elements.some((e) => e.start < offset && offset < e.openEnd) && !ast.elements.some((e) => !e.selfClosing && e.closeStart < offset && offset < e.end);
+        if (!inText) throw fail('bad-offset', 'A note reference must go in the text of a chapter.');
+        const block = { closeStart: offset };
+        // A temporary number, unique within this session; renumbering gives the real one.
+        const tmp = 'n' + Date.now().toString(36) + (sequence++).toString(36);
         let next = entries;
         if (mode === 'endnotes') {
             const doc = ensureNotesDoc(entries, path);
@@ -128,7 +144,7 @@
             const edits = [{ start: block.closeStart, end: block.closeStart, text: ref }].concat(XmlAst.insert(ast, footnoteContainer(ast), 'append', aside));
             next = Object.assign({}, next, { [path]: XmlAst.applyEdits(next[path], edits) });
         }
-        return { entries: renumber(next, mode), path: path };
+        return { entries: options && options.renumber === false ? next : renumber(next, mode), path: path };
     }
 
     // The references of one document in order, each with its target note: [{ ref, notePath, noteId }].
@@ -226,5 +242,5 @@
         return { entries: renumber(renumber(next, 'footnotes'), 'endnotes'), path: path };
     }
 
-    return { add: add, remove: remove, renumber: renumber, notesDoc: (entries) => notesDoc(entries, readBook(entries)) };
+    return { add: add, insertAt: insertAt, remove: remove, renumber: renumber, notesDoc: (entries) => notesDoc(entries, readBook(entries)) };
 });

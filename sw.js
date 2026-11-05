@@ -48,6 +48,7 @@ const APP_FILES = [
     'src/css-lint.js',
     'src/book-export.js',
     'src/epub.js',
+    'src/markdown-import.js',
     'src/importing.js',
     'src/app/core.js',
     'src/app/layout.js',

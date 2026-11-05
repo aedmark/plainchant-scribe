@@ -95,6 +95,17 @@
         return id;
     }
 
+    // The entries with `image` listed in the manifest (a new item when it has none). assets: the book's binary paths.
+    function listImage(entries, image, assets) {
+        const type = mediaTypeFor(image);
+        if (!type) throw fail('not-an-image', 'Choose a JPEG, PNG, GIF, WebP, or SVG image.');
+        const r = Book.read(entries, { assets: assets });
+        if (!r.model) throw fail('unreadable', 'content.opf cannot be read; fix it in the code editor first.');
+        if (r.model.manifest.items.some((i) => i.path === image)) return entries;
+        const id = freeId(r.model, image.split('/').pop().replace(/\.[^.]+$/, '').replace(/[^A-Za-z0-9_.-]/g, '-').replace(/^(?![A-Za-z_])/, 'img-'));
+        return Object.assign({}, entries, { [r.model.opfPath]: XmlAst.applyEdits(entries[r.model.opfPath], OpfEdit.addItem(r.model, { id: id, path: image, mediaType: type })) });
+    }
+
     // Inserts a block into chapter `path` at the element at `start`. kind: 'figure' | 'table' | 'poem' | 'quote';
     // opts: { image, alt, decorative, caption } | { rows, cols, header, caption } | { text } | { text, attribution }.
     // assets: the book's binary paths. Returns { entries }.
@@ -112,12 +123,7 @@
             // WCAG 2 1.1.1: an image needs a text alternative unless it is decorative (then alt is empty).
             if (!o.decorative && !String(o.alt || '').trim()) throw fail('no-alt', 'Describe the image for readers who cannot see it, or mark it decorative.');
             markup = figure(Book.hrefFor(path, image), o.decorative ? '' : o.alt, o.caption);
-            const r = Book.read(entries, { assets: assets });
-            if (!r.model) throw fail('unreadable', 'content.opf cannot be read; fix it in the code editor first.');
-            if (!r.model.manifest.items.some((i) => i.path === image)) {
-                const id = freeId(r.model, image.split('/').pop().replace(/\.[^.]+$/, '').replace(/[^A-Za-z0-9_.-]/g, '-').replace(/^(?![A-Za-z_])/, 'img-'));
-                next = Object.assign({}, next, { [r.model.opfPath]: XmlAst.applyEdits(next[r.model.opfPath], OpfEdit.addItem(r.model, { id: id, path: image, mediaType: type })) });
-            }
+            next = listImage(next, image, assets);
         } else if (kind === 'table') markup = table(o.rows, o.cols, o.caption, o.header !== false);
         else if (kind === 'poem') markup = poem(o.text);
         else if (kind === 'quote') markup = quote(o.text, o.attribution);
@@ -125,5 +131,5 @@
         return { entries: Object.assign({}, next, { [path]: XmlAst.applyEdits(entries[path], XmlAst.insert(ast, at.ref, at.where, markup)) }) };
     }
 
-    return { IMAGE_TYPES: IMAGE_TYPES, LIMITS: LIMITS, mediaTypeFor: mediaTypeFor, figure: figure, table: table, poem: poem, quote: quote, insert: insert };
+    return { IMAGE_TYPES: IMAGE_TYPES, LIMITS: LIMITS, mediaTypeFor: mediaTypeFor, listImage: listImage, figure: figure, table: table, poem: poem, quote: quote, insert: insert };
 });

@@ -90,3 +90,13 @@ test('book-notes: hand-made notes are renumbered without losing their markup', (
     assert.ok(t.indexOf('<a epub:type="noteref" href="#note-1" id="ref-1">*</a>') !== -1, 'a symbol marker is kept');
     assert.ok(t.indexOf('<aside epub:type="footnote" id="note-1"><p><a href="#ref-1">*</a> <em>Hand-made</em>.</p></aside>') !== -1, t);
 });
+
+test('book-notes: insertAt puts a reference at an exact place in the text, and only there (P5-03)', () => {
+    const f = bnBook(), t = f[bnCh(1)];
+    const at = t.indexOf('Scribe keeps them') + 'Scribe keeps them'.length;
+    const r = BookNotes.insertAt(f, bnCh(1), at, 'Mid-sentence.', 'footnotes').entries[bnCh(1)];
+    assert.ok(r.indexOf('Scribe keeps them<a epub:type="noteref" class="noteref" href="#note-1" id="ref-1">1</a> as they are.') !== -1, r);
+    [t.indexOf('<p>') + 1, t.indexOf('</p>') + 2, t.indexOf('<title>') - 1, 0].forEach((bad) => assert.throws(() => BookNotes.insertAt(f, bnCh(1), bad, 'x', 'footnotes'), /text of a chapter/, 'offset ' + bad));
+    const two = BookNotes.insertAt(BookNotes.insertAt(f, bnCh(1), at, 'A.', 'footnotes', { renumber: false }).entries, bnCh(1), at, 'B.', 'footnotes', { renumber: false }).entries;
+    assert.equal(BookNotes.renumber(two, 'footnotes')[bnCh(1)].match(/id="note-\d"/g).join(' '), 'id="note-1" id="note-2"', 'notes added without renumbering get distinct ids, numbered later');
+});

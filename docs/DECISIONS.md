@@ -279,6 +279,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** One bad name refuses an otherwise good book; the message names it so the author can fix the archive. Duplicates are found with NFC plus `toLowerCase`, a close approximation of full case folding. Text that is not UTF-8 or UTF-16 becomes a non-editable file. ZIP64 central-directory records (needed only past 65,535 files or 4 GB) are refused as too large.
 **Review trigger:** Real books from `P5-06`'s corpus are refused for reasons authors cannot fix, or the limits prove too tight.
 
+## D-039 Import Markdown and plain text  (2026-11-04, status: accepted)
+**Context:** `P5-03` needed choices about where import starts, how files split into chapters, which Markdown extras are handled, and how plain-text paragraphs are found. The maintainer chose each point below on 2026-11-04. Markdown stays import only (D-002).
+**Decision:** 1. An Import text… button in the Chapters tab adds the files' chapters after the chapter on the Stage, as one undo step. 2. Each top-level `#` heading starts a chapter; text before the first, a file with none, or a plain-text file is a chapter named after the file. 3. Footnotes become Scribe notes (D-034) in the book's setting, smart punctuation is applied outside code, and images are matched by file name to the book's images (D-035), else kept as `[alt text]` and listed. 4. Plain text has paragraphs at blank lines, or one per line when a file has none.
+**Alternatives:** Also accepting `.md` and `.txt` on Open file and drop (rejected: dropped `.txt` opens a web project today, and import into the open book is a different action); one chapter per file (rejected: drafts are usually one file with chapter headings); passing raw HTML through (rejected: it could break well-formedness or carry scripts); a full Markdown library (rejected: no runtime dependencies, D-001, and the core is small).
+**Consequences:** Markdown outside the core (tables, definition lists, reference links, HTML) arrives as text for the author to finish. Footnote text loses its formatting. Images must already be in the book (add them in Assets first). Relative links between Markdown files are dropped to text, since the files' names change.
+**Review trigger:** Authors import long drafts with tables or reference links, or ask for images to come along with the Markdown.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

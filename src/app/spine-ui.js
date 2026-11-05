@@ -157,3 +157,25 @@ async function mergeChapter(c, i) {
 
 document.getElementById('chapterAddBtn').addEventListener('click', addChapter);
 document.getElementById('chapterSplitBtn').addEventListener('click', splitAtHeading);
+
+// Import text (P5-03, D-039): Markdown and plain-text files become chapters after the one on the Stage, as one undo
+// step. Footnotes follow the book's notes setting, and images are found by file name among the book's images.
+const chapterImportInput = document.getElementById('chapterImportInput');
+document.getElementById('chapterImportBtn').addEventListener('click', () => chapterImportInput.click());
+chapterImportInput.addEventListener('change', async () => {
+    const picked = Array.from(chapterImportInput.files || []);
+    chapterImportInput.value = '';
+    if (!picked.length) return;
+    const tooBig = picked.find((f) => f.size > 10 * 1048576);
+    if (tooBig) { showNotice(tooBig.name + ' is larger than 10 MB, so nothing was imported.', true); return; }
+    const files = [];
+    for (const f of picked) files.push({ name: f.name, text: Importing.decode(new Uint8Array(await f.arrayBuffer())) });
+    const sheet = BookStyle.stylesheet(projectFiles.entries);
+    const style = sheet ? BookStyle.read(projectFiles.entries[sheet]) : null;
+    chapterAction((entries) => {
+        const r = MarkdownImport.importInto(entries, files, activeHtmlFile, { assets: Object.keys(projectAssets || {}), notes: style ? style.notes : 'footnotes' });
+        const missing = r.missing.length ? ' Images not in the book, kept as [alt text]: ' + r.missing.slice(0, 5).join(', ') + (r.missing.length > 5 ? ', and ' + (r.missing.length - 5) + ' more' : '') + '.' : '';
+        setTimeout(() => showNotice('Imported ' + r.added.length + (r.added.length === 1 ? ' chapter' : ' chapters') + ' from ' + files.map((f) => f.name).join(', ') + '.' + missing, r.missing.length > 0), 0);
+        return { entries: r.entries, path: r.added[0], removed: [] };
+    }, null);
+});

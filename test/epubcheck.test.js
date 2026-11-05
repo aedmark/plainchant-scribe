@@ -239,6 +239,17 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
+    test('epubcheck: a book with chapters imported from Markdown and plain text passes EPUBCheck with no messages (P5-03)', () => {
+        const png = Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'));
+        const md = 'Before.\n\n# One\n\nText *em* with a note[^n] and a [link](https://example.org).\n\n![A map](map.png "Caption")\n\n> Quote\n\n1. a\n2. b\n\n---\n\n```\ncode\n```\n\n[^n]: The note.\n\n# Two\n\n## Part\n\n- x\n  - y\n';
+        ['footnotes', 'endnotes'].forEach((mode) => {
+            const r = MarkdownImport.importInto(ExampleBook.create().files, [{ name: 'draft.md', text: md }, { name: 'plain.txt', text: 'One.\n\n"Two."' }], null, { assets: ['OEBPS/images/map.png'], notes: mode });
+            const files = Object.assign({}, r.entries, { 'OEBPS/images/map.png': png });
+            const c = epubcheck(oracle.jar, files);
+            assert.deepEqual(c.messages.map((m) => m.severity + ' ' + m.ID), [], mode + ': ' + describeMessages(c));
+        });
+    });
+
     test('epubcheck: a book whose mimetype is not first, has an extra field, or holds more than the media type fails, so the container rule is checked (P5-01)', () => {
         const files = ExampleBook.create().files;
         const order = Object.keys(files).filter((p) => p !== 'mimetype');

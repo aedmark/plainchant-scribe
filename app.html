@@ -431,6 +431,8 @@
                 <span class="chapters-actions">
                     <button type="button" class="mini" id="chapterSplitBtn" title="Select a heading on the Stage, then split the chapter there: the heading and everything after it become a new chapter.">Split at heading</button>
                     <button type="button" class="mini" id="chapterAddBtn">Add chapter&hellip;</button>
+                    <button type="button" class="mini" id="chapterImportBtn" title="Add chapters from Markdown (.md) or plain-text (.txt) files, after the chapter on the Stage. Each # heading starts a chapter.">Import text&hellip;</button>
+                    <input type="file" id="chapterImportInput" accept=".md,.markdown,.txt,text/markdown,text/plain" multiple hidden>
                     <button type="button" class="mini" id="tocGenerateBtn" title="Build the table of contents and landmarks from the chapters' headings">Generate contents&hellip;</button>
                 </span>
             </div>
@@ -1012,6 +1014,7 @@
 <script src="src/css-lint.js"></script>
 <script src="src/book-export.js"></script>
 <script src="src/epub.js"></script>
+<script src="src/markdown-import.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>
 <script src="src/app/layout.js"></script>
