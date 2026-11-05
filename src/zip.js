@@ -47,6 +47,9 @@
         return path;
     }
 
+    // files: [{ path, data, deflated? }]. data is the content (string or bytes); deflated, when given, is that content
+    // already compressed as raw DEFLATE (RFC 1951) and is written with method 8. Entries keep their order, carry no
+    // extra field, and are UTF-8 named (APPNOTE 4.4.4 bit 11), so an EPUB's mimetype can go first, stored (OCF 3.3 4.2).
     function build(files, when) {
         if (files.length > MAX_ENTRIES) throw new Error('A zip file holds at most ' + MAX_ENTRIES + ' files.');
         const stamp = dosStamp(when);
@@ -62,12 +65,13 @@
             seen.add(path);
             const name = utf8(path);
             const data = typeof file.data === 'string' ? utf8(file.data) : file.data;
+            const body = file.deflated instanceof Uint8Array ? file.deflated : data;
             if (data.length > MAX_SIZE || offset > MAX_SIZE) throw new Error('"' + path + '" is too large for a zip file.');
             const crc = crc32(data);
-            const fields = [].concat(u16(20), u16(0x0800), u16(0), u16(stamp.time), u16(stamp.date), u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0));
-            chunks.push(Uint8Array.from([0x50, 0x4B, 0x03, 0x04].concat(fields)), name, data);
+            const fields = [].concat(u16(20), u16(0x0800), u16(body === data ? 0 : 8), u16(stamp.time), u16(stamp.date), u32(crc), u32(body.length), u32(data.length), u16(name.length), u16(0));
+            chunks.push(Uint8Array.from([0x50, 0x4B, 0x03, 0x04].concat(fields)), name, body);
             central.push(Uint8Array.from([0x50, 0x4B, 0x01, 0x02].concat(u16((3 << 8) | 20), fields.slice(0, 26), u16(0), u16(0), u16(0), u32((0o100644 << 16) >>> 0), u32(offset))), name);
-            offset += 30 + name.length + data.length;
+            offset += 30 + name.length + body.length;
         });
         const centralSize = central.reduce((n, c) => n + c.length, 0);
         const end = Uint8Array.from([0x50, 0x4B, 0x05, 0x06].concat(u16(0), u16(0), u16(files.length), u16(files.length), u32(centralSize), u32(offset), u16(0)));
@@ -91,15 +95,17 @@
             if (view.getUint32(at, true) !== 0x02014B50) throw new Error('Damaged zip directory.');
             const method = view.getUint16(at + 10, true);
             const crc = view.getUint32(at + 16, true);
+            const compressed = view.getUint32(at + 20, true);
             const size = view.getUint32(at + 24, true);
             const nameLength = view.getUint16(at + 28, true);
             const extraLength = view.getUint16(at + 30, true);
             const commentLength = view.getUint16(at + 32, true);
             const local = view.getUint32(at + 42, true);
             const path = decoder.decode(bytes.subarray(at + 46, at + 46 + nameLength));
-            if (method !== 0) throw new Error('Only stored entries can be read.');
+            if (method !== 0 && method !== 8) throw new Error('Only stored and deflated entries can be read.');
             const dataStart = local + 30 + view.getUint16(local + 26, true) + view.getUint16(local + 28, true);
-            out.push({ path: path, size: size, crc: crc, data: bytes.subarray(dataStart, dataStart + size) });
+            // A deflated entry's data is still compressed; the caller inflates it.
+            out.push({ path: path, method: method, size: size, crc: crc, local: local, data: bytes.subarray(dataStart, dataStart + compressed) });
             at += 46 + nameLength + extraLength + commentLength;
         }
         return out;

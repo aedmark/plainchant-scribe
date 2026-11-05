@@ -56,6 +56,7 @@ function isDefaultThreeFileScheme(entries) {
 function refreshExportModal() {
     ensureEntries();
     syncBufferFromEditor();
+    if (typeof refreshEpubExport === 'function') refreshEpubExport();
     const keys = Object.keys(projectFiles.entries || {}).sort();
     const isDefault = isDefaultThreeFileScheme(projectFiles.entries) && !linkedFolder;
     const previewList = keys.slice(0, 6).join(', ') + (keys.length > 6 ? ', +' + (keys.length - 6) + ' more' : '');

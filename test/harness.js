@@ -1,6 +1,7 @@
 /*
  * Tiny test harness that runs unchanged in a browser (test/index.html) and in Node (test/run.js).
- * No dependencies. Exposes: test(name, fn), assert, runTests() -> [{ name, ok, error }].
+ * No dependencies. Exposes: test(name, fn), assert, runTests() -> [{ name, ok, error }], and runTestsAsync(), which
+ * also waits for a test that returns a promise (an async test).
  */
 (function (root, factory) {
     const api = factory();
@@ -50,5 +51,14 @@
         });
     }
 
-    return { test: test, assert: assert, runTests: runTests };
+    async function runTestsAsync() {
+        const out = [];
+        for (const t of registry) {
+            try { await t.fn(); out.push({ name: t.name, ok: true }); }
+            catch (e) { out.push({ name: t.name, ok: false, error: e.message }); }
+        }
+        return out;
+    }
+
+    return { test: test, assert: assert, runTests: runTests, runTestsAsync: runTestsAsync };
 });

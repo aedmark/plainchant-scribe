@@ -265,6 +265,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** Warnings are advice, not validity: a book with warnings can pass EPUBCheck, and a deliberate design (a coloured heading, a fixed-width image with `max-width`) may stay. The text-colour check looks only at the selector's subject element, so a coloured `p.note` is reported and a coloured `h2` is not. Scribe's own output must lint clean, which a test enforces.
 **Review trigger:** Authors ask for fixes, a reader in the test set (D-010) handles a warned feature well enough to drop it, or `<style>` elements in chapters become common.
 
+## D-037 Export as .epub  (2026-11-04, status: accepted)
+**Context:** `P5-01` needed choices about compression, which files go in, where the new modified date lands, and whether the desktop app exports too. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. Text files are deflated with the platform's `CompressionStream` (raw DEFLATE, RFC 1951) when that saves space; images, fonts, and media are stored; `mimetype` is always stored and first (OCF 3.3). 2. Only `mimetype`, `META-INF`, the package document, and the manifest's files go in; anything else is left out and named. 3. Export sets `dcterms:modified` to now in the working copy, as one undo step, so the source and the `.epub` agree. 4. The desktop app gets a Rust `save_book_file` command with the native Save dialog; the browser downloads.
+**Alternatives:** Storing everything (rejected: text-heavy books grow several times); exporting every file (rejected: EPUBCheck warns about unlisted files, and notes or stray files do not belong in a book); dating only the exported copy (rejected: the working copy would no longer describe the book that was published); browser-only export (rejected: the desktop app had no way to save a book).
+**Consequences:** Export changes the working copy (the date), which undo reverts. A browser without `CompressionStream` stores everything, which is valid but larger. Because EPUBCheck 5.4.0 does not report a deflated `mimetype`, that rule rests on Scribe's own byte-level test. The desktop Save dialog is checked by `cargo build` and a file-name test, not in a real window from agent sessions.
+**Review trigger:** A store or reader rejects deflated entries, authors want unlisted files kept, or font obfuscation is needed (it would join export).
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

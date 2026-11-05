@@ -379,6 +379,47 @@ fn save_project_folder(
     Ok(Some(dir.to_string_lossy().into_owned()))
 }
 
+// A file name for the Save dialog: no folders, no control or reserved characters, ending in .epub.
+fn book_file_name(name: &str) -> String {
+    let base: String = name
+        .rsplit(|c| c == '/' || c == '\\')
+        .next()
+        .unwrap_or("")
+        .chars()
+        .filter(|c| !c.is_control() && !matches!(c, '<' | '>' | ':' | '"' | '|' | '?' | '*'))
+        .collect();
+    let base = base.trim().trim_start_matches('.').to_string();
+    let stem = if base.to_ascii_lowercase().ends_with(".epub") { base[..base.len() - 5].to_string() } else { base };
+    format!("{}.epub", if stem.trim().is_empty() { "book" } else { stem.trim() })
+}
+
+// The chosen path with .epub added when the author typed another ending.
+fn with_epub_extension(path: PathBuf) -> PathBuf {
+    if path.extension().map(|e| e.eq_ignore_ascii_case("epub")).unwrap_or(false) {
+        return path;
+    }
+    let mut os = path.into_os_string();
+    os.push(".epub");
+    PathBuf::from(os)
+}
+
+// Export (P5-01, D-037): asks where to save the packed book and writes it. Ok(None) when the author cancels.
+#[tauri::command]
+fn save_book_file(name: String, data: String) -> Result<Option<String>, String> {
+    let bytes = decode_base64(&data).ok_or_else(|| "The book's data could not be read.".to_string())?;
+    let picked = rfd::FileDialog::new()
+        .set_title("Save the Book")
+        .set_file_name(book_file_name(&name))
+        .add_filter("EPUB book", &["epub"])
+        .save_file();
+    let Some(chosen) = picked else {
+        return Ok(None);
+    };
+    let path = with_epub_extension(chosen);
+    fs::write(&path, bytes).map_err(|e| format!("{}: {}", path.display(), e))?;
+    Ok(Some(path.to_string_lossy().into_owned()))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -407,6 +448,18 @@ mod tests {
     }
 
     #[test]
+    fn book_file_names_are_plain_and_end_in_epub() {
+        assert_eq!(book_file_name("my-book.epub"), "my-book.epub");
+        assert_eq!(book_file_name("my-book"), "my-book.epub");
+        assert_eq!(book_file_name("../../etc/passwd"), "passwd.epub");
+        assert_eq!(book_file_name("a\\b:c?.EPUB"), "bc.epub");
+        assert_eq!(book_file_name(" .. "), "book.epub");
+        assert_eq!(with_epub_extension(PathBuf::from("/tmp/My Book")), PathBuf::from("/tmp/My Book.epub"));
+        assert_eq!(with_epub_extension(PathBuf::from("/tmp/a.EPUB")), PathBuf::from("/tmp/a.EPUB"));
+        assert_eq!(with_epub_extension(PathBuf::from("/tmp/a.zip")), PathBuf::from("/tmp/a.zip.epub"));
+    }
+
+    #[test]
     fn rejects_paths_that_leave_the_project() {
         assert!(is_safe_relative(Path::new("images/a.png")));
         assert!(!is_safe_relative(Path::new("../a.png")));
@@ -430,6 +483,7 @@ fn main() {
             open_project_folder_at,
             use_project_folder,
             save_project_folder,
+            save_book_file,
             preview::preview_start,
             preview::preview_update,
             preview::preview_stop,

@@ -822,6 +822,13 @@
             <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
         </div>
         <div class="modal-body">
+            <section class="export-option" id="epubExportSection" hidden>
+                <h3>The Book as an .epub</h3>
+                <p id="epubExportNote">Packs the book into one .epub file that reading apps and stores accept: the files content.opf lists, with mimetype first as EPUB requires. It also sets the book&rsquo;s last-modified date to now.</p>
+                <div class="export-buttons">
+                    <button type="button" class="btn primary" id="exportEpubBtn">Download .epub</button>
+                </div>
+            </section>
             <section class="export-option">
                 <h3 id="folderExportHeading">Local Disk Folder (Retains Existing Folder &amp; File Structure)</h3>
                 <p id="folderExportNote">Your edits are safely stored in this studio project environment and are not written to disk until you export here. Exporting writes every project file to its exact relative path, preserving your folder hierarchy and existing assets.</p>
@@ -846,7 +853,7 @@
                     <button type="button" class="btn" id="exportZipBtn">Download project .zip</button>
                 </div>
             </section>
-            <section class="export-option">
+            <section class="export-option" id="bundleExportSection">
                 <h3>Standalone Single-File HTML Bundle</h3>
                 <p id="bundleExportNote">Inlines the active HTML page with its linked CSS and JavaScript into a single self-contained <code>.html</code> file.</p>
                 <div class="export-buttons">
@@ -1003,6 +1010,7 @@
 <script src="src/book-notes.js"></script>
 <script src="src/book-blocks.js"></script>
 <script src="src/css-lint.js"></script>
+<script src="src/book-export.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>
 <script src="src/app/layout.js"></script>
@@ -1044,6 +1052,7 @@
 <script src="src/app/tauri-files.js"></script>
 <script src="src/app/project-links.js"></script>
 <script src="src/app/zip-ui.js"></script>
+<script src="src/app/epub-export-ui.js"></script>
 <script src="src/app/preview-ui.js"></script>
 <script src="src/app/format-ui.js"></script>
 <script src="src/app/menus.js"></script>

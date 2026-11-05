@@ -24,11 +24,16 @@ function findEpubcheck() {
 
 // Zips files in the given order (mimetype first, stored) and returns EPUBCheck's JSON report.
 function epubcheck(jar, files) {
+    return epubcheckBytes(jar, Zip.build(Object.keys(files).map((p) => ({ path: p, data: files[p] }))));
+}
+
+// EPUBCheck's JSON report on an .epub file's bytes.
+function epubcheckBytes(jar, bytes) {
     const dir = ecFs.mkdtempSync(ecPath.join(ecOs.tmpdir(), 'scribe-epubcheck-'));
     try {
         const epub = ecPath.join(dir, 'book.epub');
         const report = ecPath.join(dir, 'report.json');
-        ecFs.writeFileSync(epub, Zip.build(Object.keys(files).map((p) => ({ path: p, data: files[p] }))));
+        ecFs.writeFileSync(epub, bytes);
         try { ecChild.execFileSync('java', ['-jar', jar, epub, '--json', report], { stdio: 'ignore' }); } catch (e) { /* non-zero when the book has errors */ }
         return JSON.parse(ecFs.readFileSync(report, 'utf8'));
     } finally {
@@ -213,6 +218,42 @@ if (!oracle.jar) {
         files[img] = Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'));
         const r = epubcheck(oracle.jar, files);
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+    });
+
+    test('epubcheck: exported books, deflated, pass EPUBCheck with no messages (P5-01)', async () => {
+        const png = Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'));
+        const withCover = BookCover.set(ExampleBook.create().files, 'OEBPS/images/cover.png', ['OEBPS/images/cover.png']).entries;
+        const books = [[BookTemplate.create().files, {}], [ExampleBook.create().files, {}], [Object.assign(withCover, { 'notes.txt': 'left out' }), { 'OEBPS/images/cover.png': png }]];
+        for (const [files, binaries] of books) {
+            const r = epubcheckBytes(oracle.jar, (await BookExport.pack(files, binaries)).bytes);
+            assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+        }
+    });
+
+    test('epubcheck: a book whose mimetype is not first, has an extra field, or holds more than the media type fails, so the container rule is checked (P5-01)', () => {
+        const files = ExampleBook.create().files;
+        const order = Object.keys(files).filter((p) => p !== 'mimetype');
+        const build = (first) => Zip.build([{ path: 'mimetype', data: first }].concat(order.map((p) => ({ path: p, data: files[p] }))));
+        const late = Zip.build(order.slice(0, 1).concat('mimetype', order.slice(1)).map((p) => ({ path: p, data: files[p] })));
+        // An extra field on the first local header: 4 bytes spliced in after the name, and every later offset moved.
+        const plain = build(files.mimetype), extra = new Uint8Array(plain.length + 4);
+        extra.set(plain.subarray(0, 38), 0);
+        extra.set([0xFE, 0xCA, 0, 0], 38);
+        extra.set(plain.subarray(38), 42);
+        const view = new DataView(extra.buffer);
+        view.setUint16(28, 4, true);
+        const end = extra.length - 22, count = view.getUint16(end + 10, true);
+        let at = view.getUint32(end + 16, true) + 4;
+        view.setUint32(end + 16, at, true);
+        for (let k = 0; k < count; k++) {
+            if (k > 0) view.setUint32(at + 42, view.getUint32(at + 42, true) + 4, true);
+            at += 46 + view.getUint16(at + 28, true) + view.getUint16(at + 30, true) + view.getUint16(at + 32, true);
+        }
+        [['not first', late, 'PKG-006'], ['extra field', extra, 'PKG-005'], ['a trailing newline', build('application/epub+zip\n'), 'PKG-007']].forEach(([why, bytes, id]) => {
+            const r = epubcheckBytes(oracle.jar, bytes);
+            assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), ['ERROR ' + id], why + ': ' + describeMessages(r));
+        });
+        // EPUBCheck 5.4.0 reports nothing for a deflated mimetype (observed 2026-11-04); test/book-export.test.js checks that rule at the byte level.
     });
 
     test('epubcheck: a template with the modified date removed fails, so the oracle is really checking', () => {

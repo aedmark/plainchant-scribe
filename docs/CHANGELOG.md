@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ### Added
 
+- **Export as .epub**: in a book, the Export dialog packs it into one `.epub` (mimetype first, text compressed, only the files content.opf lists), warns first if the book has errors, and updates its last-modified date; the desktop app asks where to save it (`P5-01`, `D-037`).
 - **CSS lint**: in a book, the Problems panel's new Stylesheets category lists CSS that reading systems handle badly (fixed positioning, px font sizes, fixed text colours, grid and flex, and more) in stylesheets and style attributes, and the `direction` and `unicode-bidi` properties EPUB 3.3 forbids (`P4-06`, `D-036`).
 - **Figures, tables, poems, and quotes**: the Layout tab inserts each after the paragraph selected on the Stage (a figure with alt text and a caption), and one switch keeps them readable on any screen; in a book, the Assets panel's Insert makes a figure (`P4-05`, `D-035`).
 - **Footnotes and endnotes**: the Layout tab adds a numbered note to the paragraph selected on the Stage, as a footnote at the end of the chapter or an endnote in a Notes chapter, renumbers notes as they are added and removed, and can style the references (`P4-04`, `D-034`).

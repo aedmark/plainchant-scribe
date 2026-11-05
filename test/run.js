@@ -22,6 +22,7 @@ globalThis.BookFonts = require('../src/book-fonts.js');
 globalThis.BookNotes = require('../src/book-notes.js');
 globalThis.BookBlocks = require('../src/book-blocks.js');
 globalThis.CssLint = require('../src/css-lint.js');
+globalThis.BookExport = require('../src/book-export.js');
 globalThis.CodeShade = require('../src/code-shade.js');
 globalThis.DomOutline = require('../src/dom-outline.js');
 globalThis.Project = require('../src/project.js');
@@ -62,6 +63,7 @@ require('./book-fonts.test.js');
 require('./book-notes.test.js');
 require('./book-blocks.test.js');
 require('./css-lint.test.js');
+require('./book-export.test.js');
 require('./epubcheck.test.js');
 require('./hints.test.js');
 require('./preview.test.js');
@@ -73,11 +75,12 @@ require('./theme.test.js');
 require('./project.test.js');
 require('./structure.test.js');
 
-const results = harness.runTests();
-let failed = 0;
-for (const r of results) {
-    if (r.ok) console.log('  ok   ' + r.name);
-    else { failed++; console.log('  FAIL ' + r.name + '\n         ' + r.error); }
-}
-console.log('\n' + (results.length - failed) + '/' + results.length + ' passed');
-process.exit(failed ? 1 : 0);
+harness.runTestsAsync().then((results) => {
+    let failed = 0;
+    for (const r of results) {
+        if (r.ok) console.log('  ok   ' + r.name);
+        else { failed++; console.log('  FAIL ' + r.name + '\n         ' + r.error); }
+    }
+    console.log('\n' + (results.length - failed) + '/' + results.length + ' passed');
+    process.exit(failed ? 1 : 0);
+});
