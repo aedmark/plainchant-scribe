@@ -34,7 +34,7 @@ test('book-style: settings read back from the block, including hand edits, and p
     assert.equal(BookStyle.presetOf(s), null);
     const custom = { paragraph: 'indent', size: 1, lineHeight: null, justify: false, hyphens: true, widows: 3 };
     assert.deepEqual(BookStyle.read(BookStyle.apply(base, custom, 'en')), BookStyle.normalise(custom));
-    assert.deepEqual(BookStyle.normalise({ paragraph: 'weird', size: 99, lineHeight: 'x', widows: 9 }), { paragraph: 'none', size: 1, lineHeight: null, justify: false, hyphens: false, widows: null }, 'out-of-range values fall back');
+    assert.deepEqual(BookStyle.normalise({ paragraph: 'weird', size: 99, lineHeight: 'x', widows: 9 }), { paragraph: 'none', size: 1, lineHeight: null, justify: false, hyphens: false, widows: null, headingAlign: '', headingDrop: 'none', firstLineCaps: false, dropCap: 0, sceneBreak: 'none', smallCaps: false }, 'out-of-range values fall back');
 });
 
 test('book-style: the stylesheet is the one the first chapter links, else the first CSS item', () => {
@@ -49,4 +49,44 @@ test('book-style: the stylesheet is the one the first chapter links, else the fi
     unlinked['OEBPS/text/chapter-1.xhtml'] = unlinked['OEBPS/text/chapter-1.xhtml'].replace(/\s*<link[^>]*>/, '');
     assert.equal(BookStyle.stylesheet(unlinked), ST_CSS, 'the first CSS in the manifest');
     assert.equal(BookStyle.stylesheet(Object.assign({}, files, { 'OEBPS/content.opf': '<x' })), null);
+});
+
+const stAll = () => Object.assign({}, BookStyle.PRESETS.novel.settings, { headingAlign: 'center', headingDrop: 'third', firstLineCaps: true, dropCap: 3, sceneBreak: 'fleuron', smallCaps: true });
+
+test('book-style: chapter openers, drop caps, scene breaks, and small caps are written into the block and read back (P4-02)', () => {
+    const t = BookStyle.apply('', stAll(), 'en');
+    const rules = CssAst.parse(t).rules.map((r) => r.selector.trim());
+    ['h1', 'h1 + p::first-line', 'h1 + p::first-letter', 'hr', 'hr::after', '.small-caps'].forEach((sel) => assert.ok(rules.indexOf(sel) !== -1, sel));
+    assert.ok(/h1 \{\n  text-align: center;\n  margin-top: 6em;\n  margin-top: 30vh;\n\}/.test(t), 'a third of the page, with an em fallback');
+    assert.ok(t.indexOf('content: "\\2766";') !== -1 && /^[\x00-\x7F]*$/.test(t), 'ornaments as escapes, so the stylesheet stays ASCII');
+    assert.deepEqual(BookStyle.read(t), BookStyle.normalise(stAll()));
+    const each = [{ headingAlign: 'left' }, { headingDrop: 'some' }, { dropCap: 2 }, { sceneBreak: 'space' }, { sceneBreak: 'asterism' }, { sceneBreak: 'stars' }, { firstLineCaps: true }, { smallCaps: true }];
+    each.forEach((change) => {
+        const s = Object.assign({}, BookStyle.PRESETS.plain.settings, change);
+        const css = BookStyle.apply('', s, 'en');
+        assert.ok(css.indexOf(BookStyle.START) === 0, JSON.stringify(change) + ' writes a block even with paragraphs left alone');
+        assert.deepEqual(BookStyle.read(css), BookStyle.normalise(s), JSON.stringify(change));
+    });
+    assert.equal(BookStyle.apply('', Object.assign({}, BookStyle.PRESETS.plain.settings, { sceneBreak: 'space' }), 'en').indexOf('::after'), -1, 'blank space has no ornament');
+});
+
+test('book-style: presets set only the paragraph settings and keep openers; the preset mark ignores them', () => {
+    const s = BookStyle.withPreset(stAll(), 'modern');
+    assert.deepEqual([s.paragraph, s.justify, s.dropCap, s.sceneBreak, s.smallCaps], ['space', false, 3, 'fleuron', true]);
+    assert.equal(BookStyle.presetOf(s), 'modern');
+    assert.equal(BookStyle.presetOf(stAll()), 'novel');
+    const plain = BookStyle.withPreset(stAll(), 'plain');
+    assert.ok(BookStyle.apply('', plain, 'en').indexOf('p {') === -1 && BookStyle.apply('', plain, 'en').indexOf('hr::after') !== -1, 'plain paragraphs, openers kept');
+});
+
+test('book-style: a scene break goes after the selected block, climbing out of inline elements', () => {
+    const ch = stBook()['OEBPS/text/chapter-2.xhtml'];
+    const at = (test) => XmlAst.parse(ch).elements.find(test).start;
+    const out = BookStyle.sceneBreakAfter(ch, at((e) => e.local === 'code'));
+    assert.ok(/decides the order of the book\. This chapter is second because its <code>itemref<\/code> is second\.<\/p>\n    <hr\/>\n    <p>The contents/.test(out), out);
+    assert.deepEqual(Xhtml.check(out, { path: 'c.xhtml' }).problems, []);
+    assert.throws(() => BookStyle.sceneBreakAfter(ch, at((e) => e.local === 'body')));
+    assert.throws(() => BookStyle.sceneBreakAfter('<html', 0));
+    const prefixed = '<?xml version="1.0"?>\n<h:html xmlns:h="http://www.w3.org/1999/xhtml"><h:head><h:title>T</h:title></h:head><h:body><h:p>x</h:p></h:body></h:html>';
+    assert.ok(BookStyle.sceneBreakAfter(prefixed, XmlAst.parse(prefixed).elements.find((e) => e.local === 'p').start).indexOf('<h:p>x</h:p><h:hr/>') !== -1);
 });

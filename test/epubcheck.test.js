@@ -166,10 +166,12 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
-    test('epubcheck: a book with each layout preset passes EPUBCheck with no messages (P4-01)', () => {
-        ['novel', 'modern'].forEach((k) => {
+    test('epubcheck: a book with each layout preset, and with openers and a scene break, passes EPUBCheck with no messages (P4-01, P4-02)', () => {
+        ['novel', 'modern', 'openers'].forEach((k) => {
             const files = ExampleBook.create().files;
-            files['OEBPS/css/book.css'] = BookStyle.apply(files['OEBPS/css/book.css'], BookStyle.PRESETS[k].settings, 'en');
+            const settings = k === 'openers' ? Object.assign({}, BookStyle.PRESETS.novel.settings, { headingAlign: 'center', headingDrop: 'third', firstLineCaps: true, dropCap: 3, sceneBreak: 'fleuron', smallCaps: true }) : BookStyle.PRESETS[k].settings;
+            files['OEBPS/css/book.css'] = BookStyle.apply(files['OEBPS/css/book.css'], settings, 'en');
+            if (k === 'openers') files['OEBPS/text/chapter-2.xhtml'] = BookStyle.sceneBreakAfter(files['OEBPS/text/chapter-2.xhtml'], XmlAst.parse(files['OEBPS/text/chapter-2.xhtml']).elements.find((e) => e.local === 'p').start);
             const r = epubcheck(oracle.jar, files);
             assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], k + ': ' + describeMessages(r));
         });

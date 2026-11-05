@@ -443,7 +443,7 @@
                 <span class="insp-inline-label">Start from:</span>
                 <button type="button" class="chip" data-layout-preset="novel" aria-pressed="false" title="First-line indents, justified, hyphenated">Novel</button>
                 <button type="button" class="chip" data-layout-preset="modern" aria-pressed="false" title="Space between paragraphs, ragged right">Modern</button>
-                <button type="button" class="chip" data-layout-preset="plain" aria-pressed="false" title="Remove Scribe's layout block; the book's own CSS and the reader decide">Plain</button>
+                <button type="button" class="chip" data-layout-preset="plain" aria-pressed="false" title="Paragraphs left to the book's own CSS and the reader; with no openers or breaks set either, Scribe's block is removed">Plain</button>
             </div>
             <div class="insp-grid layout-grid">
                 <label class="insp-field"><span>Paragraphs</span>
@@ -465,7 +465,46 @@
                 <label class="layout-check"><input type="checkbox" data-layout="justify"> Justify</label>
                 <label class="layout-check"><input type="checkbox" data-layout="hyphens"> Hyphenate</label>
             </div>
-            <p class="parts-help">Readers can override line height and justification with their own settings.</p>
+            <h4 class="book-sub">Chapter openers</h4>
+            <div class="insp-grid layout-grid">
+                <label class="insp-field"><span>Chapter title</span>
+                    <select data-layout="headingAlign">
+                        <option value="">As the book sets it</option>
+                        <option value="left">Left</option>
+                        <option value="center">Centred</option>
+                    </select>
+                </label>
+                <label class="insp-field"><span>Start lower</span>
+                    <select data-layout="headingDrop">
+                        <option value="none">No</option>
+                        <option value="some">A little</option>
+                        <option value="third">A third of the page</option>
+                    </select>
+                </label>
+                <label class="insp-field"><span>Drop cap</span>
+                    <select data-layout="dropCap">
+                        <option value="0">None</option>
+                        <option value="2">Over 2 lines</option>
+                        <option value="3">Over 3 lines</option>
+                    </select>
+                </label>
+                <label class="layout-check"><input type="checkbox" data-layout="firstLineCaps"> First line in small caps</label>
+            </div>
+            <h4 class="book-sub">Scene breaks and small caps</h4>
+            <div class="insp-grid layout-grid">
+                <label class="insp-field"><span>Scene break (&lt;hr/&gt;)</span>
+                    <select data-layout="sceneBreak">
+                        <option value="none">As the book sets it</option>
+                        <option value="space">Blank space</option>
+                        <option value="asterism">&#8258;</option>
+                        <option value="stars">* * *</option>
+                        <option value="fleuron">&#10086;</option>
+                    </select>
+                </label>
+                <div class="insp-field"><span>&nbsp;</span><button type="button" class="mini" id="sceneBreakBtn" title="Put a scene break (&lt;hr/&gt;) after the paragraph selected on the Stage">Insert scene break</button></div>
+                <label class="layout-check"><input type="checkbox" data-layout="smallCaps"> Small caps class (.small-caps)</label>
+            </div>
+            <p class="parts-help">Readers can override line height and justification with their own settings. Apply .small-caps to an element with the Properties tab&rsquo;s Classes field.</p>
         </div>
         <div id="inspProblemsPane" class="inspector-body" hidden>
             <div id="problemsFilterBar" class="css-state-bar" role="group" aria-label="Kinds of problems to show">

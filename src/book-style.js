@@ -4,7 +4,9 @@
  * The block sits between the START and END comments and is rewritten on each change; it wins over earlier rules by
  * coming last, and the rest of the stylesheet is never touched (D-002). read() takes the settings back from the
  * block, so hand edits inside it show in the Layout tab. Settings: { paragraph: 'indent' | 'space' | 'none',
- * size (em), lineHeight (number or null), justify, hyphens, widows (number or null) }.
+ * size (em), lineHeight (number or null), justify, hyphens, widows (number or null) } and, for openers and breaks
+ * (P4-02, D-032), { headingAlign: '' | 'left' | 'center', headingDrop: 'none' | 'some' | 'third', firstLineCaps,
+ * dropCap: 0 | 2 | 3, sceneBreak: 'none' | 'space' | 'asterism' | 'stars' | 'fleuron', smallCaps }.
  */
 (function (root, factory) {
     if (typeof module === 'object' && module.exports) module.exports = factory(require('./xml-ast.js'), require('./book.js'));
@@ -14,11 +16,15 @@
 
     const START = '/* Scribe layout: written by the Layout tab. Edit it here or there; the rest of this file is yours. */';
     const END = '/* End of Scribe layout */';
+    const OPENERS = { headingAlign: '', headingDrop: 'none', firstLineCaps: false, dropCap: 0, sceneBreak: 'none', smallCaps: false };
     const PRESETS = {
-        novel: { label: 'Novel', settings: { paragraph: 'indent', size: 1.5, lineHeight: 1.4, justify: true, hyphens: true, widows: 2 } },
-        modern: { label: 'Modern', settings: { paragraph: 'space', size: 1, lineHeight: 1.5, justify: false, hyphens: false, widows: 2 } },
-        plain: { label: 'Plain', settings: { paragraph: 'none', size: 1, lineHeight: null, justify: false, hyphens: false, widows: null } }
+        novel: { label: 'Novel', settings: Object.assign({ paragraph: 'indent', size: 1.5, lineHeight: 1.4, justify: true, hyphens: true, widows: 2 }, OPENERS) },
+        modern: { label: 'Modern', settings: Object.assign({ paragraph: 'space', size: 1, lineHeight: 1.5, justify: false, hyphens: false, widows: 2 }, OPENERS) },
+        plain: { label: 'Plain', settings: Object.assign({ paragraph: 'none', size: 1, lineHeight: null, justify: false, hyphens: false, widows: null }, OPENERS) }
     };
+    // Scene-break ornaments, as CSS content (escapes keep the stylesheet ASCII).
+    const BREAKS = { space: null, asterism: '"\\2042"', stars: '"*\\00a0\\00a0*\\00a0\\00a0*"', fleuron: '"\\2766"' };
+    const DROP_SIZES = { 2: '2.7em', 3: '3.9em' };
     const LINE_HEIGHTS = [1.2, 1.3, 1.4, 1.5, 1.6, 1.8];
     const RTL = /^(ar|he|fa|ur|yi|ps|dv)(-|$)/i;
 
@@ -32,7 +38,13 @@
             lineHeight: v.lineHeight == null || v.lineHeight === '' ? null : num(v.lineHeight, 1, 3),
             justify: !!v.justify,
             hyphens: !!v.hyphens,
-            widows: v.widows == null || v.widows === '' ? null : num(v.widows, 1, 5)
+            widows: v.widows == null || v.widows === '' ? null : num(v.widows, 1, 5),
+            headingAlign: ['left', 'center'].indexOf(v.headingAlign) !== -1 ? v.headingAlign : '',
+            headingDrop: ['some', 'third'].indexOf(v.headingDrop) !== -1 ? v.headingDrop : 'none',
+            firstLineCaps: !!v.firstLineCaps,
+            dropCap: Number(v.dropCap) === 2 || Number(v.dropCap) === 3 ? Number(v.dropCap) : 0,
+            sceneBreak: Object.prototype.hasOwnProperty.call(BREAKS, v.sceneBreak) ? v.sceneBreak : 'none',
+            smallCaps: !!v.smallCaps
         };
     }
 
@@ -48,11 +60,26 @@
         if (s.hyphens) p.push('  -webkit-hyphens: auto;', '  -epub-hyphens: auto;', '  hyphens: auto;');
         if (s.widows != null) p.push('  widows: ' + s.widows + ';', '  orphans: ' + s.widows + ';');
         const decls = p.filter(Boolean);
-        if (!decls.length) return '';
-        const lines = ['p {'].concat(decls, ['}']);
+        const rules = [];
+        const rule = (selector, list) => rules.push([selector + ' {'].concat(list, ['}']).join('\n'));
+        if (decls.length) rule('p', decls);
         // After a heading or a scene break, a paragraph starts flush.
-        if (s.paragraph === 'indent') lines.push('', 'h1 + p, h2 + p, h3 + p, h4 + p, h5 + p, h6 + p, hr + p {', '  text-indent: 0;', '}');
-        return lines.join('\n');
+        if (s.paragraph === 'indent') rule('h1 + p, h2 + p, h3 + p, h4 + p, h5 + p, h6 + p, hr + p', ['  text-indent: 0;']);
+        // Chapter openers (P4-02): the chapter title (h1) and the paragraph that follows it.
+        const h1 = [];
+        if (s.headingAlign) h1.push('  text-align: ' + s.headingAlign + ';');
+        // vh for a sink measured on the page, with an em fallback for readers without it.
+        if (s.headingDrop === 'some') h1.push('  margin-top: 3em;');
+        if (s.headingDrop === 'third') h1.push('  margin-top: 6em;', '  margin-top: 30vh;');
+        if (h1.length) rule('h1', h1);
+        if (s.firstLineCaps) rule('h1 + p::first-line', ['  font-variant: small-caps;', '  letter-spacing: 0.05em;']);
+        if (s.dropCap) rule('h1 + p::first-letter', ['  float: left;', '  font-size: ' + DROP_SIZES[s.dropCap] + ';', '  line-height: 0.85;', '  margin: 0.05em 0.08em 0 0;']);
+        if (s.sceneBreak !== 'none') {
+            rule('hr', ['  border: 0;', '  height: auto;', '  margin: 1.5em 0;', '  text-align: center;']);
+            if (BREAKS[s.sceneBreak]) rule('hr::after', ['  content: ' + BREAKS[s.sceneBreak] + ';', '  display: block;']);
+        }
+        if (s.smallCaps) rule('.small-caps', ['  font-variant: small-caps;', '  letter-spacing: 0.05em;']);
+        return rules.join('\n\n');
     }
 
     function blockRange(text) {
@@ -67,8 +94,13 @@
         const r = blockRange(String(text || ''));
         if (!r) return null;
         const body = text.slice(r.start + START.length, r.end - END.length);
-        const rule = /(^|\n)\s*p\s*\{([^}]*)\}/.exec(body);
-        const decl = (prop) => { const m = rule ? new RegExp('(^|[;\\s])' + prop + '\\s*:\\s*([^;]+);').exec(rule[2]) : null; return m ? m[2].trim() : null; };
+        const ruleOf = (selector) => new RegExp('(^|\\n)\\s*' + selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*\\{([^}]*)\\}').exec(body);
+        const declIn = (r, prop) => { const m = r ? new RegExp('(^|[;\\s])' + prop + '\\s*:\\s*([^;]+);').exec(r[2]) : null; return m ? m[2].trim() : null; };
+        const rule = ruleOf('p');
+        const decl = (prop) => declIn(rule, prop);
+        const h1 = ruleOf('h1'), letter = ruleOf('h1 + p::first-letter'), hr = ruleOf('hr'), after = ruleOf('hr::after');
+        const content = declIn(after, 'content');
+        const top = h1 ? (body.match(/(^|\n)\s*h1\s*\{[^}]*\}/) || [''])[0] : '';
         const indent = decl('text-indent'), bottom = decl('margin-bottom');
         const em = (v) => { const m = /^([\d.]+)em$/.exec(v || ''); return m ? Number(m[1]) : null; };
         let paragraph = 'none', size = 1;
@@ -79,7 +111,13 @@
             lineHeight: lh != null && /^[\d.]+$/.test(lh) ? Number(lh) : null,
             justify: decl('text-align') === 'justify',
             hyphens: decl('hyphens') === 'auto' || decl('-webkit-hyphens') === 'auto',
-            widows: decl('widows') != null ? Number(decl('widows')) : null
+            widows: decl('widows') != null ? Number(decl('widows')) : null,
+            headingAlign: declIn(h1, 'text-align') || '',
+            headingDrop: /30vh/.test(top) ? 'third' : (declIn(h1, 'margin-top') ? 'some' : 'none'),
+            firstLineCaps: !!ruleOf('h1 + p::first-line'),
+            dropCap: letter ? (declIn(letter, 'font-size') === DROP_SIZES[3] ? 3 : 2) : 0,
+            sceneBreak: !hr ? 'none' : (Object.keys(BREAKS).find((k) => BREAKS[k] === content) || (content ? 'asterism' : 'space')),
+            smallCaps: !!ruleOf('.small-caps')
         });
     }
 
@@ -97,10 +135,21 @@
         return t.replace(/\s*$/, '') + (t.trim() ? '\n\n' : '') + block + '\n';
     }
 
-    // The preset whose settings these are, or null.
+    // Presets set the paragraph settings; openers, breaks, and small caps are kept (P4-02).
+    const PARAGRAPH_KEYS = ['paragraph', 'size', 'lineHeight', 'justify', 'hyphens', 'widows'];
+    const pick = (s) => PARAGRAPH_KEYS.map((k) => normalise(s)[k]);
+
+    // The preset whose paragraph settings these are, or null.
     function presetOf(settings) {
-        const s = JSON.stringify(normalise(settings));
-        return Object.keys(PRESETS).find((k) => JSON.stringify(normalise(PRESETS[k].settings)) === s) || null;
+        const s = JSON.stringify(pick(settings));
+        return Object.keys(PRESETS).find((k) => JSON.stringify(pick(PRESETS[k].settings)) === s) || null;
+    }
+
+    // The settings with a preset's paragraph settings applied and everything else kept.
+    function withPreset(settings, name) {
+        const base = normalise(settings), preset = normalise(PRESETS[name] ? PRESETS[name].settings : {});
+        PARAGRAPH_KEYS.forEach((k) => { base[k] = preset[k]; });
+        return base;
     }
 
     // The book's main stylesheet: the first stylesheet the first spine chapter links, else the first CSS item.
@@ -118,5 +167,19 @@
         return css ? css.path : null;
     }
 
-    return { START: START, END: END, PRESETS: PRESETS, LINE_HEIGHTS: LINE_HEIGHTS, normalise: normalise, css: css, read: read, apply: apply, presetOf: presetOf, stylesheet: stylesheet };
+    // Where to put a scene break after the element at `start` in a chapter: that element, or the block it sits in.
+    const INLINE = { a: 1, abbr: 1, b: 1, cite: 1, code: 1, em: 1, i: 1, kbd: 1, mark: 1, q: 1, s: 1, small: 1, span: 1, strong: 1, sub: 1, sup: 1, u: 1, img: 1, br: 1 };
+    function sceneBreakAfter(text, start) {
+        const ast = XmlAst.parse(text || '');
+        if (!ast.wellFormed) throw Object.assign(new Error('The chapter is not well-formed; fix it in the code editor first.'), { code: 'not-well-formed' });
+        let el = ast.elements.find((e) => e.start === start);
+        while (el && INLINE[el.local]) el = ast.byId[el.parentId];
+        if (!el || el.type !== 'element' || ['html', 'head', 'body'].indexOf(el.local) !== -1 || el === ast.documentElement) {
+            throw Object.assign(new Error('Select a paragraph on the Stage to put the scene break after it.'), { code: 'no-block' });
+        }
+        const name = el.prefix ? el.prefix + ':hr' : 'hr';
+        return XmlAst.applyEdits(text, XmlAst.insert(ast, el, 'after', '<' + name + '/>'));
+    }
+
+    return { START: START, END: END, PRESETS: PRESETS, BREAKS: BREAKS, sceneBreakAfter: sceneBreakAfter, withPreset: withPreset, LINE_HEIGHTS: LINE_HEIGHTS, normalise: normalise, css: css, read: read, apply: apply, presetOf: presetOf, stylesheet: stylesheet };
 });

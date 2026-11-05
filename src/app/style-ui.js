@@ -53,6 +53,7 @@ function writeLayout(settings) {
 function layoutFromInputs() {
     const s = {};
     layoutInputs.forEach((el) => { s[el.dataset.layout] = el.type === 'checkbox' ? el.checked : el.value; });
+    s.dropCap = Number(s.dropCap);
     return s;
 }
 
@@ -60,4 +61,15 @@ layoutInputs.forEach((el) => el.addEventListener('change', () => {
     if (el.dataset.layout === 'size' && !(Number(el.value) > 0)) { showNotice('The indent or space is a number of em, such as 1.5.', true); refreshLayout(); return; }
     writeLayout(layoutFromInputs());
 }));
-inspLayoutPane.querySelectorAll('[data-layout-preset]').forEach((b) => b.addEventListener('click', () => writeLayout(BookStyle.PRESETS[b.dataset.layoutPreset].settings)));
+inspLayoutPane.querySelectorAll('[data-layout-preset]').forEach((b) => b.addEventListener('click', () => writeLayout(BookStyle.withPreset(layoutFromInputs(), b.dataset.layoutPreset))));
+
+// Insert scene break (P4-02, D-032): an <hr/> after the paragraph selected on the Stage, as a guarded chapter edit.
+document.getElementById('sceneBreakBtn').addEventListener('click', () => {
+    const node = selectedPcId ? HtmlAst.findById(currentHtmlAst, selectedPcId) : null;
+    if (!node || !/\.xhtml?$/i.test(activeHtmlFile)) { showNotice('Select a paragraph in a chapter on the Stage first.', true); return; }
+    let next;
+    try { next = BookStyle.sceneBreakAfter(projectFiles.html, node.start); } catch (e) { showNotice(e.message, true); return; }
+    applyHtmlTransform(next, null);
+    const s = BookStyle.read(projectFiles.entries[layoutTarget()] || '');
+    showNotice('Inserted a scene break.' + (s && s.sceneBreak !== 'none' ? '' : ' Choose how it looks under Scene break.'));
+});

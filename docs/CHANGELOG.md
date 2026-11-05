@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ### Added
 
+- **Chapter openers, scene breaks, and small caps**: the Layout tab centres or lowers chapter titles, adds a drop cap or a small-caps first line, styles scene breaks as space or an ornament (with Insert scene break on the Stage), and offers a small caps class (`P4-02`, `D-032`).
 - **Layout presets**: a Layout tab sets paragraph indents or spacing, line height, justification, hyphenation, and widows and orphans, from a Novel, Modern, or Plain start, written as one clearly marked block at the end of the book's stylesheet (`P4-01`, `D-031`).
 - **Series and contributors**: the Book tab sets the series name and number (also written for Calibre), lists contributors such as editors and translators with roles and sort names, and moves creators and contributors up and down (`P3-06`, `D-030`).
 - **Cover**: the Book tab chooses a cover image from the book's images or generates a typographic one (title and author in EB Garamond, three colour schemes), marks it as the cover, and keeps a cover page first in the book; Remove takes both away. Images added to a book now go into its own images folder (`P3-05`, `D-029`).

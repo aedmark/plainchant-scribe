@@ -230,6 +230,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** The block's `p` rule overrides the book's own paragraph rules for the properties it sets, as intended. A book with several stylesheets gets the block in the first chapter's.
 **Review trigger:** Authors need different layouts per chapter, or a reader is found to ignore the block.
 
+## D-032 Chapter openers, scene breaks, and small caps in the layout block  (2026-11-04, status: accepted)
+**Context:** `P4-02` needed choices about how openers, drop caps, and small caps are applied, which opener options there are, how scene breaks work, and whether running-text small caps get a class. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. More settings in the Layout tab, written into the same marked block (D-031) and applied to every chapter by selectors; no chapter markup changes. 2. Openers: the chapter title (`h1`) left or centred and set lower, the first line of the first paragraph (`h1 + p`) in small caps, and a drop cap over 2 or 3 lines, floated so readers that cannot float it show a large letter. 3. A scene break is an `<hr/>`, the HTML thematic break, styled as blank space or an ornament through `hr::after`. Insert scene break puts an XHTML `<hr/>` after the paragraph selected on the Stage, through the chapter guard (D-024). 4. A `.small-caps` class, written only when chosen, applied through the Inspector's Classes field. Presets set only the paragraph settings, so they keep these.
+**Alternatives:** Classes written into each chapter (rejected: it edits every chapter for a book-wide look); fewer opener options (the maintainer wanted all three); styling only, or a paragraph holding the ornament (rejected: an `<hr/>` is the semantic break, and typing it by hand is error-prone); small caps only in the opener (rejected: authors need them in running text too).
+**Consequences:** Openers apply to every `h1` and the paragraph after it, so a book whose chapters do not start with `h1` gets no opener styling. `hr::after` and `initial-letter`-style effects vary between readers; the floated drop cap is the most widely shown.
+**Review trigger:** Chapters need different openers, or a target reader shows drop caps or ornaments badly.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are
