@@ -518,6 +518,14 @@
                 <button type="button" class="mini" id="noteAddBtn" title="Add a numbered note to the paragraph selected on the Stage">Add note&hellip;</button>
                 <button type="button" class="mini" id="noteRemoveBtn" title="Remove the note whose reference is selected on the Stage">Remove note</button>
             </div>
+            <h4 class="book-sub">Figures, tables, poems, and quotes</h4>
+            <label class="layout-check"><input type="checkbox" data-layout="blocks"> Keep them readable on any screen (images fit, nothing splits across pages)</label>
+            <div class="font-actions">
+                <button type="button" class="mini" data-block="figure" title="Put a figure with an image after the paragraph selected on the Stage">Figure&hellip;</button>
+                <button type="button" class="mini" data-block="table" title="Put a table after the paragraph selected on the Stage">Table&hellip;</button>
+                <button type="button" class="mini" data-block="poem" title="Put a poem after the paragraph selected on the Stage">Poem&hellip;</button>
+                <button type="button" class="mini" data-block="quote" title="Put a block quote after the paragraph selected on the Stage">Quote&hellip;</button>
+            </div>
             <h4 class="book-sub">Fonts</h4>
             <div id="fontList" class="font-list"></div>
             <div class="insp-grid layout-grid">
@@ -651,6 +659,53 @@
         <div class="modal-footer ask-footer">
             <button type="button" class="btn" data-close>Cancel</button>
             <button type="submit" class="btn primary">Embed font</button>
+        </div>
+    </form>
+</div>
+
+<div id="block-modal" class="modal-overlay">
+    <form class="modal-content ask-content" role="dialog" aria-modal="true" aria-labelledby="block-title" id="blockForm">
+        <div class="modal-header">
+            <h2 id="block-title">Insert</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body font-form">
+            <p class="ask-hint" id="blockWhere"></p>
+            <div data-kind="figure">
+                <div class="font-form">
+                    <label class="insp-field"><span>Image</span><select id="blockImage"></select></label>
+                    <p class="ask-hint" id="blockNoImages" hidden>This book has no images yet. Add one in Assets, then come back.</p>
+                    <label class="insp-field"><span>Description (alt text)</span><input type="text" id="blockAlt" class="ask-input" autocomplete="off"></label>
+                    <label class="layout-check"><input type="checkbox" id="blockDecorative"> Decorative: it adds nothing a description could say</label>
+                    <label class="insp-field"><span>Caption (optional)</span><input type="text" id="blockFigCaption" class="ask-input" autocomplete="off"></label>
+                </div>
+            </div>
+            <div data-kind="table">
+                <div class="font-form">
+                    <div class="font-row">
+                        <label class="insp-field"><span>Rows</span><input type="number" id="blockRows" class="ask-input" min="1" max="50" value="3"></label>
+                        <label class="insp-field"><span>Columns</span><input type="number" id="blockCols" class="ask-input" min="1" max="10" value="2"></label>
+                    </div>
+                    <label class="layout-check"><input type="checkbox" id="blockHeader" checked> A header row</label>
+                    <label class="insp-field"><span>Caption (optional)</span><input type="text" id="blockTableCaption" class="ask-input" autocomplete="off"></label>
+                    <p class="ask-hint">Fill in the cells on the Stage or in the code editor. Keep tables narrow: a reader on a phone sees only a few columns.</p>
+                </div>
+            </div>
+            <div data-kind="poem">
+                <label class="insp-field"><span>Lines</span><textarea id="blockPoem" rows="8" spellcheck="true"></textarea></label>
+                <p class="ask-hint">One line per line. A blank line starts a new stanza; start a line with two spaces to indent it.</p>
+            </div>
+            <div data-kind="quote">
+                <div class="font-form">
+                    <label class="insp-field"><span>Quotation</span><textarea id="blockQuote" rows="5" spellcheck="true"></textarea></label>
+                    <label class="insp-field"><span>Attribution (optional)</span><input type="text" id="blockAttribution" class="ask-input" autocomplete="off"></label>
+                </div>
+            </div>
+            <p id="blockError" class="ask-error" role="alert" hidden></p>
+        </div>
+        <div class="modal-footer ask-footer">
+            <button type="button" class="btn" data-close>Cancel</button>
+            <button type="submit" class="btn primary" id="blockOkBtn">Insert</button>
         </div>
     </form>
 </div>
@@ -945,6 +1000,7 @@
 <script src="src/font-info.js"></script>
 <script src="src/book-fonts.js"></script>
 <script src="src/book-notes.js"></script>
+<script src="src/book-blocks.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>
 <script src="src/app/layout.js"></script>
@@ -973,6 +1029,7 @@
 <script src="src/app/style-ui.js"></script>
 <script src="src/app/fonts-ui.js"></script>
 <script src="src/app/notes-ui.js"></script>
+<script src="src/app/blocks-ui.js"></script>
 <script src="src/app/inspector-ui.js"></script>
 <script src="src/app/parts-ui.js"></script>
 <script src="src/app/problems-ui.js"></script>

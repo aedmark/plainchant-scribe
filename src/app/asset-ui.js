@@ -37,6 +37,8 @@ function selectedImageTarget() {
 }
 
 function insertAssetImage(item) {
+    // A book gets a figure with alt text and well-formed XHTML (P4-05, D-035).
+    if (isBookProject()) { openBlockDialog('figure', { image: item.path }); return; }
     const rel = Project.relativePath(activeHtmlFile, item.path);
     const snippet = '<img src="' + HtmlAst.escapeAttr(rel) + '" alt="' + HtmlAst.escapeAttr(item.name.replace(/\.[^.]+$/, '')) + '" style="max-width: 100%; height: auto;">';
     const node = selectedPcId ? HtmlAst.findById(currentHtmlAst, selectedPcId) : null;

@@ -251,6 +251,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** Changing the setting affects new notes only; existing notes stay where they are and keep their numbering. Notes not made by Scribe are renumbered only when they use `epub:type` noteref and a note type. Reading systems differ in how they show footnotes (pop-up or link).
 **Review trigger:** Authors ask to convert notes between kinds, or a target reading system mishandles the `aside` footnotes.
 
+## D-035 Figures, tables, poems, and quotes  (2026-11-04, status: accepted)
+**Context:** `P4-05` needed choices about how these blocks get into a chapter, what styling makes them survive reflow, how poems are marked up, and what happens to the Assets panel's Insert in a book. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. Insert buttons in the Layout tab open one dialog per kind and put the block after the paragraph selected on the Stage, like Insert scene break (D-032). A figure needs alt text or a decorative mark and lists its image in the manifest. 2. One switch writes reflow-safe rules for all four kinds into the layout block (D-031), keyed on the classes the inserts write. 3. A poem is a `div.poem` of `div.stanza` of `p.line`, so each line can wrap with a hanging indent. 4. In a book, the Assets panel's Insert opens the same figure dialog.
+**Alternatives:** Styling only, with markup by hand (rejected: the markup is where reflow problems start); images only (rejected: tables and poems are where authors most need a pattern); a switch per kind with figure sizes (rejected for now: more settings than the first version needs); `<br/>`-separated poem lines (rejected: a wrapped line cannot hang); leaving the Assets Insert alone (rejected: it wrote HTML the chapter guard refuses).
+**Consequences:** The rules style the inserted classes and plain `blockquote` and `figcaption`, so hand-made figures and tables without the classes keep the book's own styling. Tables still depend on the reading system for width. Attributions follow the HTML standard (`figure` and `figcaption` around the quote), not a `footer` inside it.
+**Review trigger:** Authors ask for figure sizes or float placement, or a target reading system breaks figures across pages despite the rules.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

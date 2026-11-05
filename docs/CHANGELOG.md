@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ### Added
 
+- **Figures, tables, poems, and quotes**: the Layout tab inserts each after the paragraph selected on the Stage (a figure with alt text and a caption), and one switch keeps them readable on any screen; in a book, the Assets panel's Insert makes a figure (`P4-05`, `D-035`).
 - **Footnotes and endnotes**: the Layout tab adds a numbered note to the paragraph selected on the Stage, as a footnote at the end of the chapter or an endnote in a Notes chapter, renumbers notes as they are added and removed, and can style the references (`P4-04`, `D-034`).
 - **Embedded fonts**: the Layout tab imports TTF, OTF, WOFF, and WOFF2 fonts (reading their family, weight, and style, refusing fonts whose licence forbids embedding, and asking you to confirm the licence), and sets the body and heading fonts (`P4-03`, `D-033`).
 - **Chapter openers, scene breaks, and small caps**: the Layout tab centres or lowers chapter titles, adds a drop cap or a small-caps first line, styles scene breaks as space or an ornament (with Insert scene break on the Stage), and offers a small caps class (`P4-02`, `D-032`).

@@ -8,7 +8,8 @@
  * (P4-02, D-032), { headingAlign: '' | 'left' | 'center', headingDrop: 'none' | 'some' | 'third', firstLineCaps,
  * dropCap: 0 | 2 | 3, sceneBreak: 'none' | 'space' | 'asterism' | 'stars' | 'fleuron', smallCaps } and, for embedded
  * fonts (P4-03, D-033), { fonts: [{ family, weight, style, src }], bodyFont, bodyFallback, headingFont,
- * headingFallback }, where src is the font file's URL as written relative to the stylesheet.
+ * headingFallback }, where src is the font file's URL as written relative to the stylesheet, and for notes (P4-04,
+ * D-034) { notes: 'footnotes' | 'endnotes', noteStyle } and reflow-safe blocks (P4-05, D-035) { blocks }.
  */
 (function (root, factory) {
     if (typeof module === 'object' && module.exports) module.exports = factory(require('./xml-ast.js'), require('./book.js'));
@@ -19,7 +20,7 @@
     const START = '/* Scribe layout: written by the Layout tab. Edit it here or there; the rest of this file is yours. */';
     const END = '/* End of Scribe layout */';
     const OPENERS = { headingAlign: '', headingDrop: 'none', firstLineCaps: false, dropCap: 0, sceneBreak: 'none', smallCaps: false,
-        fonts: [], bodyFont: '', bodyFallback: 'serif', headingFont: '', headingFallback: 'serif', notes: 'footnotes', noteStyle: false };
+        fonts: [], bodyFont: '', bodyFallback: 'serif', headingFont: '', headingFallback: 'serif', notes: 'footnotes', noteStyle: false, blocks: false };
     const FALLBACKS = ['serif', 'sans-serif'];
     const quoteFamily = (f) => '"' + String(f).replace(/["\\]/g, '') + '"';
     const PRESETS = {
@@ -58,7 +59,8 @@
             headingFont: typeof v.headingFont === 'string' ? v.headingFont.replace(/["\\]/g, '').trim() : '',
             headingFallback: FALLBACKS.indexOf(v.headingFallback) !== -1 ? v.headingFallback : 'serif',
             notes: v.notes === 'endnotes' ? 'endnotes' : 'footnotes',
-            noteStyle: !!v.noteStyle
+            noteStyle: !!v.noteStyle,
+            blocks: !!v.blocks
         };
     }
 
@@ -101,6 +103,29 @@
         if (s.noteStyle) {
             rule('a.noteref', ['  vertical-align: super;', '  font-size: 0.75em;', '  line-height: 0;', '  text-decoration: none;']);
             rule('aside.footnote, li.endnote', ['  font-size: 0.9em;']);
+        }
+        // Reflow-safe blocks (P4-05): images fit the screen, and figures, captions, and table rows are not split across
+        // pages (CSS Fragmentation 3 break-inside and break-before, with the CSS 2 page-break spellings older readers use).
+        if (s.blocks) {
+            const start = RTL.test(language || '') ? 'right' : 'left';
+            const keep = ['  page-break-inside: avoid;', '  break-inside: avoid;'];
+            rule('figure.figure, figure.quote', ['  margin: 1.5em 0;'].concat(keep));
+            rule('figure.figure', ['  text-align: center;']);
+            rule('figure.figure img', ['  max-width: 100%;', '  max-height: 90vh;', '  height: auto;']);
+            rule('figcaption', ['  font-size: 0.9em;', '  text-indent: 0;', '  page-break-before: avoid;', '  break-before: avoid;']);
+            rule('table.table', ['  border-collapse: collapse;', '  width: 100%;', '  margin: 1em 0;', '  font-size: 0.9em;']);
+            rule('table.table caption', ['  font-weight: bold;', '  margin-bottom: 0.5em;']);
+            rule('table.table th, table.table td', ['  border-top: 1px solid;', '  padding: 0.25em 0.5em;', '  text-align: ' + start + ';', '  vertical-align: top;']);
+            rule('table.table tr', keep);
+            rule('div.poem', ['  margin: 1em 0 1em 1.5em;', '  -webkit-hyphens: none;', '  -epub-hyphens: none;', '  hyphens: none;']);
+            rule('div.poem div.stanza', ['  margin: 0 0 1em;']);
+            // A wrapped line hangs under its start, so the reader can still see where each line begins.
+            rule('div.poem p.line', ['  margin: 0;', '  padding-left: 2em;', '  text-indent: -2em;', '  text-align: ' + start + ';']);
+            rule('div.poem p.line.indent', ['  padding-left: 4em;']);
+            rule('blockquote', ['  margin: 1em 1.5em;']);
+            rule('blockquote > p:first-child', ['  text-indent: 0;']);
+            rule('figure.quote blockquote', ['  margin: 0 1.5em;']);
+            rule('figure.quote figcaption', ['  margin: 0.5em 1.5em 0;', '  text-align: right;']);
         }
         if (s.notes === 'endnotes') rules.unshift('/* notes: endnotes */');
         return rules.join('\n\n');
@@ -155,7 +180,8 @@
             smallCaps: !!ruleOf('.small-caps'),
             fonts: faces, bodyFont: bodyF[0], bodyFallback: bodyF[1], headingFont: headF[0], headingFallback: headF[1],
             notes: /\/\*\s*notes:\s*endnotes\s*\*\//.test(body) ? 'endnotes' : 'footnotes',
-            noteStyle: !!ruleOf('a.noteref')
+            noteStyle: !!ruleOf('a.noteref'),
+            blocks: !!ruleOf('figure.figure, figure.quote')
         });
     }
 

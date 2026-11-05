@@ -34,7 +34,7 @@ test('book-style: settings read back from the block, including hand edits, and p
     assert.equal(BookStyle.presetOf(s), null);
     const custom = { paragraph: 'indent', size: 1, lineHeight: null, justify: false, hyphens: true, widows: 3 };
     assert.deepEqual(BookStyle.read(BookStyle.apply(base, custom, 'en')), BookStyle.normalise(custom));
-    assert.deepEqual(BookStyle.normalise({ paragraph: 'weird', size: 99, lineHeight: 'x', widows: 9 }), { paragraph: 'none', size: 1, lineHeight: null, justify: false, hyphens: false, widows: null, headingAlign: '', headingDrop: 'none', firstLineCaps: false, dropCap: 0, sceneBreak: 'none', smallCaps: false, fonts: [], bodyFont: '', bodyFallback: 'serif', headingFont: '', headingFallback: 'serif', notes: 'footnotes', noteStyle: false }, 'out-of-range values fall back');
+    assert.deepEqual(BookStyle.normalise({ paragraph: 'weird', size: 99, lineHeight: 'x', widows: 9 }), { paragraph: 'none', size: 1, lineHeight: null, justify: false, hyphens: false, widows: null, headingAlign: '', headingDrop: 'none', firstLineCaps: false, dropCap: 0, sceneBreak: 'none', smallCaps: false, fonts: [], bodyFont: '', bodyFallback: 'serif', headingFont: '', headingFallback: 'serif', notes: 'footnotes', noteStyle: false, blocks: false }, 'out-of-range values fall back');
 });
 
 test('book-style: the stylesheet is the one the first chapter links, else the first CSS item', () => {

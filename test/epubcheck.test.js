@@ -201,6 +201,20 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
+    test('epubcheck: a book with a figure, table, poem, and quotes, styled for reflow, passes EPUBCheck with no messages (P4-05)', () => {
+        const img = 'OEBPS/images/map.png';
+        let files = ExampleBook.create().files;
+        const ch = 'OEBPS/text/chapter-2.xhtml';
+        const at = () => XmlAst.parse(files[ch]).elements.filter((e) => e.local === 'p')[0].start;
+        [['figure', { image: img, alt: 'A map', caption: 'The map.' }], ['figure', { image: img, decorative: true }], ['table', { rows: 2, cols: 2, header: true, caption: 'Parts' }],
+            ['poem', { text: 'One,\n  two.\n\nThree.' }], ['quote', { text: 'A quote.' }], ['quote', { text: 'Another.', attribution: 'Someone' }]
+        ].forEach(([kind, opts]) => { files = BookBlocks.insert(files, ch, at(), kind, opts, [img]).entries; });
+        files['OEBPS/css/book.css'] = BookStyle.apply(files['OEBPS/css/book.css'], Object.assign({}, BookStyle.PRESETS.novel.settings, { blocks: true }), 'en');
+        files[img] = Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'));
+        const r = epubcheck(oracle.jar, files);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+    });
+
     test('epubcheck: a template with the modified date removed fails, so the oracle is really checking', () => {
         const files = BookTemplate.create().files;
         files['OEBPS/content.opf'] = files['OEBPS/content.opf'].replace(/ *<meta property="dcterms:modified">[^<]*<\/meta>\n/, '');
