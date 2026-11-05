@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ### Added
 
+- **Generate contents**: on the Chapters tab, Generate contents… previews a table of contents built from the chapters' headings (one, two, or three levels) and the landmarks, then replaces the contents in one undo step, adding ids to headings that need them (`P3-04`, `D-028`).
 - **Split and merge chapters**: select a heading on the Stage and Split at heading makes it the start of a new chapter; Merge joins a chapter with the next one. Links across the book and the table of contents follow, and undo reverses either in one step (`P3-03`, `D-027`).
 - **Chapters organiser**: a Chapters tab in the Inspector adds a chapter after the one on the Stage, renames a chapter's title, deletes a chapter after asking, and moves chapters by drag or arrows. The table of contents follows each change, and undo reverses it in one step (`P3-02`, `D-026`).
 - **Book panel**: a Book tab in the Inspector edits the title, language, date, publisher, rights, description, ISBN, and creators with roles and sort names, writing only the lines of `content.opf` they change. The identifier is shown read-only, and Update now stamps the modified date (`P3-01`, `D-025`).

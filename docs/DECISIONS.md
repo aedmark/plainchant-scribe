@@ -202,6 +202,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** A split cannot be made at the very start of a chapter. The merged chapter may end up with two sections typed as chapters; that is valid. Link rewriting reads every XHTML file in the book once per split or merge.
 **Review trigger:** Authors split in the middle of a section and want the section kept whole, or need to merge non-adjacent chapters.
 
+## D-028 Generating the contents and landmarks from headings  (2026-11-04, status: accepted)
+**Context:** `P3-04` needed choices about the generate flow, the depth and missing ids, which chapters go in, and what happens to the landmarks. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. Preview, then replace: a dialog shows the tree, the ids to add, and the landmarks; applying replaces the toc's list (hand edits to it are lost, as the dialog says) in one undo step, and the page list and the rest of the nav stay. 2. Depth 1 to 3, default 2. Each chapter is a top entry (its first heading, linked to the chapter itself), deeper headings nest by their level relative to that first heading, and headings that need a link and lack an id get one, slugged from their text and unique in the chapter. 3. Linear spine chapters in spine order; `linear="no"` chapters and the nav are left out. Labels are the first heading, else the `<title>`. 4. Landmarks are refreshed from `epub:type`: bodymatter at the first chapter marked so (else the first linear chapter), plus the first chapter of each other landmark type found on a chapter's body or first element; toc only when the nav is in the spine (EPUBCheck RSC-011); landmarks to files the plan did not consider stay.
+**Alternatives:** Replacing at once with the last depth (rejected: replacing loses hand edits, so a preview first); depth 1 by default and never adding ids (rejected: sections are what a reader's contents show, and ids are the only way to link them); every spine chapter (rejected: non-linear items are auxiliary); only bodymatter, or leaving landmarks alone (rejected: the types are already in the chapters).
+**Consequences:** Generated labels are plain text: inline markup in headings is not carried into the contents. Running it again after editing headings is the way to refresh the toc.
+**Review trigger:** Authors want hand edits kept across regeneration, or labels that differ from headings.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

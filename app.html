@@ -407,6 +407,7 @@
                 <span class="chapters-actions">
                     <button type="button" class="mini" id="chapterSplitBtn" title="Select a heading on the Stage, then split the chapter there: the heading and everything after it become a new chapter.">Split at heading</button>
                     <button type="button" class="mini" id="chapterAddBtn">Add chapter&hellip;</button>
+                    <button type="button" class="mini" id="tocGenerateBtn" title="Build the table of contents and landmarks from the chapters' headings">Generate contents&hellip;</button>
                 </span>
             </div>
             <ol id="chaptersList" class="chapters-list"></ol>
@@ -460,6 +461,31 @@
         <div class="modal-footer ask-footer">
             <button type="button" class="btn" data-close id="confirmCancelBtn">Cancel</button>
             <button type="submit" class="btn primary" id="confirmOkBtn">OK</button>
+        </div>
+    </form>
+</div>
+
+<div id="toc-modal" class="modal-overlay">
+    <form class="modal-content" role="dialog" aria-modal="true" aria-labelledby="toc-title" id="tocForm">
+        <div class="modal-header">
+            <h2 id="toc-title">Generate contents</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p class="ask-hint">Builds the table of contents from the chapters&rsquo; headings, in reading order, and refreshes the landmarks. It replaces the contents list in nav.xhtml, so changes you made to it by hand are lost; undo brings them back.</p>
+            <label class="toc-depth">Heading depth
+                <select id="tocDepth">
+                    <option value="1">1 level: one entry per chapter</option>
+                    <option value="2" selected>2 levels: chapters and their sections</option>
+                    <option value="3">3 levels: and subsections</option>
+                </select>
+            </label>
+            <p id="tocSummary" class="toc-summary" aria-live="polite"></p>
+            <div id="tocPreview" class="toc-preview" aria-label="Preview of the contents"></div>
+        </div>
+        <div class="modal-footer ask-footer">
+            <button type="button" class="btn" data-close>Cancel</button>
+            <button type="submit" class="btn primary" id="tocApplyBtn">Replace the contents</button>
         </div>
     </form>
 </div>
@@ -748,6 +774,7 @@
 <script src="src/example-book.js"></script>
 <script src="src/book-meta.js"></script>
 <script src="src/book-chapters.js"></script>
+<script src="src/book-contents.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>
 <script src="src/app/layout.js"></script>
@@ -771,6 +798,7 @@
 <script src="src/app/stage-nav.js"></script>
 <script src="src/app/book-ui.js"></script>
 <script src="src/app/spine-ui.js"></script>
+<script src="src/app/contents-ui.js"></script>
 <script src="src/app/inspector-ui.js"></script>
 <script src="src/app/parts-ui.js"></script>
 <script src="src/app/problems-ui.js"></script>

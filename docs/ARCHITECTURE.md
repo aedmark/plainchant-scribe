@@ -13,7 +13,7 @@ A book is a set of files in the Studio's working copy: `mimetype`, `META-INF/con
 | XML parsing and splicing | `src/xml-ast.js` | New (done, D-011) | `P1-01` |
 | New-book template | `src/book-template.js` | New (done, D-012) | `P1-02` |
 | Book model (OPF, manifest, spine) | `src/book.js`, `src/opf-edit.js` | New (reading done, D-014; edits done, D-015) | `P1-03`, `P1-04` |
-| Nav document | `src/nav.js` | New (read and edit done, D-016) | `P1-05`, `P3-04` |
+| Nav document | `src/nav.js`, `src/book-contents.js` | New (read and edit done, D-016; generated from headings, D-028) | `P1-05`, `P3-04` |
 | XHTML checks and normalising | `src/xhtml.js` | New (done, D-017) | `P1-06` |
 | Reading Stage and reader controls | `src/book-stage.js`, `src/app/stage-book.js`, `src/app/reader-ui.js`, `src/app/reader-device.js`, `src/app/stage-nav.js` | Chapter display (D-018), reader settings (D-020), paged mode (D-021), device presets (D-022), navigation (D-023), and Stage editing (D-024) done; adapted from Plainchant Web's Stage | `P2-01` to `P2-06` |
 | Example book | `src/example-book.js` | New (done, D-018) | `P2-01` |
@@ -51,6 +51,7 @@ Import: .epub -> Epub.read() (path and size checks) -> working-copy files
 | `BookStage.neighbour`, `linkTarget`, `contents` | `src/book-stage.js` | Stage navigation (`src/app/stage-nav.js`) | The previous or next linear spine chapter (null at the ends); what a link leads to (`fragment`, `chapter`, `file`, `missing`, `external`, `invalid`); the toc as a plain tree (D-023) |
 | `BookMeta.fields(model)`, `BookMeta.set*`, `addCreator`, `removeCreator`, `check` | `src/book-meta.js` | Book panel (`src/app/book-ui.js`) | `fields` gives the panel's values; each change is a list of ops, `(model) => edits`, applied to fresh reads of the OPF and committed as one undo step; `check(name, value)` returns an error or '' (D-025) |
 | `BookChapters.list`, `add`, `rename`, `remove`, `move`, `split`, `merge`, `incomingLinks` | `src/book-chapters.js` | Chapters tab (`src/app/spine-ui.js`) | Each operation takes the text files and returns `{ entries, path, removed }`: the chapter, `content.opf`, and `nav.xhtml` changed together by splices, or an Error with a `.code`; `split` and `merge` also rewrite links across the book's XHTML files (D-026, D-027) |
+| `BookContents.plan(entries, depth)`, `apply(entries, plan)` | `src/book-contents.js` | Generate contents (`src/app/contents-ui.js`) | `plan` reads the linear chapters and returns `{ tree, ids, landmarks, skipped }` without changing anything; `apply` adds the ids, replaces the toc list, and refreshes the landmarks (D-028) |
 | `ExampleBook.create(options)` | `src/example-book.js` | Load Example Book, first run | The three-chapter guide, made with `BookTemplate`, `OpfEdit`, and `Nav`; passes `Book`, `Nav`, `Xhtml`, and EPUBCheck with no problems |
 | `Epub.build(files)` | `src/epub.js` | Export | Output opens in EPUBCheck without errors when `Book.check()` reports none |
 | `Epub.read(bytes)` | `src/epub.js` | Import | Refuses unsafe paths, absolute paths, duplicate names, and over-limit sizes (see SECURITY) |
