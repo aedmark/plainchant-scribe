@@ -1032,6 +1032,7 @@ body.shaded #editor {
 .book-sub { margin: 0.9rem 0 0.4rem; font-size: 0.78rem; color: var(--text-strong); }
 .book-creators { display: flex; flex-direction: column; gap: 0.4rem; }
 .book-creator { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 2fr) auto; gap: 0.4rem 0.5rem; align-items: end; }
+.book-creator-actions { display: inline-flex; gap: 0.2rem; }
 .book-creator .insp-field { min-width: 0; }
 .book-creator input, .book-creator select { width: 100%; min-width: 0; box-sizing: border-box; }
 .book-creator-new { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--border-mid); }

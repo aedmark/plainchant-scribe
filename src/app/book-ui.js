@@ -74,7 +74,8 @@ function roleOptions(select, current) {
     select.value = current || '';
 }
 
-function creatorRow(c) {
+// One person (creator or contributor, P3-06) with name, role, sort name, and move and remove buttons.
+function personRow(kind, c, count) {
     const row = document.createElement('div');
     row.className = 'book-creator';
     const field = (label, control) => {
@@ -85,31 +86,42 @@ function creatorRow(c) {
         wrap.append(span, control);
         return wrap;
     };
-    const name = document.createElement('input');
-    name.type = 'text';
-    name.value = c.name;
-    name.autocomplete = 'off';
-    name.addEventListener('change', () => {
-        const err = BookMeta.check('creator', name.value);
-        if (err) { showNotice(err, true); name.value = c.name; return; }
-        applyBookOps(BookMeta.setCreator(c.index, 'name', name.value));
-    });
+    const input = (value, placeholder, part) => {
+        const el = document.createElement('input');
+        el.type = 'text';
+        el.value = value;
+        el.placeholder = placeholder;
+        el.autocomplete = 'off';
+        el.addEventListener('change', () => {
+            if (part === 'name') {
+                const err = BookMeta.check('creator', el.value);
+                if (err) { showNotice(err, true); el.value = c.name; return; }
+            }
+            applyBookOps(BookMeta.setPerson(kind, c.index, part, el.value));
+        });
+        return el;
+    };
     const role = document.createElement('select');
     roleOptions(role, c.role);
-    role.addEventListener('change', () => applyBookOps(BookMeta.setCreator(c.index, 'role', role.value)));
-    const fileAs = document.createElement('input');
-    fileAs.type = 'text';
-    fileAs.value = c.fileAs;
-    fileAs.placeholder = 'Sort name';
-    fileAs.autocomplete = 'off';
-    fileAs.addEventListener('change', () => applyBookOps(BookMeta.setCreator(c.index, 'fileAs', fileAs.value)));
-    const remove = document.createElement('button');
-    remove.type = 'button';
-    remove.className = 'mini';
-    remove.textContent = 'Remove';
-    remove.setAttribute('aria-label', 'Remove ' + c.name);
-    remove.addEventListener('click', () => applyBookOps(BookMeta.removeCreator(c.index)));
-    row.append(field('Name', name), field('Role', role), field('Sort name', fileAs), remove);
+    role.addEventListener('change', () => applyBookOps(BookMeta.setPerson(kind, c.index, 'role', role.value)));
+    const button = (text, label, fn, disabled) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'mini';
+        b.textContent = text;
+        b.title = label;
+        b.setAttribute('aria-label', label + ': ' + c.name);
+        b.disabled = !!disabled;
+        b.addEventListener('click', fn);
+        return b;
+    };
+    const actions = document.createElement('span');
+    actions.className = 'book-creator-actions';
+    actions.append(
+        button('\u2191', 'Move up', () => applyBookOps(BookMeta.movePerson(kind, c.index, -1)), c.index === 0),
+        button('\u2193', 'Move down', () => applyBookOps(BookMeta.movePerson(kind, c.index, 1)), c.index === count - 1),
+        button('Remove', 'Remove', () => applyBookOps(BookMeta.removePerson(kind, c.index))));
+    row.append(field('Name', input(c.name, '', 'name')), field('Role', role), field('Sort name', input(c.fileAs, 'Sort name', 'fileAs')), actions);
     return row;
 }
 
@@ -133,7 +145,12 @@ function refreshBookPanel(force) {
     document.getElementById('bookIdentifier').textContent = f.identifier || '(none)';
     document.getElementById('bookModified').textContent = f.modified || '(none)';
     bookCreators.textContent = '';
-    f.creators.forEach((c) => bookCreators.appendChild(creatorRow(c)));
+    f.creators.forEach((c) => bookCreators.appendChild(personRow('creator', c, f.creators.length)));
+    const contributors = document.getElementById('bookContributors');
+    contributors.textContent = '';
+    f.contributors.forEach((c) => contributors.appendChild(personRow('contributor', c, f.contributors.length)));
+    const newCRole = document.getElementById('bookNewCRole');
+    if (!newCRole.options.length) roleOptions(newCRole, 'edt');
     if (typeof refreshCover === 'function') refreshCover();
     const newRole = document.getElementById('bookNewRole');
     if (!newRole.options.length) roleOptions(newRole, 'aut');
@@ -143,27 +160,37 @@ bookForm.addEventListener('submit', (e) => e.preventDefault());
 bookForm.querySelectorAll('[data-book-field]').forEach((input) => {
     const commit = () => {
         const name = input.dataset.bookField;
-        const current = BookMeta.fields(bookRead().model || { metadata: { dc: [], identifiers: [], creators: [] } })[name] || '';
+        const model = bookRead().model;
+        if (!model) return;
+        const current = BookMeta.fields(model)[name] || '';
         if (input.value.trim() === current) { showBookError(name, ''); return; }
         const err = BookMeta.check(name, input.value);
         showBookError(name, err);
         if (err) return;
+        if (name === 'series' || name === 'seriesPosition') {
+            const value = (n) => bookForm.querySelector('[data-book-field="' + n + '"]').value;
+            applyBookOps(BookMeta.setSeries(value('series'), value('seriesPosition')));
+            return;
+        }
         applyBookOps(name === 'isbn' ? BookMeta.setIsbn(input.value) : BookMeta.setField(name, input.value));
     };
     input.addEventListener('change', commit);
     if (input.tagName !== 'TEXTAREA') input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); commit(); } });
 });
-document.getElementById('bookAddCreator').addEventListener('click', () => {
-    const name = document.getElementById('bookNewName');
+function addPersonFrom(kind, ids) {
+    const name = document.getElementById(ids.name);
     const err = BookMeta.check('creator', name.value);
-    showBookError('creator', err);
+    showBookError(kind, err);
     if (err) { name.focus(); return; }
-    const fileAs = document.getElementById('bookNewFileAs');
-    if (applyBookOps(BookMeta.addCreator(name.value, document.getElementById('bookNewRole').value, fileAs.value))) {
+    const fileAs = document.getElementById(ids.fileAs);
+    if (applyBookOps(BookMeta.addPerson(kind, name.value, document.getElementById(ids.role).value, fileAs.value))) {
         name.value = '';
         fileAs.value = '';
+        document.getElementById(ids.role).value = kind === 'contributor' ? 'edt' : 'aut';
     }
-});
+}
+document.getElementById('bookAddCreator').addEventListener('click', () => addPersonFrom('creator', { name: 'bookNewName', role: 'bookNewRole', fileAs: 'bookNewFileAs' }));
+document.getElementById('bookAddContributor').addEventListener('click', () => addPersonFrom('contributor', { name: 'bookNewCName', role: 'bookNewCRole', fileAs: 'bookNewCFileAs' }));
 document.getElementById('bookCopyId').addEventListener('click', () => {
     const id = document.getElementById('bookIdentifier').textContent;
     if (navigator.clipboard) navigator.clipboard.writeText(id).then(() => showNotice('Copied the identifier.'), () => showNotice('Could not copy.', true));

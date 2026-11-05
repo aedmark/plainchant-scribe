@@ -126,11 +126,12 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
-    test('epubcheck: a book edited through the Book panel passes EPUBCheck with no messages (P3-01)', () => {
+    test('epubcheck: a book edited through the Book panel passes EPUBCheck with no messages (P3-01, P3-06)', () => {
         let files = ExampleBook.create().files;
         const ops = [].concat(BookMeta.setField('title', 'Ink & Ash'), BookMeta.setField('publisher', 'Small Press'), BookMeta.setField('date', '2026-11-04'),
             BookMeta.setField('description', 'A short guide.'), BookMeta.setField('rights', 'CC BY 4.0'), BookMeta.setIsbn('978-0-306-40615-7'),
-            BookMeta.setCreator(0, 'role', 'aut'), BookMeta.addCreator('Ada Penrose', 'edt', 'Penrose, Ada'), BookMeta.touchModified(Date.UTC(2026, 10, 4)));
+            BookMeta.setCreator(0, 'role', 'aut'), BookMeta.addCreator('Ada Penrose', 'edt', 'Penrose, Ada'), BookMeta.touchModified(Date.UTC(2026, 10, 4)),
+            BookMeta.setSeries('The Ledger Trilogy', '2'), BookMeta.addPerson('contributor', 'Tom Translator', 'trl', 'Translator, Tom'), BookMeta.movePerson('creator', 1, -1));
         ops.forEach((op) => { files = Object.assign({}, files, { 'OEBPS/content.opf': XmlAst.applyEdits(files['OEBPS/content.opf'], op(Book.read(files).model)) }); });
         const r = epubcheck(oracle.jar, files);
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));

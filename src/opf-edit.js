@@ -147,6 +147,16 @@
         return XmlAst.insert(ast, metadata, 'append', markup(metadata, NS.opf, 'meta', [['property', property], ['scheme', o.scheme], ['id', o.id]], value));
     }
 
+    // Adds a book-level <meta property> even when one with that property exists (belongs-to-collection may repeat).
+    function insertMeta(model, property, value, options) {
+        const ast = astOf(model);
+        checkProperty(property);
+        const o = options || {};
+        if (o.id != null) checkNewId(model, o.id);
+        const metadata = sectionNode(model, 'metadata');
+        return XmlAst.insert(ast, metadata, 'append', markup(metadata, NS.opf, 'meta', [['property', property], ['scheme', o.scheme], ['id', o.id]], value));
+    }
+
     function removeMeta(model, property) {
         const ast = astOf(model);
         const found = model.metadata.metas.filter((m) => m.property === property && m.refines == null);
@@ -171,6 +181,30 @@
         const el = markup(metadata, NS.opf, 'meta', [['refines', '#' + id], ['property', property], ['scheme', o.scheme]], value);
         const inMetadata = entry.node.parentId === metadata.id;
         return edits.concat(inMetadata ? XmlAst.insert(ast, blockEnd(entry), 'after', el) : XmlAst.insert(ast, metadata, 'append', el));
+    }
+
+    // EPUB 2 <meta name content> (EPUB 3.3 §5.9.3 keeps them legal), used by tools such as Calibre (calibre:series).
+    function setLegacyMeta(model, name, content) {
+        const ast = astOf(model);
+        const found = model.legacy.metas.find((m) => m.name === name);
+        if (found) return XmlAst.setAttr(ast, found.node, 'content', String(content));
+        const metadata = sectionNode(model, 'metadata');
+        return XmlAst.insert(ast, metadata, 'append', markup(metadata, NS.opf, 'meta', [['name', name], ['content', String(content)]], null));
+    }
+
+    function removeLegacyMeta(model, name) {
+        const ast = astOf(model);
+        return removeAll(ast, model.legacy.metas.filter((m) => m.name === name).map((m) => m.node));
+    }
+
+    // Moves a metadata entry before (dir -1) or after (dir 1) another, as written; refinements point at its id, so
+    // they stay where they are. Going after, it lands after the other entry's refinements.
+    function moveMetadata(model, entry, other, dir) {
+        const ast = owned(model, entry);
+        owned(model, other);
+        const raw = ast.text.slice(entry.node.start, entry.node.end);
+        const insert = dir < 0 ? XmlAst.insert(ast, other.node, 'before', raw) : XmlAst.insert(ast, blockEnd(other), 'after', raw);
+        return insert.concat(XmlAst.remove(ast, entry.node));
     }
 
     // EPUB 3.3 §5.5.5: dcterms:modified is UTC, YYYY-MM-DDThh:mm:ssZ.
@@ -365,9 +399,13 @@
         setLanguage: (model, value) => setFirstDc(model, 'language', value),
         removeMetadata: removeMetadata,
         setMeta: setMeta,
+        insertMeta: insertMeta,
         removeMeta: removeMeta,
         setRefinement: setRefinement,
         touchModified: touchModified,
+        setLegacyMeta: setLegacyMeta,
+        removeLegacyMeta: removeLegacyMeta,
+        moveMetadata: moveMetadata,
         addItem: addItem,
         removeItem: removeItem,
         renameItem: renameItem,

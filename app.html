@@ -386,6 +386,8 @@
                     <label class="insp-field insp-wide"><span>Publisher</span><input type="text" data-book-field="publisher" autocomplete="off"></label>
                     <label class="insp-field insp-wide"><span>Rights</span><input type="text" data-book-field="rights" autocomplete="off" placeholder="&copy; 2026 Your Name"></label>
                     <label class="insp-field insp-wide"><span>Description</span><textarea data-book-field="description" rows="3"></textarea></label>
+                    <label class="insp-field insp-wide"><span>Series</span><input type="text" data-book-field="series" autocomplete="off" placeholder="The Ledger Trilogy"></label>
+                    <label class="insp-field"><span>Number in series</span><input type="text" data-book-field="seriesPosition" autocomplete="off" placeholder="2" aria-describedby="bookErr-seriesPosition"><em class="book-err" id="bookErr-seriesPosition" hidden></em></label>
                     <label class="insp-field"><span>ISBN</span><input type="text" data-book-field="isbn" autocomplete="off" placeholder="978-&hellip;" aria-describedby="bookErr-isbn"><em class="book-err" id="bookErr-isbn" hidden></em></label>
                     <div class="insp-field insp-wide"><span>Identifier</span><div class="book-readonly"><code id="bookIdentifier"></code><button type="button" class="mini" id="bookCopyId">Copy</button></div></div>
                     <div class="insp-field insp-wide"><span>Last modified</span><div class="book-readonly"><code id="bookModified"></code><button type="button" class="mini" id="bookTouch" title="Set dcterms:modified to now. Export will also do this.">Update now</button></div></div>
@@ -411,6 +413,15 @@
                     <button type="button" class="mini" id="bookAddCreator">Add</button>
                 </div>
                 <em class="book-err" id="bookErr-creator" hidden></em>
+                <h4 class="book-sub">Contributors</h4>
+                <div id="bookContributors" class="book-creators"></div>
+                <div class="book-creator book-creator-new">
+                    <label class="insp-field"><span>Name</span><input type="text" id="bookNewCName" autocomplete="off" placeholder="Tom Translator"></label>
+                    <label class="insp-field"><span>Role</span><select id="bookNewCRole"></select></label>
+                    <label class="insp-field"><span>Sort name</span><input type="text" id="bookNewCFileAs" autocomplete="off" placeholder="Translator, Tom"></label>
+                    <button type="button" class="mini" id="bookAddContributor">Add</button>
+                </div>
+                <em class="book-err" id="bookErr-contributor" hidden></em>
             </form>
         </div>
         <div id="inspChaptersPane" class="inspector-body" hidden>

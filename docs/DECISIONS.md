@@ -216,6 +216,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** The cover page is a spine item, so it appears in the Chapters tab and is the first page read; Generate contents leaves it out of the toc. Generated covers depend on EB Garamond having loaded in the browser.
 **Review trigger:** A store rejects the generated cover's size or format, or authors want more cover designs.
 
+## D-030 Series, contributors, and moving people  (2026-11-04, status: accepted)
+**Context:** `P3-06` needed choices about how much collection metadata to edit, whether to write Calibre's series tags, how contributors are entered, and whether people can be reordered. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. One series, name and number, as a book-level `belongs-to-collection` refined with `collection-type` "series" and `group-position` (EPUB 3.3 §5.5.6 and its D.3 vocabulary). The series is the collection typed "series", else the first untyped one. Clearing the name removes it, and other collections are left alone. 2. Calibre's `calibre:series` and `calibre:series_index` are written and removed with it, since Calibre and its Kindle conversion read them (D-010). They are EPUB 2 `name`/`content` metas, legal in EPUB 3.3 (§5.9.3). 3. Contributors are a list like Creators: name, MARC role, and sort name, written as `dc:contributor` with `role` and `file-as` refinements; new ones default to Editor. 4. Creators and contributors move up and down within their list. The `dc` element moves as written; its refinements stay where they are and still point at its id, and a person moved down lands after the other person's refinements. Each change is one undo step.
+**Alternatives:** Any number of collections (rejected for now: one series covers most books); EPUB 3 tags only (rejected: Calibre is one of the maintainer's test readers); one People list with a creator or contributor mark (rejected: the two lists match how readers show them); no reordering (rejected: the first creator is the one readers show).
+**Consequences:** The Calibre tags show as EPUB 2 leftovers only if `Book.read` is ever made to report them. A book can still carry other collections, edited in the code editor.
+**Review trigger:** Calibre reads `belongs-to-collection` well enough that its own tags are no longer needed, or authors need several collections.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

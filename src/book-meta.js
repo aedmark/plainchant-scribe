@@ -23,6 +23,13 @@
     // date and time with a time zone.
     const DATE_RE = /^\d{4}(?:-(0[1-9]|1[0-2])(?:-(0[1-9]|[12]\d|3[01])(?:T([01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|[+-]([01]\d|2[0-3]):[0-5]\d))?)?)?$/;
 
+    // The series: a book-level belongs-to-collection typed "series", else the first untyped one (EPUB 3.3 §5.5.6 and
+    // the D.3 vocabulary: collection-type, group-position).
+    function seriesEntry(model) {
+        const all = model.metadata.metas.filter((m) => m.property === 'belongs-to-collection' && m.refines == null);
+        return all.find((m) => Book.refinement(m, 'collection-type') === 'series') || all.find((m) => !Book.refinement(m, 'collection-type')) || null;
+    }
+
     const isbnIdentifier = (model) => model.metadata.identifiers.find((i) => i !== model.metadata.uniqueIdentifier && /^urn:isbn:/i.test(i.value)) || null;
 
     function fields(model) {
@@ -34,7 +41,12 @@
         const isbn = isbnIdentifier(model);
         out.isbn = isbn ? isbn.value.replace(/^urn:isbn:/i, '') : '';
         out.modified = md.modified || '';
-        out.creators = md.creators.map((c, i) => ({ index: i, name: c.value, role: Book.refinement(c, 'role') || '', fileAs: Book.refinement(c, 'file-as') || '' }));
+        const person = (c, i) => ({ index: i, name: c.value, role: Book.refinement(c, 'role') || '', fileAs: Book.refinement(c, 'file-as') || '' });
+        out.creators = md.creators.map(person);
+        out.contributors = md.contributors.map(person);
+        const series = seriesEntry(model);
+        out.series = series ? series.value : '';
+        out.seriesPosition = series ? Book.refinement(series, 'group-position') || '' : '';
         return out;
     }
 
@@ -60,6 +72,7 @@
         if (name === 'isbn' && v && !normaliseIsbn(v)) return '"' + v + '" is not a valid ISBN-10 or ISBN-13 (its check digit does not match).';
         if (name === 'creator' && !v) return 'Enter a name.';
         if (name === 'role' && v && !/^[a-z]{3}$/.test(v)) return 'A role is a three-letter MARC relator code such as aut or edt.';
+        if (name === 'seriesPosition' && v && !/^\d+(\.\d+)?$/.test(v)) return 'The number in the series is a number such as 2 or 2.5.';
         return '';
     }
 
@@ -90,11 +103,13 @@
         return id;
     }
 
-    // A refinement on the creator at index: set it, or remove it when value is empty.
-    function refine(index, property, value, scheme) {
+    const peopleOf = (model, kind) => (kind === 'contributor' ? model.metadata.contributors : model.metadata.creators);
+
+    // A refinement on the person at index: set it, or remove it when value is empty.
+    function refine(index, property, value, scheme, kind) {
         const v = String(value == null ? '' : value).trim();
         return (model) => {
-            const c = model.metadata.creators[index];
+            const c = peopleOf(model, kind)[index];
             if (!c) return [];
             const found = c.refinements.find((r) => r.property === property);
             if (!v) return found ? OpfEdit.removeMetadata(model, found) : [];
@@ -102,33 +117,77 @@
         };
     }
 
-    function setCreator(index, part, value) {
-        if (part === 'name') return [(model) => { const c = model.metadata.creators[index]; return c ? OpfEdit.setValue(model, c, String(value).trim()) : []; }];
-        if (part === 'role') return [refine(index, 'role', value, 'marc:relators')];
-        if (part === 'fileAs') return [refine(index, 'file-as', value)];
+    // kind is 'creator' (the default) or 'contributor' (P3-06): the same name, role, and sort name.
+    function setPerson(kind, index, part, value) {
+        if (part === 'name') return [(model) => { const c = peopleOf(model, kind)[index]; return c ? OpfEdit.setValue(model, c, String(value).trim()) : []; }];
+        if (part === 'role') return [refine(index, 'role', value, 'marc:relators', kind)];
+        if (part === 'fileAs') return [refine(index, 'file-as', value, null, kind)];
         return [];
     }
 
-    // A new creator goes after the others, with an id so refinements can point at it.
-    function addCreator(name, role, fileAs) {
+    // A new person goes after the others of their kind, with an id so refinements can point at it.
+    function addPerson(kind, name, role, fileAs) {
+        const k = kind === 'contributor' ? 'contributor' : 'creator';
         let index = null;
         const ops = [(model) => {
-            index = model.metadata.creators.length;
-            return OpfEdit.addDc(model, 'creator', String(name).trim(), { id: freeId(model, 'creator') });
+            index = peopleOf(model, k).length;
+            return OpfEdit.addDc(model, k, String(name).trim(), { id: freeId(model, k) });
         }];
-        if (role) ops.push((model) => refine(index, 'role', role, 'marc:relators')(model));
-        if (fileAs) ops.push((model) => refine(index, 'file-as', fileAs)(model));
+        if (role) ops.push((model) => refine(index, 'role', role, 'marc:relators', k)(model));
+        if (fileAs) ops.push((model) => refine(index, 'file-as', fileAs, null, k)(model));
         return ops;
     }
 
-    function removeCreator(index) {
-        return [(model) => { const c = model.metadata.creators[index]; return c ? OpfEdit.removeMetadata(model, c) : []; }];
+    function removePerson(kind, index) {
+        return [(model) => { const c = peopleOf(model, kind)[index]; return c ? OpfEdit.removeMetadata(model, c) : []; }];
+    }
+
+    // Moves the person at index up (dir -1) or down (dir 1) within their kind.
+    function movePerson(kind, index, dir) {
+        return [(model) => {
+            const list = peopleOf(model, kind), a = list[index], b = list[index + dir];
+            return a && b ? OpfEdit.moveMetadata(model, a, b, dir) : [];
+        }];
+    }
+
+    const setCreator = (index, part, value) => setPerson('creator', index, part, value);
+    const addCreator = (name, role, fileAs) => addPerson('creator', name, role, fileAs);
+    const removeCreator = (index) => removePerson('creator', index);
+
+    // Sets the series name and number, or removes the series when the name is empty; Calibre's calibre:series and
+    // calibre:series_index follow, since Calibre and its Kindle conversion read them (D-030).
+    function setSeries(name, position) {
+        const n = String(name == null ? '' : name).trim(), pos = String(position == null ? '' : position).trim();
+        if (!n) {
+            return [(model) => { const e = seriesEntry(model); return e ? OpfEdit.removeMetadata(model, e) : []; },
+                (model) => OpfEdit.removeLegacyMeta(model, 'calibre:series'), (model) => OpfEdit.removeLegacyMeta(model, 'calibre:series_index')];
+        }
+        const refineSeries = (property, value) => (model) => {
+            const e = seriesEntry(model);
+            if (!e) return [];
+            const found = e.refinements.find((r) => r.property === property);
+            if (!value) return found ? OpfEdit.removeMetadata(model, found) : [];
+            return OpfEdit.setRefinement(model, e, property, value);
+        };
+        return [
+            (model) => {
+                const e = seriesEntry(model);
+                if (e) return OpfEdit.setValue(model, e, n);
+                const id = freeId(model, 'series');
+                return OpfEdit.insertMeta(model, 'belongs-to-collection', n, { id: id });
+            },
+            refineSeries('collection-type', 'series'),
+            refineSeries('group-position', pos),
+            (model) => OpfEdit.setLegacyMeta(model, 'calibre:series', n),
+            (model) => (pos ? OpfEdit.setLegacyMeta(model, 'calibre:series_index', pos) : OpfEdit.removeLegacyMeta(model, 'calibre:series_index'))
+        ];
     }
 
     const touchModified = (now) => [(model) => OpfEdit.touchModified(model, now)];
 
     return {
         TEXT_FIELDS: TEXT_FIELDS, ROLES: ROLES, fields: fields, check: check, normaliseIsbn: normaliseIsbn,
-        setField: setField, setIsbn: setIsbn, setCreator: setCreator, addCreator: addCreator, removeCreator: removeCreator, touchModified: touchModified
+        setField: setField, setIsbn: setIsbn, setCreator: setCreator, addCreator: addCreator, removeCreator: removeCreator, touchModified: touchModified,
+        setPerson: setPerson, addPerson: addPerson, removePerson: removePerson, movePerson: movePerson, setSeries: setSeries
     };
 });

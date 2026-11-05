@@ -249,3 +249,29 @@ test('opf-edit: CRLF files keep their line ends, and a sequence of edits leaves 
     assert.deepEqual(m.spine.itemrefs.map((x) => x.idref), ['chapter-1', 'ch-2']);
     assert.equal(m.metadata.modified, '2026-12-01T00:00:00Z');
 });
+
+test('opf-edit: EPUB 2 name/content metas are set and removed, and metadata entries move as written (P3-06)', () => {
+    const files = oeFixtureBook();
+    let r = oeRun(files, (m) => OpfEdit.setLegacyMeta(m, 'calibre:series', 'Ledger & Co'));
+    assert.ok(r.opf.indexOf('<meta name="calibre:series" content="Ledger &amp; Co"/>') !== -1);
+    r = oeRun(r.files, (m) => OpfEdit.setLegacyMeta(m, 'calibre:series', 'Ledger'));
+    assert.equal((r.opf.match(/calibre:series/g) || []).length, 1);
+    r = oeRun(r.files, (m) => OpfEdit.removeLegacyMeta(m, 'calibre:series'));
+    assert.equal(r.opf, files['OEBPS/content.opf']);
+    // The creator moves after the language; its file-as refinement stays put and still refines it.
+    const moved = oeRun(files, (m) => OpfEdit.moveMetadata(m, m.metadata.creators[0], m.metadata.languages[0], 1));
+    assert.ok(moved.opf.indexOf('<dc:language>en</dc:language>\n    <dc:creator id="author" opf:role="aut">Ada Penrose</dc:creator>') !== -1, moved.opf);
+    assert.equal(Book.refinement(moved.read.model.metadata.creators[0], 'file-as'), 'Penrose, Ada');
+    const ins = oeRun(files, (m) => OpfEdit.insertMeta(m, 'belongs-to-collection', 'A', { id: 'c1' }));
+    const again = oeRun(ins.files, (m) => OpfEdit.insertMeta(m, 'belongs-to-collection', 'B', { id: 'c2' }));
+    assert.equal((again.opf.match(/belongs-to-collection/g) || []).length, 2, 'insertMeta adds even when the property exists');
+});
+
+test('opf-edit: an entry moved down lands after the other entry\'s refinements, not between them', () => {
+    const files = oeFixtureBook();
+    const two = oeRun(files, (m) => OpfEdit.addDc(m, 'creator', 'B. Writer', { id: 'b' }));
+    const refined = oeRun(two.files, (m) => OpfEdit.setRefinement(m, m.metadata.creators[1], 'role', 'edt'));
+    const r = oeRun(refined.files, (m) => OpfEdit.moveMetadata(m, m.metadata.creators[0], m.metadata.creators[1], 1));
+    assert.ok(r.opf.indexOf('<dc:creator id="b">B. Writer</dc:creator>\n    <meta refines="#b" property="role">edt</meta>\n    <dc:creator id="author" opf:role="aut">Ada Penrose</dc:creator>') !== -1, r.opf);
+    assert.deepEqual(r.read.model.metadata.creators.map((c) => c.value), ['B. Writer', 'Ada Penrose']);
+});

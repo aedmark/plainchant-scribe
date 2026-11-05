@@ -13,7 +13,7 @@ test('book-meta: the panel\'s fields come from the package document (P3-01)', ()
     assert.deepEqual(f, {
         title: 'A Short Guide to Plainchant Scribe', language: 'en', publisher: '', date: '', description: '', rights: '',
         identifier: 'urn:uuid:0f3c2a1e-6b7d-4e2a-9c1b-8a5d4f3e2b10', isbn: '', modified: '2026-11-04T00:00:00Z',
-        creators: [{ index: 0, name: 'Plainchant Scribe', role: '', fileAs: '' }]
+        creators: [{ index: 0, name: 'Plainchant Scribe', role: '', fileAs: '' }], contributors: [], series: '', seriesPosition: ''
     });
     const fixture = { 'META-INF/container.xml': BookTemplate.create()['files']['META-INF/container.xml'], [BMO]: require('fs').readFileSync(require('path').join(__dirname, 'fixtures', 'xml', 'content.opf'), 'utf8') };
     assert.deepEqual(BookMeta.fields(Book.read(fixture).model).creators, [{ index: 0, name: 'Ada Penrose', role: '', fileAs: 'Penrose, Ada' }], 'refinements are read');
@@ -85,4 +85,49 @@ test('book-meta: when the unique identifier is itself an ISBN, the ISBN field le
     const r = bmRun(files, BookMeta.setIsbn('0-306-40615-2'));
     assert.equal(r.read.model.metadata.uniqueIdentifier.value, 'urn:isbn:9780306406157');
     assert.ok(r.opf.indexOf('<dc:identifier id="isbn">urn:isbn:0306406152</dc:identifier>') !== -1);
+});
+
+test('book-meta: the series is a belongs-to-collection with type and number, kept in step with Calibre\'s tags (P3-06)', () => {
+    let r = bmRun(bmBook(), BookMeta.setSeries('The Ledger Trilogy', '2'));
+    assert.ok(r.opf.indexOf('    <meta property="belongs-to-collection" id="series">The Ledger Trilogy</meta>\n    <meta refines="#series" property="collection-type">series</meta>\n    <meta refines="#series" property="group-position">2</meta>\n    <meta name="calibre:series" content="The Ledger Trilogy"/>\n    <meta name="calibre:series_index" content="2"/>\n') !== -1, r.opf);
+    assert.deepEqual([BookMeta.fields(r.read.model).series, BookMeta.fields(r.read.model).seriesPosition], ['The Ledger Trilogy', '2']);
+    assert.deepEqual(r.read.problems, []);
+    r = bmRun(r.files, BookMeta.setSeries('The Ledger', '2.5'));
+    assert.ok(/>The Ledger<\/meta>/.test(r.opf) && /group-position">2\.5</.test(r.opf) && /calibre:series" content="The Ledger"/.test(r.opf) && /series_index" content="2\.5"/.test(r.opf));
+    assert.equal((r.opf.match(/belongs-to-collection/g) || []).length, 1, 'updated in place');
+    r = bmRun(r.files, BookMeta.setSeries('The Ledger', ''));
+    assert.ok(r.opf.indexOf('group-position') === -1 && r.opf.indexOf('series_index') === -1 && /calibre:series"/.test(r.opf));
+    r = bmRun(r.files, BookMeta.setSeries('', ''));
+    assert.equal(/belongs-to-collection|calibre|collection-type/.test(r.opf), false);
+    assert.deepEqual(r.read.problems, []);
+    assert.ok(BookMeta.check('seriesPosition', 'two') && !BookMeta.check('seriesPosition', '3'));
+});
+
+test('book-meta: a collection typed "set" is left alone; the series is the one typed "series"', () => {
+    const files = bmBook();
+    files[BMO] = files[BMO].replace('  </metadata>', '    <meta property="belongs-to-collection" id="set1">Boxed Set</meta>\n    <meta refines="#set1" property="collection-type">set</meta>\n  </metadata>');
+    assert.equal(BookMeta.fields(Book.read(files).model).series, '', 'a set is not the series');
+    const r = bmRun(files, BookMeta.setSeries('Trilogy', '1'));
+    assert.ok(r.opf.indexOf('Boxed Set') !== -1 && r.opf.indexOf('>Trilogy</meta>') !== -1);
+    assert.equal(BookMeta.fields(r.read.model).series, 'Trilogy');
+    const cleared = bmRun(r.files, BookMeta.setSeries('', ''));
+    assert.ok(cleared.opf.indexOf('Boxed Set') !== -1 && cleared.opf.indexOf('Trilogy') === -1);
+});
+
+test('book-meta: contributors work like creators, and people move up and down within their kind', () => {
+    let r = bmRun(bmBook(), BookMeta.addPerson('contributor', 'Tom Translator', 'trl', 'Translator, Tom').concat(BookMeta.addPerson('contributor', 'Eve Editor', 'edt', '')));
+    assert.ok(r.opf.indexOf('<dc:contributor id="contributor">Tom Translator</dc:contributor>\n    <meta refines="#contributor" property="role" scheme="marc:relators">trl</meta>') !== -1, r.opf);
+    assert.deepEqual(BookMeta.fields(r.read.model).contributors.map((c) => [c.name, c.role, c.fileAs]), [['Tom Translator', 'trl', 'Translator, Tom'], ['Eve Editor', 'edt', '']]);
+    r = bmRun(r.files, BookMeta.movePerson('contributor', 1, -1));
+    assert.deepEqual(BookMeta.fields(r.read.model).contributors.map((c) => [c.name, c.role]), [['Eve Editor', 'edt'], ['Tom Translator', 'trl']], 'refinements follow by id');
+    r = bmRun(r.files, BookMeta.setPerson('contributor', 1, 'fileAs', ''));
+    assert.equal(BookMeta.fields(r.read.model).contributors[1].fileAs, '');
+    r = bmRun(r.files, BookMeta.removePerson('contributor', 0));
+    assert.deepEqual(BookMeta.fields(r.read.model).contributors.map((c) => c.name), ['Tom Translator']);
+    r = bmRun(r.files, BookMeta.addCreator('B. Writer', 'aut', '').concat(BookMeta.movePerson('creator', 1, -1)));
+    assert.deepEqual(BookMeta.fields(r.read.model).creators.map((c) => c.name), ['B. Writer', 'Plainchant Scribe'], 'the new first creator is the one readers show');
+    r = bmRun(r.files, BookMeta.movePerson('creator', 0, 1));
+    assert.deepEqual(BookMeta.fields(r.read.model).creators.map((c) => c.name), ['Plainchant Scribe', 'B. Writer']);
+    assert.deepEqual(bmRun(r.files, BookMeta.movePerson('creator', 1, 1)).opf, r.opf, 'moving past the end changes nothing');
+    assert.deepEqual(r.read.problems, []);
 });
