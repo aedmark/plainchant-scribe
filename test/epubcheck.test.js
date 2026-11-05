@@ -177,6 +177,18 @@ if (!oracle.jar) {
         });
     });
 
+    test('epubcheck: a book with an embedded font passes EPUBCheck with no messages (P4-03)', () => {
+        // EB Garamond (SIL Open Font License, fonts/OFL-EBGaramond.txt) may be embedded.
+        const font = 'OEBPS/fonts/eb-garamond-latin-400-normal.woff2';
+        let files = BookFonts.add(ExampleBook.create().files, [font], { path: font, family: 'EB Garamond', weight: 400, style: 'normal' }).entries;
+        const s = BookStyle.read(files['OEBPS/css/book.css']);
+        s.bodyFont = 'EB Garamond';
+        files['OEBPS/css/book.css'] = BookStyle.apply(files['OEBPS/css/book.css'], s, 'en');
+        files[font] = Uint8Array.from(require('fs').readFileSync(require('path').join(__dirname, '..', 'fonts', 'eb-garamond-latin-400-normal.woff2')));
+        const r = epubcheck(oracle.jar, files);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+    });
+
     test('epubcheck: a template with the modified date removed fails, so the oracle is really checking', () => {
         const files = BookTemplate.create().files;
         files['OEBPS/content.opf'] = files['OEBPS/content.opf'].replace(/ *<meta property="dcterms:modified">[^<]*<\/meta>\n/, '');

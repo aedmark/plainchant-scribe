@@ -237,6 +237,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** Openers apply to every `h1` and the paragraph after it, so a book whose chapters do not start with `h1` gets no opener styling. `hr::after` and `initial-letter`-style effects vary between readers; the floated drop cap is the most widely shown.
 **Review trigger:** Chapters need different openers, or a target reader shows drop caps or ornaments badly.
 
+## D-033 Embedded fonts  (2026-11-04, status: accepted)
+**Context:** `P4-03` needed choices about where fonts are managed, how their details are known, what import does about licences, and which formats are accepted. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. A Fonts section in the Layout tab lists the book's fonts, imports and removes them, and sets body and heading fonts with a serif or sans-serif fallback. `@font-face` rules and the choices go in the marked layout block (D-031); files go in `OEBPS/fonts` and the manifest. 2. For TTF and OTF, a small pure reader takes the family, weight, italic flag, and embedding permission from the name and OS/2 tables. WOFF and WOFF2 compress their tables, so their details are guessed from the file name. A dialog shows the details for correction either way. 3. A font whose OS/2 `fsType` says Restricted License embedding (bit 1 alone; the least restrictive bit wins when several are set) is refused. Every other import needs the author to confirm the licence allows embedding, after a plain explanation that embedding redistributes the font. 4. TTF, OTF, WOFF, and WOFF2, the EPUB 3.3 core font types; no obfuscation.
+**Alternatives:** Import only, with use left to the stylesheet (rejected: choosing a body font is the common case); asking for every detail (rejected: the details are in the file); a reminder only (rejected: the flag is cheap to check, and refusing a restricted font prevents an unlawful book); TTF, OTF, and WOFF2 only (rejected: WOFF is just as much a core type).
+**Consequences:** The licence check is the author's statement plus a flag many fonts do not set correctly; Scribe cannot verify a licence. Fonts are stored unobfuscated, which is valid EPUB; some stores' terms ask for obfuscation, which would come with export.
+**Review trigger:** A store requires obfuscation, or authors need font subsetting to keep books small.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

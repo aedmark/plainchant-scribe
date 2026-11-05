@@ -15,6 +15,15 @@ function layoutLanguage() {
 
 function showLayout(settings, path) {
     const s = BookStyle.normalise(settings);
+    // The font choices list the embedded families.
+    const families = Array.from(new Set(s.fonts.map((f) => f.family)));
+    inspLayoutPane.querySelectorAll('.font-choice').forEach((sel) => {
+        sel.textContent = '';
+        const add = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); };
+        add('', 'The reader\u2019s font');
+        families.forEach((f) => add(f, f));
+    });
+    if (typeof showFonts === 'function') showFonts(s.fonts);
     layoutInputs.forEach((el) => {
         const v = s[el.dataset.layout];
         if (el.type === 'checkbox') el.checked = !!v;
@@ -51,7 +60,9 @@ function writeLayout(settings) {
 }
 
 function layoutFromInputs() {
-    const s = {};
+    // Start from the block, so settings the inputs do not show (the font list) are kept.
+    const path = layoutTarget();
+    const s = Object.assign({}, (path && BookStyle.read(projectFiles.entries[path])) || BookStyle.normalise(BookStyle.PRESETS.plain.settings));
     layoutInputs.forEach((el) => { s[el.dataset.layout] = el.type === 'checkbox' ? el.checked : el.value; });
     s.dropCap = Number(s.dropCap);
     return s;

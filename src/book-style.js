@@ -6,7 +6,9 @@
  * block, so hand edits inside it show in the Layout tab. Settings: { paragraph: 'indent' | 'space' | 'none',
  * size (em), lineHeight (number or null), justify, hyphens, widows (number or null) } and, for openers and breaks
  * (P4-02, D-032), { headingAlign: '' | 'left' | 'center', headingDrop: 'none' | 'some' | 'third', firstLineCaps,
- * dropCap: 0 | 2 | 3, sceneBreak: 'none' | 'space' | 'asterism' | 'stars' | 'fleuron', smallCaps }.
+ * dropCap: 0 | 2 | 3, sceneBreak: 'none' | 'space' | 'asterism' | 'stars' | 'fleuron', smallCaps } and, for embedded
+ * fonts (P4-03, D-033), { fonts: [{ family, weight, style, src }], bodyFont, bodyFallback, headingFont,
+ * headingFallback }, where src is the font file's URL as written relative to the stylesheet.
  */
 (function (root, factory) {
     if (typeof module === 'object' && module.exports) module.exports = factory(require('./xml-ast.js'), require('./book.js'));
@@ -16,7 +18,10 @@
 
     const START = '/* Scribe layout: written by the Layout tab. Edit it here or there; the rest of this file is yours. */';
     const END = '/* End of Scribe layout */';
-    const OPENERS = { headingAlign: '', headingDrop: 'none', firstLineCaps: false, dropCap: 0, sceneBreak: 'none', smallCaps: false };
+    const OPENERS = { headingAlign: '', headingDrop: 'none', firstLineCaps: false, dropCap: 0, sceneBreak: 'none', smallCaps: false,
+        fonts: [], bodyFont: '', bodyFallback: 'serif', headingFont: '', headingFallback: 'serif' };
+    const FALLBACKS = ['serif', 'sans-serif'];
+    const quoteFamily = (f) => '"' + String(f).replace(/["\\]/g, '') + '"';
     const PRESETS = {
         novel: { label: 'Novel', settings: Object.assign({ paragraph: 'indent', size: 1.5, lineHeight: 1.4, justify: true, hyphens: true, widows: 2 }, OPENERS) },
         modern: { label: 'Modern', settings: Object.assign({ paragraph: 'space', size: 1, lineHeight: 1.5, justify: false, hyphens: false, widows: 2 }, OPENERS) },
@@ -44,7 +49,14 @@
             firstLineCaps: !!v.firstLineCaps,
             dropCap: Number(v.dropCap) === 2 || Number(v.dropCap) === 3 ? Number(v.dropCap) : 0,
             sceneBreak: Object.prototype.hasOwnProperty.call(BREAKS, v.sceneBreak) ? v.sceneBreak : 'none',
-            smallCaps: !!v.smallCaps
+            smallCaps: !!v.smallCaps,
+            fonts: (Array.isArray(v.fonts) ? v.fonts : []).filter((f) => f && f.family && f.src).map((f) => ({
+                family: String(f.family).replace(/["\\]/g, '').trim(), weight: num(f.weight, 100, 900) || 400, style: f.style === 'italic' ? 'italic' : 'normal', src: String(f.src)
+            })),
+            bodyFont: typeof v.bodyFont === 'string' ? v.bodyFont.replace(/["\\]/g, '').trim() : '',
+            bodyFallback: FALLBACKS.indexOf(v.bodyFallback) !== -1 ? v.bodyFallback : 'serif',
+            headingFont: typeof v.headingFont === 'string' ? v.headingFont.replace(/["\\]/g, '').trim() : '',
+            headingFallback: FALLBACKS.indexOf(v.headingFallback) !== -1 ? v.headingFallback : 'serif'
         };
     }
 
@@ -62,6 +74,10 @@
         const decls = p.filter(Boolean);
         const rules = [];
         const rule = (selector, list) => rules.push([selector + ' {'].concat(list, ['}']).join('\n'));
+        // Embedded fonts (P4-03): one @font-face per file, then the families chosen for text and headings.
+        s.fonts.forEach((f) => rule('@font-face', ['  font-family: ' + quoteFamily(f.family) + ';', '  font-weight: ' + f.weight + ';', '  font-style: ' + f.style + ';', '  src: url("' + f.src.replace(/"/g, '%22') + '");']));
+        if (s.bodyFont) rule('body', ['  font-family: ' + quoteFamily(s.bodyFont) + ', ' + s.bodyFallback + ';']);
+        if (s.headingFont) rule('h1, h2, h3, h4, h5, h6', ['  font-family: ' + quoteFamily(s.headingFont) + ', ' + s.headingFallback + ';']);
         if (decls.length) rule('p', decls);
         // After a heading or a scene break, a paragraph starts flush.
         if (s.paragraph === 'indent') rule('h1 + p, h2 + p, h3 + p, h4 + p, h5 + p, h6 + p, hr + p', ['  text-indent: 0;']);
@@ -100,6 +116,17 @@
         const decl = (prop) => declIn(rule, prop);
         const h1 = ruleOf('h1'), letter = ruleOf('h1 + p::first-letter'), hr = ruleOf('hr'), after = ruleOf('hr::after');
         const content = declIn(after, 'content');
+        const faces = [];
+        const faceRe = /@font-face\s*\{([^}]*)\}/g;
+        let fm;
+        while ((fm = faceRe.exec(body))) {
+            const r = [null, null, fm[1]];
+            const fam = (declIn(r, 'font-family') || '').replace(/^["']|["']$/g, '');
+            const src = /url\(\s*["']?([^"')]+)["']?\s*\)/.exec(declIn(r, 'src') || '');
+            if (fam && src) faces.push({ family: fam, weight: Number(declIn(r, 'font-weight')) || 400, style: declIn(r, 'font-style') === 'italic' ? 'italic' : 'normal', src: src[1] });
+        }
+        const familyOf = (r) => { const v = declIn(r, 'font-family'); if (!v) return ['', 'serif']; const m = /^\s*["']([^"']+)["']\s*(?:,\s*([\w-]+))?/.exec(v); return m ? [m[1], m[2] || 'serif'] : ['', 'serif']; };
+        const bodyF = familyOf(ruleOf('body')), headF = familyOf(ruleOf('h1, h2, h3, h4, h5, h6'));
         const top = h1 ? (body.match(/(^|\n)\s*h1\s*\{[^}]*\}/) || [''])[0] : '';
         const indent = decl('text-indent'), bottom = decl('margin-bottom');
         const em = (v) => { const m = /^([\d.]+)em$/.exec(v || ''); return m ? Number(m[1]) : null; };
@@ -117,7 +144,8 @@
             firstLineCaps: !!ruleOf('h1 + p::first-line'),
             dropCap: letter ? (declIn(letter, 'font-size') === DROP_SIZES[3] ? 3 : 2) : 0,
             sceneBreak: !hr ? 'none' : (Object.keys(BREAKS).find((k) => BREAKS[k] === content) || (content ? 'asterism' : 'space')),
-            smallCaps: !!ruleOf('.small-caps')
+            smallCaps: !!ruleOf('.small-caps'),
+            fonts: faces, bodyFont: bodyF[0], bodyFallback: bodyF[1], headingFont: headF[0], headingFallback: headF[1]
         });
     }
 

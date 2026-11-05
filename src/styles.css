@@ -1000,6 +1000,14 @@ body.shaded #editor {
 /* Layout tab (P4-01) */
 .layout-presets { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
 .layout-check { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--text-strong); }
+/* Fonts (P4-03) */
+.font-list { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.5rem; }
+.font-item { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.3rem 0.45rem; border: 1px solid var(--border-void); border-radius: 0.3rem; background: var(--bg-sunken); font-size: 0.78rem; color: var(--text-strong); }
+.font-item small { color: var(--text-void-muted); }
+.font-actions { margin: 0.5rem 0; }
+.font-form { display: flex; flex-direction: column; gap: 0.6rem; }
+.font-row { display: flex; gap: 0.75rem; }
+.font-licence { align-items: flex-start; }
 /* Cover (P3-05) */
 .book-cover { display: flex; gap: 0.75rem; align-items: flex-start; }
 .cover-thumb { width: 72px; height: 115px; object-fit: contain; border: 1px solid var(--border-mid); background: var(--bg-sunken); }
