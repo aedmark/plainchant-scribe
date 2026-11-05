@@ -8,6 +8,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ### Added
 
+- **Book Problems tab**: for a book, the Problems tab now checks the whole book as EPUBCheck does: a new Package category (content.opf, the contents, file names, image formats, the cover, very long chapters), links and stylesheet `url()`s that point at missing, unlisted, or out-of-order files or at ids that do not exist, duplicate ids and mismatched languages, and accessibility warnings (missing alt text, skipped headings, links with no text). Each problem jumps to its text; export asks first if any are errors (`P5-04`, `D-040`).
+
 - **Import Markdown and plain text**: Import text… in the Chapters tab turns `.md` and `.txt` files into chapters (a chapter per `#` heading), with footnotes as notes, images matched to the book's, and typeset quotes and dashes (`P5-03`, `D-039`).
 - **Import .epub**: Open file… and drag-and-drop open an `.epub` as a new book, after checking the archive (unsafe names, sizes, damage, and zip bombs refuse it, with the reason); DRM-protected books are refused with an explanation (`P5-02`, `D-038`).
 - **Export as .epub**: in a book, the Export dialog packs it into one `.epub` (mimetype first, text compressed, only the files content.opf lists), warns first if the book has errors, and updates its last-modified date; the desktop app asks where to save it (`P5-01`, `D-037`).

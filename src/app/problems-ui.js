@@ -7,6 +7,9 @@ const hintChecker = Hints.createChecker();
 const problemsFilterButtons = Array.from(document.querySelectorAll('.problems-filter-btn'));
 let problemsTimer = null;
 const cssLintChecker = CssLint.createChecker();
+// A book's problems come from BookCheck (P5-04, D-040); images' first bytes are read once, for their media type.
+const bookChecker = BookCheck.createChecker();
+const assetHeads = new Map();
 let problemsResult = { problems: [], errors: 0, warnings: 0 };
 let problemsFilter = settings.problemsFilter;
 
@@ -15,19 +18,45 @@ function knownProjectPaths() {
     return tree.concat(Object.keys(typeof projectAssets === 'object' ? projectAssets : {}));
 }
 
-function runProblemsCheck() {
-    clearTimeout(problemsTimer);
-    problemsTimer = null;
+function problemEntries() {
     ensureEntries();
     const entries = Object.assign({}, projectFiles.entries);
     if (activeFile in entries) entries[activeFile] = editor.value;
-    const links = linkChecker.check(entries, knownProjectPaths());
-    const hints = hintChecker.check(entries);
-    // Book stylesheets and style attributes get the ebook CSS lint (P4-06, D-036).
-    const lint = isBookProject() ? cssLintChecker.check(entries).problems : [];
-    const order = Object.keys(entries);
-    const problems = links.problems.map((p) => Object.assign({ category: 'links' }, p)).concat(hints.problems, lint)
-        .sort((a, b) => (order.indexOf(a.file) - order.indexOf(b.file)) || (a.start - b.start));
+    return entries;
+}
+
+// Reads the first bytes of image assets not read yet, then checks again.
+function loadAssetHeads() {
+    const assets = typeof projectAssets === 'object' ? projectAssets : {};
+    const wanted = Object.keys(assets).filter((p) => /\.(png|jpe?g|gif|webp)$/i.test(p) && assets[p] instanceof Blob && (!assetHeads.has(p) || assetHeads.get(p).blob !== assets[p]));
+    if (!wanted.length) return;
+    Promise.all(wanted.map((p) => assets[p].slice(0, 16).arrayBuffer().then((b) => assetHeads.set(p, { blob: assets[p], bytes: new Uint8Array(b) }))))
+        .then(() => { if (isBookProject()) runProblemsCheck(); }, () => {});
+}
+
+// Every problem BookCheck finds in the open book, with the stylesheet lint.
+function bookProblems(entries) {
+    const e = entries || problemEntries();
+    const heads = {};
+    assetHeads.forEach((v, p) => { if (projectAssets && projectAssets[p] === v.blob) heads[p] = v.bytes; });
+    return bookChecker.check(e, { assets: Object.keys(projectAssets || {}), heads: heads }).problems.concat(cssLintChecker.check(e).problems);
+}
+
+function runProblemsCheck() {
+    clearTimeout(problemsTimer);
+    problemsTimer = null;
+    const entries = problemEntries();
+    let problems;
+    if (isBookProject()) {
+        loadAssetHeads();
+        problems = bookProblems(entries);
+    } else {
+        const links = linkChecker.check(entries, knownProjectPaths());
+        const hints = hintChecker.check(entries);
+        const order = Object.keys(entries);
+        problems = links.problems.map((p) => Object.assign({ category: 'links' }, p)).concat(hints.problems)
+            .sort((a, b) => (order.indexOf(a.file) - order.indexOf(b.file)) || (a.start - b.start));
+    }
     problemsResult = { problems: problems };
     renderProblems();
 }
@@ -47,12 +76,18 @@ function jumpToProblem(problem) {
 }
 
 function renderProblems() {
-    const problems = problemsResult.problems.filter((p) => problemsFilter === 'all' || p.category === problemsFilter);
+    const book = isBookProject();
+    // Package and Stylesheets are book categories.
+    const shown = (f) => book || (f !== 'package' && f !== 'stylesheets');
+    const filter = shown(problemsFilter) ? problemsFilter : 'all';
+    const problems = problemsResult.problems.filter((p) => filter === 'all' || p.category === filter);
     const errors = problems.filter((p) => p.severity === 'error').length;
-    const warnings = problems.length - errors;
+    const notes = problems.filter((p) => p.severity === 'info').length;
+    const warnings = problems.length - errors - notes;
     problemsFilterButtons.forEach((btn) => {
+        btn.hidden = !shown(btn.dataset.filter);
         const count = problemsResult.problems.filter((p) => btn.dataset.filter === 'all' || p.category === btn.dataset.filter).length;
-        btn.setAttribute('aria-pressed', String(btn.dataset.filter === problemsFilter));
+        btn.setAttribute('aria-pressed', String(btn.dataset.filter === filter));
         btn.textContent = btn.dataset.filter.charAt(0).toUpperCase() + btn.dataset.filter.slice(1) + (count ? ' ' + count : '');
     });
     problemsCountBadge.hidden = problems.length === 0;
@@ -60,25 +95,31 @@ function renderProblems() {
     problemsCountBadge.classList.toggle('has-error', errors > 0);
     if (inspProblemsPane.hidden) return;
     problemsSummary.textContent = problems.length
-        ? errors + (errors === 1 ? ' error' : ' errors') + ', ' + warnings + (warnings === 1 ? ' warning' : ' warnings')
-        : (problemsFilter === 'all' ? 'No problems found.' : 'Nothing found in this category.');
+        ? errors + (errors === 1 ? ' error' : ' errors') + ', ' + warnings + (warnings === 1 ? ' warning' : ' warnings') + (notes ? ', ' + notes + (notes === 1 ? ' note' : ' notes') : '')
+        : (filter === 'all' ? 'No problems found.' : 'Nothing found in this category.');
     problemsList.textContent = '';
     problems.forEach((p) => {
         const row = document.createElement('button');
         row.type = 'button';
-        row.className = 'console-row problem-row problem-' + p.severity + ' problem-cat-' + p.category;
+        row.className = 'list-row problem-row problem-' + p.severity + ' problem-cat-' + p.category;
         const level = document.createElement('span');
-        level.className = 'console-level';
-        level.textContent = p.severity === 'error' ? 'error' : 'warn';
+        level.className = 'list-level';
+        level.textContent = p.severity === 'error' ? 'error' : p.severity === 'info' ? 'note' : 'warn';
         const msg = document.createElement('span');
-        msg.className = 'console-msg';
+        msg.className = 'list-msg';
         msg.textContent = p.message;
         const where = document.createElement('span');
-        where.className = 'console-src';
+        where.className = 'list-src';
         where.textContent = p.file + ':' + p.line;
-        row.title = 'Jump to ' + p.file + ' line ' + p.line;
         row.append(level, msg, where);
-        row.addEventListener('click', () => jumpToProblem(p));
+        // Images and missing files have no text to open.
+        if (typeof projectFiles.entries[p.file] === 'string') {
+            row.title = 'Jump to ' + p.file + ' line ' + p.line;
+            row.addEventListener('click', () => jumpToProblem(p));
+        } else {
+            row.classList.add('problem-static');
+            row.title = p.file;
+        }
         problemsList.appendChild(row);
     });
 }

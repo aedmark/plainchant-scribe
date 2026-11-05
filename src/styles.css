@@ -1302,7 +1302,7 @@ body.shaded #editor {
     body[data-view="preview"] .pane-void { display: none; }
 }
 
-.console-badge {
+.count-badge {
     display: inline-block;
     min-width: 1.1em;
     margin-left: 0.25rem;
@@ -1315,27 +1315,28 @@ body.shaded #editor {
     border-radius: 999px;
 }
 
-.console-badge.has-error { background: var(--danger); color: var(--on-accent); }
-.console-empty { color: var(--text-void-muted); padding: 0.4rem 0; }
-.console-row { display: flex; gap: 0.5rem; align-items: baseline; padding: 0.15rem 0.3rem; border-bottom: 1px solid var(--border-void); }
-.console-level { flex: 0 0 3.2rem; font-weight: 700; text-transform: uppercase; font-size: 0.66rem; color: var(--text-void-muted); }
-.console-msg { flex: 1 1 auto; white-space: pre-wrap; word-break: break-word; color: var(--text-void); }
-.console-src { flex: 0 0 auto; background: none; border: none; padding: 0; color: var(--text-soft); font: inherit; text-decoration: underline; cursor: pointer; }
-.console-error { background: var(--danger-soft-bg); }
-.console-error .console-level, .console-error .console-msg { color: var(--danger-soft-text); }
-.console-warn .console-level { color: var(--warn); }
+.count-badge.has-error { background: var(--danger); color: var(--on-accent); }
+.list-empty { color: var(--text-void-muted); padding: 0.4rem 0; }
+.list-row { display: flex; gap: 0.5rem; align-items: baseline; padding: 0.15rem 0.3rem; border-bottom: 1px solid var(--border-void); }
+.list-level { flex: 0 0 3.2rem; font-weight: 700; text-transform: uppercase; font-size: 0.66rem; color: var(--text-void-muted); }
+.list-msg { flex: 1 1 auto; white-space: pre-wrap; word-break: break-word; color: var(--text-void); }
+.list-src { flex: 0 0 auto; background: none; border: none; padding: 0; color: var(--text-soft); font: inherit; text-decoration: underline; cursor: pointer; }
+.list-error { background: var(--danger-soft-bg); }
+.list-error .list-level, .list-error .list-msg { color: var(--danger-soft-text); }
+.list-warn .list-level { color: var(--warn); }
 
 .panel-bar { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
 
 .parts-help { margin: 0 0 0.4rem; font-size: 0.72rem; color: var(--text-void-muted); }
 .parts-list { font-family: var(--font-code); font-size: 0.74rem; overflow-y: auto; max-height: 150px; }
-.parts-list .console-row { align-items: center; }
+.parts-list .list-row { align-items: center; }
 .problem-row { cursor: pointer; text-align: left; width: 100%; background: none; border-top: 0; border-left: 0; border-right: 0; color: inherit; font: inherit; }
 .problem-row:hover, .problem-row:focus-visible { background: var(--bg-raised); outline: none; }
-.problem-row .console-level { flex-basis: 3.4rem; }
-.problem-warning .console-level { color: var(--warn); }
-.problem-error .console-level { color: var(--danger-soft-text); }
-.problem-row .console-src { text-decoration: none; }
+.problem-row .list-level { flex-basis: 3.4rem; }
+.problem-warning .list-level { color: var(--warn); }
+.problem-error .list-level { color: var(--danger-soft-text); }
+.problem-row .list-src { text-decoration: none; }
+.problem-row.problem-static { cursor: default; }
 
 .find-bar {
     display: flex;
@@ -1461,9 +1462,9 @@ body.shaded #editor {
 .fr-more { padding: 0.2rem 0.85rem; color: var(--text-void-muted); font-style: italic; }
 .find-bar .mini:disabled { opacity: 0.45; cursor: not-allowed; }
 
-.css-state-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; margin-bottom: 0.55rem; }
-.css-state-btn[aria-pressed="true"] { background: var(--text-strong); color: var(--bg-void); }
-.css-state-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.filter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; margin-bottom: 0.55rem; }
+.filter-btn[aria-pressed="true"] { background: var(--text-strong); color: var(--bg-void); }
+.filter-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .css-state-hint { flex: 1 1 100%; font-size: 0.72rem; color: var(--text-void-muted); overflow-wrap: anywhere; }
 
 .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.65rem; align-content: start; }

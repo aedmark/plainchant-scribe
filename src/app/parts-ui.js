@@ -46,16 +46,16 @@ function refreshPartsUi() {
     partsList.textContent = '';
     if (!paths.length && !scan.invalid.length) {
         const empty = document.createElement('div');
-        empty.className = 'console-empty';
+        empty.className = 'list-empty';
         empty.textContent = 'No shared parts yet. Select an element and choose Make Part…';
         partsList.appendChild(empty);
         return;
     }
     const addRow = (text, actions, cls) => {
         const row = document.createElement('div');
-        row.className = 'console-row ' + (cls || '');
+        row.className = 'list-row ' + (cls || '');
         const msg = document.createElement('span');
-        msg.className = 'console-msg';
+        msg.className = 'list-msg';
         msg.textContent = text;
         row.appendChild(msg);
         actions.forEach(([label, title, fn]) => {
@@ -80,14 +80,14 @@ function refreshPartsUi() {
             addRow('  ' + r.page + ' differs from the part', [
                 ['Use part', 'Replace this page’s copy with the part file', () => commitPartEntries(Parts.sync(projectFiles.entries, r).entries)],
                 ['Update part', 'Make the part match this page and update every page', () => commitPartEntries(Parts.pull(projectFiles.entries, r.page, r.index).entries)]
-            ], 'console-warn');
+            ], 'list-warn');
         });
     });
     scan.regions.filter((r) => r.state === 'missing').forEach((r) => {
-        addRow(r.page + ': part file "' + r.src + '" was not found', [['Open page', 'Open the page', () => openFileInEditor(r.page)]], 'console-error');
+        addRow(r.page + ': part file "' + r.src + '" was not found', [['Open page', 'Open the page', () => openFileInEditor(r.page)]], 'list-error');
     });
     scan.invalid.forEach((b) => {
-        addRow(b.page + ': unmatched or nested pc:part marker' + (b.src ? ' for "' + b.src + '"' : ''), [['Open page', 'Open the page', () => openFileInEditor(b.page)]], 'console-error');
+        addRow(b.page + ': unmatched or nested pc:part marker' + (b.src ? ' for "' + b.src + '"' : ''), [['Open page', 'Open the page', () => openFileInEditor(b.page)]], 'list-error');
     });
 }
 

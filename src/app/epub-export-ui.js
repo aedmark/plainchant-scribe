@@ -18,8 +18,7 @@ async function exportEpub() {
     const assets = Object.keys(projectAssets || {});
     const read = Book.read(projectFiles.entries, { assets: assets });
     if (!read.model) { showNotice('content.opf cannot be read, so the book cannot be exported. Fix it in the code editor.', true); return; }
-    const nav = Nav.read(projectFiles.entries, read.model);
-    const errors = read.problems.concat(nav.problems || []).filter((p) => p.severity === 'error');
+    const errors = bookProblems().filter((p) => p.severity === 'error');
     if (errors.length && !await askConfirm({
         title: 'Export a book with errors?',
         text: 'This book has ' + errors.length + (errors.length === 1 ? ' error' : ' errors') + ', for example: ' + errors[0].message + ' Reading apps and stores may refuse it. Fix them first, or export anyway to test.',

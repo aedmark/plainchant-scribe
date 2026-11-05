@@ -240,8 +240,8 @@
             <div class="inspector-tabs" role="tablist" aria-label="Inspector sections">
                 <button type="button" class="insp-tab" data-insp="props" aria-selected="true">Properties (HTML)</button>
                 <button type="button" class="insp-tab" data-insp="css" aria-selected="false">CSS Designer</button>
-                <button type="button" class="insp-tab" data-insp="parts" aria-selected="false">Parts <span id="partsCountBadge" class="console-badge" hidden>0</span></button>
-                <button type="button" class="insp-tab" data-insp="problems" aria-selected="false">Problems <span id="problemsCountBadge" class="console-badge" hidden>0</span></button>
+                <button type="button" class="insp-tab" data-insp="parts" aria-selected="false">Parts <span id="partsCountBadge" class="count-badge" hidden>0</span></button>
+                <button type="button" class="insp-tab" data-insp="problems" aria-selected="false">Problems <span id="problemsCountBadge" class="count-badge" hidden>0</span></button>
                 <button type="button" class="insp-tab" data-insp="book" aria-selected="false" id="bookTabBtn" hidden>Book</button>
                 <button type="button" class="insp-tab" data-insp="chapters" aria-selected="false" id="chaptersTabBtn" hidden>Chapters</button>
                 <button type="button" class="insp-tab" data-insp="layout" aria-selected="false" id="layoutTabBtn" hidden>Layout</button>
@@ -543,13 +543,14 @@
             <p class="parts-help">Readers can override line height and justification with their own settings. Apply .small-caps to an element with the Properties tab&rsquo;s Classes field.</p>
         </div>
         <div id="inspProblemsPane" class="inspector-body" hidden>
-            <div id="problemsFilterBar" class="css-state-bar" role="group" aria-label="Kinds of problems to show">
+            <div id="problemsFilterBar" class="filter-bar" role="group" aria-label="Kinds of problems to show">
                 <span class="insp-inline-label">Show:</span>
-                <button type="button" class="mini css-state-btn problems-filter-btn" data-filter="all" aria-pressed="true">All</button>
-                <button type="button" class="mini css-state-btn problems-filter-btn" data-filter="links" aria-pressed="false" title="Broken links and missing files">Links</button>
-                <button type="button" class="mini css-state-btn problems-filter-btn" data-filter="accessibility" aria-pressed="false" title="Missing alt text, heading order, labels, and page language">Accessibility</button>
-                <button type="button" class="mini css-state-btn problems-filter-btn" data-filter="markup" aria-pressed="false" title="Duplicate ids, unclosed or stray tags, and obsolete elements">Markup</button>
-                <button type="button" class="mini css-state-btn problems-filter-btn" data-filter="stylesheets" aria-pressed="false" title="In a book: CSS that reading systems handle badly or not at all, in stylesheets and style attributes">Stylesheets</button>
+                <button type="button" class="mini filter-btn problems-filter-btn" data-filter="all" aria-pressed="true">All</button>
+                <button type="button" class="mini filter-btn problems-filter-btn" data-filter="package" aria-pressed="false" title="In a book: the container, content.opf, the contents, file names, media types, the cover, and chapter size" hidden>Package</button>
+                <button type="button" class="mini filter-btn problems-filter-btn" data-filter="links" aria-pressed="false" title="Broken links, missing files, and in a book, links outside the reading order or to ids that do not exist">Links</button>
+                <button type="button" class="mini filter-btn problems-filter-btn" data-filter="accessibility" aria-pressed="false" title="Missing alt text, heading order, labels, and page language">Accessibility</button>
+                <button type="button" class="mini filter-btn problems-filter-btn" data-filter="markup" aria-pressed="false" title="Duplicate ids, unclosed or stray tags, and obsolete elements">Markup</button>
+                <button type="button" class="mini filter-btn problems-filter-btn" data-filter="stylesheets" aria-pressed="false" title="In a book: CSS that reading systems handle badly or not at all, in stylesheets and style attributes">Stylesheets</button>
             </div>
             <div class="panel-bar">
                 <span id="problemsSummary" class="parts-help" aria-live="polite"></span>
@@ -1015,6 +1016,8 @@
 <script src="src/book-export.js"></script>
 <script src="src/epub.js"></script>
 <script src="src/markdown-import.js"></script>
+<script src="src/xhtml.js"></script>
+<script src="src/book-check.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>
 <script src="src/app/layout.js"></script>

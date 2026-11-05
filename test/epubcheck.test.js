@@ -282,4 +282,17 @@ if (!oracle.jar) {
         const r = epubcheck(oracle.jar, files);
         assert.ok(r.messages.some((m) => m.severity === 'ERROR'), 'expected an error, got ' + describeMessages(r));
     });
+
+    // The same broken books as test/book-check.test.js: BookCheck's errors are EPUBCheck's (P5-04, D-040).
+    test('epubcheck: agrees with BookCheck on each broken book (P5-04)', () => {
+        const cases = require('./book-check-cases.js').BOOK_CHECK_CASES;
+        cases.forEach((c) => {
+            const files = BookTemplate.create({ title: 'Check' }).files;
+            c.change(files);
+            const r = epubcheck(oracle.jar, files);
+            // EPUBCheck writes HTM_054 with an underscore.
+            const ids = Array.from(new Set(r.messages.map((m) => m.ID.replace('_', '-')))).sort();
+            assert.deepEqual(ids, c.epubcheck.slice().sort(), c.name + ': ' + describeMessages(r));
+        });
+    });
 }

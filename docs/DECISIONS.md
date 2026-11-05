@@ -286,6 +286,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** Markdown outside the core (tables, definition lists, reference links, HTML) arrives as text for the author to finish. Footnote text loses its formatting. Images must already be in the book (add them in Assets first). Relative links between Markdown files are dropped to text, since the files' names change.
 **Review trigger:** Authors import long drafts with tables or reference links, or ask for images to come along with the Markdown.
 
+## D-040 Book Problems tab  (2026-11-05, status: accepted)
+**Context:** `P5-04` needed the book rules shown in the Problems tab, which until then checked only `.html` pages and, for books, the CSS lint. The maintainer chose each point below on 2026-11-05.
+**Decision:** 1. A new Package category, for books only, holds the container, package document, nav, file names, media types, cover, and chapter size; chapter checks fill the existing Links, Accessibility, and Markup categories, and Stylesheets stays. 2. Chapters over 300 KB get a warning. 3. Markup checks are targeted rules (duplicate ids, lang and xml:lang, reserved namespaces, and `Xhtml.check`), not HTML's content model. 4. The `.console-*` and `.css-state-*` class names are renamed. A rule is an error when EPUBCheck 5.4.0 reports it as one (its message ID is cited, and a shared table of broken books holds both to it); readers' and WCAG's advice are warnings.
+**Alternatives:** One flat list for books (rejected: the filters already exist and sort the work); grouping by file (rejected: the list already sorts by file); a 1 MB limit or none (rejected: 300 KB is where older readers failed); common content-model rules (rejected: large and easy to get wrong, and EPUBCheck reports them, `P5-05`); keeping the class names (rejected: HANDOFF had deferred them to this change).
+**Consequences:** Every new book shows one warning until it has a cover. A file in the book but not in the manifest is a warning, since export leaves it out. Checking an image's format needs its first bytes, read once per image as a Blob, so the first check of a book can change a moment later. Export now asks first on any BookCheck error, not only package and nav errors.
+**Review trigger:** Authors find a warning noisy (the cover, chapter size), EPUBCheck changes a rule's severity, or `P5-05` makes the content model visible.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are
