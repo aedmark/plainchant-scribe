@@ -20,7 +20,7 @@ test('structure: the app scripts are loaded after the src/ modules they use, and
         'src/html-ast.js', 'src/css-ast.js', 'src/code-shade.js', 'src/dom-outline.js',
         'src/project.js', 'src/editing.js', 'src/suggest.js', 'src/library.js',
         'src/store.js', 'src/versions.js', 'src/filesync.js', 'src/importing.js',
-        'src/xml-ast.js', 'src/book-template.js', 'src/book.js', 'src/opf-edit.js', 'src/nav.js', 'src/book-stage.js', 'src/example-book.js', 'src/book-meta.js', 'src/book-chapters.js', 'src/book-contents.js', 'src/book-cover.js'
+        'src/xml-ast.js', 'src/book-template.js', 'src/book.js', 'src/opf-edit.js', 'src/nav.js', 'src/book-stage.js', 'src/example-book.js', 'src/book-meta.js', 'src/book-chapters.js', 'src/book-contents.js', 'src/book-cover.js', 'src/book-style.js'
     ].forEach((m) => {
         assert.ok(order.indexOf(m) !== -1 && order.indexOf(m) < order.indexOf('src/app/core.js'), m + ' must load before the app scripts');
     });

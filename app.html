@@ -244,6 +244,7 @@
                 <button type="button" class="insp-tab" data-insp="problems" aria-selected="false">Problems <span id="problemsCountBadge" class="console-badge" hidden>0</span></button>
                 <button type="button" class="insp-tab" data-insp="book" aria-selected="false" id="bookTabBtn" hidden>Book</button>
                 <button type="button" class="insp-tab" data-insp="chapters" aria-selected="false" id="chaptersTabBtn" hidden>Chapters</button>
+                <button type="button" class="insp-tab" data-insp="layout" aria-selected="false" id="layoutTabBtn" hidden>Layout</button>
             </div>
             <div class="inspector-selection-badge">
                 <span id="inspSelectedTag">No element selected</span>
@@ -435,6 +436,36 @@
             </div>
             <ol id="chaptersList" class="chapters-list"></ol>
             <p id="chaptersUnreadable" class="parts-help" hidden></p>
+        </div>
+        <div id="inspLayoutPane" class="inspector-body" hidden>
+            <p id="layoutWhere" class="parts-help"></p>
+            <div class="layout-presets" role="group" aria-label="Start from a preset">
+                <span class="insp-inline-label">Start from:</span>
+                <button type="button" class="chip" data-layout-preset="novel" aria-pressed="false" title="First-line indents, justified, hyphenated">Novel</button>
+                <button type="button" class="chip" data-layout-preset="modern" aria-pressed="false" title="Space between paragraphs, ragged right">Modern</button>
+                <button type="button" class="chip" data-layout-preset="plain" aria-pressed="false" title="Remove Scribe's layout block; the book's own CSS and the reader decide">Plain</button>
+            </div>
+            <div class="insp-grid layout-grid">
+                <label class="insp-field"><span>Paragraphs</span>
+                    <select data-layout="paragraph">
+                        <option value="indent">Indent the first line</option>
+                        <option value="space">Space between</option>
+                        <option value="none">Leave to the book and reader</option>
+                    </select>
+                </label>
+                <label class="insp-field"><span>Indent or space (em)</span><input type="text" data-layout="size" inputmode="decimal" autocomplete="off"></label>
+                <label class="insp-field"><span>Line height</span><select data-layout="lineHeight"></select></label>
+                <label class="insp-field"><span>Keep lines together</span>
+                    <select data-layout="widows">
+                        <option value="">Leave to the reader</option>
+                        <option value="2">At least 2 lines</option>
+                        <option value="3">At least 3 lines</option>
+                    </select>
+                </label>
+                <label class="layout-check"><input type="checkbox" data-layout="justify"> Justify</label>
+                <label class="layout-check"><input type="checkbox" data-layout="hyphens"> Hyphenate</label>
+            </div>
+            <p class="parts-help">Readers can override line height and justification with their own settings.</p>
         </div>
         <div id="inspProblemsPane" class="inspector-body" hidden>
             <div id="problemsFilterBar" class="css-state-bar" role="group" aria-label="Kinds of problems to show">
@@ -821,6 +852,7 @@
 <script src="src/book-chapters.js"></script>
 <script src="src/book-contents.js"></script>
 <script src="src/book-cover.js"></script>
+<script src="src/book-style.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>
 <script src="src/app/layout.js"></script>
@@ -846,6 +878,7 @@
 <script src="src/app/spine-ui.js"></script>
 <script src="src/app/contents-ui.js"></script>
 <script src="src/app/cover-ui.js"></script>
+<script src="src/app/style-ui.js"></script>
 <script src="src/app/inspector-ui.js"></script>
 <script src="src/app/parts-ui.js"></script>
 <script src="src/app/problems-ui.js"></script>

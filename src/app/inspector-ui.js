@@ -79,6 +79,8 @@ function switchInspectorTab(tab) {
     if (tab === 'book') refreshBookPanel(true);
     inspChaptersPane.hidden = tab !== 'chapters';
     if (tab === 'chapters') refreshChapters();
+    inspLayoutPane.hidden = tab !== 'layout';
+    if (tab === 'layout') refreshLayout();
 }
 
 function defaultSelectorFor(node) {

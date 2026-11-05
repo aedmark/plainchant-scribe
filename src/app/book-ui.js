@@ -16,7 +16,8 @@ function syncBookTab() {
     const book = isBookProject();
     bookTabBtn.hidden = !book;
     document.getElementById('chaptersTabBtn').hidden = !book;
-    if (!book && (activeInspectorTab === 'book' || activeInspectorTab === 'chapters')) switchInspectorTab('props');
+    document.getElementById('layoutTabBtn').hidden = !book;
+    if (!book && ['book', 'chapters', 'layout'].indexOf(activeInspectorTab) !== -1) switchInspectorTab('props');
     if (book && typeof refreshChapters === 'function') refreshChapters();
 }
 

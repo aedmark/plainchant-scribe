@@ -410,6 +410,7 @@ function render(typed) {
     if (typeof scheduleProblemsCheck === 'function') scheduleProblemsCheck();
     if (typeof refreshBookPanel === 'function') refreshBookPanel(false);
     if (typeof refreshChapters === 'function') refreshChapters();
+    if (typeof refreshLayout === 'function') refreshLayout();
     if (typeof schedulePreviewPush === 'function') schedulePreviewPush();
 }
 

@@ -223,6 +223,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** The Calibre tags show as EPUB 2 leftovers only if `Book.read` is ever made to report them. A book can still carry other collections, edited in the code editor.
 **Review trigger:** Calibre reads `belongs-to-collection` well enough that its own tags are no longer needed, or authors need several collections.
 
+## D-031 Layout presets as one marked block in the book's stylesheet  (2026-11-04, status: accepted)
+**Context:** `P4-01` needed choices about where the layout controls live, how they are written into the stylesheet, which controls there are, and how hyphenation is spelled for readers. The maintainer chose each point below on 2026-11-04.
+**Decision:** 1. A Layout tab in the Inspector, shown only for books, for Phase 4's later items to join. 2. One block between `/* Scribe layout: ... */` and `/* End of Scribe layout */` at the end of the book's main stylesheet (the one the first chapter links, else the first CSS item), rewritten on each change. It wins by coming last, and the rest of the file is never touched; the tab reads its values back from the block. 3. Three presets (Novel, Modern, Plain) and each setting on its own: paragraphs as indent, space, or left alone, with a size in em; line height; justify; hyphenate; and widows and orphans. Plain writes nothing and removes the block. 4. Hyphenation is written as `-webkit-hyphens`, `-epub-hyphens`, and `hyphens`; widows and orphans are standard; in indent mode, paragraphs after headings and `hr` start flush; ragged text aligns to the start side of the language.
+**Alternatives:** A section of the Book tab (rejected: one long tab); editing existing rules in place (rejected: the tool would have to guess which rule is the paragraph rule); presets only (rejected: authors fine-tune line height and indents); standard CSS only (rejected: readers that need a prefix would ignore hyphenation).
+**Consequences:** The block's `p` rule overrides the book's own paragraph rules for the properties it sets, as intended. A book with several stylesheets gets the block in the first chapter's.
+**Review trigger:** Authors need different layouts per chapter, or a reader is found to ignore the block.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

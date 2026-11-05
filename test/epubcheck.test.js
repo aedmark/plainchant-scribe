@@ -166,6 +166,15 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
+    test('epubcheck: a book with each layout preset passes EPUBCheck with no messages (P4-01)', () => {
+        ['novel', 'modern'].forEach((k) => {
+            const files = ExampleBook.create().files;
+            files['OEBPS/css/book.css'] = BookStyle.apply(files['OEBPS/css/book.css'], BookStyle.PRESETS[k].settings, 'en');
+            const r = epubcheck(oracle.jar, files);
+            assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], k + ': ' + describeMessages(r));
+        });
+    });
+
     test('epubcheck: a template with the modified date removed fails, so the oracle is really checking', () => {
         const files = BookTemplate.create().files;
         files['OEBPS/content.opf'] = files['OEBPS/content.opf'].replace(/ *<meta property="dcterms:modified">[^<]*<\/meta>\n/, '');
