@@ -189,7 +189,7 @@
             "epub",
             "D-002"
           ],
-          "what": "Plainchant Scribe will let an author make, lay out, check, and export reflowable EPUB 3.3 books. The book's XHTML, CSS, and package files are authoritative and are edited by exact-range splices, never rewritten. Nothing in this entry is built yet.",
+          "what": "Plainchant Scribe lets an author make, lay out, check, and export reflowable EPUB 3.3 books. The book's XHTML, CSS, and package files are authoritative and are edited by exact-range splices, never rewritten. Phases 0 to 4 and most of Phase 5 are built; `ROADMAP.md` says which items are left.",
           "how": [
             "`ROADMAP.md` orders the work: spinoff and renaming, the XML and book format, the Reading Stage, structure tools, layout, import and export with validation, accessibility, and later extras.",
             "Validation is a built-in rule set plus an optional EPUBCheck run in the desktop app (D-005).",
