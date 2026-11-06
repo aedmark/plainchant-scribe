@@ -293,6 +293,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** Every new book shows one warning until it has a cover. A file in the book but not in the manifest is a warning, since export leaves it out. Checking an image's format needs its first bytes, read once per image as a Blob, so the first check of a book can change a moment later. Export now asks first on any BookCheck error, not only package and nav errors.
 **Review trigger:** Authors find a warning noisy (the cover, chapter size), EPUBCheck changes a rule's severity, or `P5-05` makes the content model visible.
 
+## D-041 The optional EPUBCheck run  (2026-11-06, status: accepted)
+**Context:** `P5-05` needed choices about how the desktop app finds EPUBCheck, when it runs, and how its messages are shown (D-005). The maintainer chose each point below on 2026-11-06.
+**Decision:** 1. The author chooses the jar once in a file dialog and the path is kept in settings; `EPUBCHECK_JAR` is used when none is chosen, and shift-clicking the button chooses again. Java is `JAVA_HOME`'s, else the PATH's. 2. It runs only from a Run EPUBCheck button in the Problems tab, desktop only, on the book as Export packs it, written to a fresh temporary folder that is deleted afterwards; Java is started directly, with the paths as arguments, and the notice shows the command. A run is stopped after five minutes. 3. Its messages go in their own EPUBCheck category, so "passes Scribe's checks" and "passes EPUBCheck" stay separate claims; after an edit they stay, marked as from an earlier version. 4. A row selects the tag EPUBCheck's line and column end at (both count from 1); messages without a line are not clickable.
+**Alternatives:** Searching known folders for the jar (rejected: guessing); the environment variable only (rejected: hard to set for a desktop app); running after every export too (rejected: the button is enough, and export already warns on Scribe's errors); merging into the other categories by rule ID (rejected: it hides which tool said what); selecting the whole line (rejected: less exact).
+**Consequences:** Export's errors check still counts only Scribe's rules. EPUBCheck's results are not kept across reloads. The run is checked by `cargo test` (one real run when `.tools/` has the jar) and the browser pane with a stand-in shell, not in a real desktop window.
+**Review trigger:** A new EPUBCheck release changes its JSON report, or authors want EPUBCheck run on export.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

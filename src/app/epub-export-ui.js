@@ -12,6 +12,13 @@ function refreshEpubExport() {
     exportEpubBtn.textContent = hasTauri() ? 'Save .epub…' : 'Download .epub';
 }
 
+// The open book packed as Export writes it: the working copy's text files and its binary assets (P5-01, P5-05).
+async function packOpenBook() {
+    const binaries = {};
+    for (const path of Object.keys(projectAssets || {})) if (!(path in projectFiles.entries)) binaries[path] = new Uint8Array(await projectAssets[path].arrayBuffer());
+    return BookExport.pack(projectFiles.entries, binaries);
+}
+
 async function exportEpub() {
     ensureEntries();
     syncBufferFromEditor();
@@ -25,9 +32,7 @@ async function exportEpub() {
         confirm: 'Export anyway'
     })) return;
     if (!applyBookOps(BookMeta.touchModified(Date.now()))) return;
-    const binaries = {};
-    for (const path of assets) if (!(path in projectFiles.entries)) binaries[path] = new Uint8Array(await projectAssets[path].arrayBuffer());
-    const res = await BookExport.pack(projectFiles.entries, binaries);
+    const res = await packOpenBook();
     const name = BookExport.fileName(read.model.metadata.title);
     let where = name;
     if (hasTauri()) {

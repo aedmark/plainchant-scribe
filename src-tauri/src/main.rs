@@ -1,6 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde::Serialize;
+mod epubcheck;
 mod preview;
 
 use std::collections::BTreeMap;
@@ -484,6 +485,9 @@ fn main() {
             use_project_folder,
             save_project_folder,
             save_book_file,
+            epubcheck::epubcheck_run,
+            epubcheck::epubcheck_pick_jar,
+            epubcheck::epubcheck_env_jar,
             preview::preview_start,
             preview::preview_update,
             preview::preview_stop,

@@ -10,6 +10,8 @@ const cssLintChecker = CssLint.createChecker();
 // A book's problems come from BookCheck (P5-04, D-040); images' first bytes are read once, for their media type.
 const bookChecker = BookCheck.createChecker();
 const assetHeads = new Map();
+// The last EPUBCheck run (P5-05, D-041): its rows, the book it ran on, and the files as they were then.
+let epubcheckRun = null;
 let problemsResult = { problems: [], errors: 0, warnings: 0 };
 let problemsFilter = settings.problemsFilter;
 
@@ -50,6 +52,7 @@ function runProblemsCheck() {
     if (isBookProject()) {
         loadAssetHeads();
         problems = bookProblems(entries);
+        if (epubcheckRun && epubcheckRun.book === currentScriptId) problems = problems.concat(epubcheckRun.problems);
     } else {
         const links = linkChecker.check(entries, knownProjectPaths());
         const hints = hintChecker.check(entries);
@@ -57,8 +60,16 @@ function runProblemsCheck() {
         problems = links.problems.map((p) => Object.assign({ category: 'links' }, p)).concat(hints.problems)
             .sort((a, b) => (order.indexOf(a.file) - order.indexOf(b.file)) || (a.start - b.start));
     }
-    problemsResult = { problems: problems };
+    problemsResult = { problems: problems, epubcheckStale: epubcheckChanged(entries) };
     renderProblems();
+}
+
+// True when the book's files differ from those EPUBCheck last checked.
+function epubcheckChanged(entries) {
+    if (!epubcheckRun || epubcheckRun.book !== currentScriptId) return false;
+    const was = epubcheckRun.entries;
+    const keys = Object.keys(entries);
+    return keys.length !== Object.keys(was).length || keys.some((k) => was[k] !== entries[k]);
 }
 
 function scheduleProblemsCheck() {
@@ -77,8 +88,9 @@ function jumpToProblem(problem) {
 
 function renderProblems() {
     const book = isBookProject();
-    // Package and Stylesheets are book categories.
-    const shown = (f) => book || (f !== 'package' && f !== 'stylesheets');
+    if (typeof refreshEpubcheckButton === 'function') refreshEpubcheckButton();
+    // Package and Stylesheets are book categories; EPUBCheck runs only in the desktop app.
+    const shown = (f) => f === 'epubcheck' ? book && hasTauri() : book || (f !== 'package' && f !== 'stylesheets');
     const filter = shown(problemsFilter) ? problemsFilter : 'all';
     const problems = problemsResult.problems.filter((p) => filter === 'all' || p.category === filter);
     const errors = problems.filter((p) => p.severity === 'error').length;
@@ -96,7 +108,10 @@ function renderProblems() {
     if (inspProblemsPane.hidden) return;
     problemsSummary.textContent = problems.length
         ? errors + (errors === 1 ? ' error' : ' errors') + ', ' + warnings + (warnings === 1 ? ' warning' : ' warnings') + (notes ? ', ' + notes + (notes === 1 ? ' note' : ' notes') : '')
-        : (filter === 'all' ? 'No problems found.' : 'Nothing found in this category.');
+        : (filter === 'all' ? 'No problems found.' : filter === 'epubcheck' && !(epubcheckRun && epubcheckRun.book === currentScriptId) ? 'EPUBCheck has not been run on this book.' : 'Nothing found in this category.');
+    if (filter === 'epubcheck' && epubcheckRun && epubcheckRun.book === currentScriptId) {
+        problemsSummary.textContent = problemsSummary.textContent.replace(/\.?$/, '. ') + 'From EPUBCheck ' + epubcheckRun.version + (problemsResult.epubcheckStale ? ', on an earlier version of the book: run it again.' : '.');
+    }
     problemsList.textContent = '';
     problems.forEach((p) => {
         const row = document.createElement('button');
@@ -110,15 +125,15 @@ function renderProblems() {
         msg.textContent = p.message;
         const where = document.createElement('span');
         where.className = 'list-src';
-        where.textContent = p.file + ':' + p.line;
+        where.textContent = (p.file || 'book') + (p.line ? ':' + p.line : '');
         row.append(level, msg, where);
         // Images and missing files have no text to open.
         if (typeof projectFiles.entries[p.file] === 'string') {
-            row.title = 'Jump to ' + p.file + ' line ' + p.line;
+            row.title = 'Jump to ' + p.file + (p.line ? ' line ' + p.line : '');
             row.addEventListener('click', () => jumpToProblem(p));
         } else {
             row.classList.add('problem-static');
-            row.title = p.file;
+            row.title = p.file || 'The whole book';
         }
         problemsList.appendChild(row);
     });

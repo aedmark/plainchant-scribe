@@ -293,6 +293,23 @@ if (!oracle.jar) {
             // EPUBCheck writes HTM_054 with an underscore.
             const ids = Array.from(new Set(r.messages.map((m) => m.ID.replace('_', '-')))).sort();
             assert.deepEqual(ids, c.epubcheck.slice().sort(), c.name + ': ' + describeMessages(r));
+            // Every row EpubcheckReport makes from the real report points inside its file, on the line EPUBCheck named (P5-05).
+            EpubcheckReport.read(r, files).problems.forEach((p) => {
+                if (typeof files[p.file] !== 'string' || !p.line) return;
+                assert.ok(p.start <= p.end && p.end <= files[p.file].length, c.name + ' ' + p.code);
+                assert.equal(files[p.file].slice(0, p.start).split('\n').length, p.line, c.name + ' ' + p.code);
+            });
         });
+    });
+
+    test('epubcheck: the desktop run reports HTML content-model errors that BookCheck leaves to it (P5-05)', () => {
+        const files = BookTemplate.create({ title: 'Check' }).files;
+        const chapter = 'OEBPS/text/chapter-1.xhtml';
+        files[chapter] = files[chapter].replace('<p>Begin', '<p><div>block</div></p><ul><p>x</p></ul><p>Begin');
+        assert.deepEqual(BookCheck.check(files).problems.map((p) => p.code), ['cover-missing'], 'BookCheck does not judge the content model');
+        const rows = EpubcheckReport.read(epubcheck(oracle.jar, files), files).problems;
+        assert.deepEqual(rows.map((p) => p.code + ' ' + p.severity), ['RSC-005 error', 'RSC-005 error'], describeMessages({ messages: rows.map((p) => ({ severity: p.severity, ID: p.code, message: p.message })) }));
+        assert.deepEqual(rows.map((p) => files[chapter].slice(p.start, p.end)), ['<div>', '<p>']);
+        assert.ok(rows.every((p) => p.file === chapter && p.category === 'epubcheck'));
     });
 }

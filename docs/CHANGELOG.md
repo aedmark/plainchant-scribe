@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ### Added
 
+- **EPUBCheck in the desktop app**: Run EPUBCheck in the Problems tab checks the book with your own EPUBCheck jar (chosen once; needs Java) and lists its messages in a new EPUBCheck category, each one jumping to the tag it is about. Nothing is downloaded, and the book is checked as Export would save it.
 - **Book Problems tab**: for a book, the Problems tab now checks the whole book as EPUBCheck does: a new Package category (content.opf, the contents, file names, image formats, the cover, very long chapters), links and stylesheet `url()`s that point at missing, unlisted, or out-of-order files or at ids that do not exist, duplicate ids and mismatched languages, and accessibility warnings (missing alt text, skipped headings, links with no text). Each problem jumps to its text; export asks first if any are errors (`P5-04`, `D-040`).
 
 - **Import Markdown and plain text**: Import text… in the Chapters tab turns `.md` and `.txt` files into chapters (a chapter per `#` heading), with footnotes as notes, images matched to the book's, and typeset quotes and dashes (`P5-03`, `D-039`).
