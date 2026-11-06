@@ -302,6 +302,18 @@ if (!oracle.jar) {
         });
     });
 
+    test('epubcheck: an exported book keeps its linked ONIX record, as Standard Ebooks books have (P5-06)', async () => {
+        const files = BookTemplate.create({ title: 'Record' }).files;
+        files['OEBPS/content.opf'] = files['OEBPS/content.opf'].replace('</metadata>', '  <link href="onix.xml" media-type="application/xml" properties="onix" rel="record"/>\n  </metadata>');
+        files['OEBPS/onix.xml'] = '<?xml version="1.0" encoding="UTF-8"?>\n<ONIXMessage release="3.0" xmlns="http://ns.editeur.org/onix/3.0/reference"/>\n';
+        const r = epubcheckBytes(oracle.jar, (await BookExport.pack(files, {})).bytes);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+        // Without the record, EPUBCheck warns, which is how the corpus found the bug.
+        delete files['OEBPS/onix.xml'];
+        const gone = epubcheckBytes(oracle.jar, (await BookExport.pack(files, {})).bytes);
+        assert.deepEqual(gone.messages.map((m) => m.severity + ' ' + m.ID), ['WARNING RSC-007w']);
+    });
+
     test('epubcheck: the desktop run reports HTML content-model errors that BookCheck leaves to it (P5-05)', () => {
         const files = BookTemplate.create({ title: 'Check' }).files;
         const chapter = 'OEBPS/text/chapter-1.xhtml';

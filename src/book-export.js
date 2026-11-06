@@ -3,9 +3,11 @@
  *
  * The container follows OCF 3.3 (EPUB 3.3 §4.2): the first entry is mimetype, holding exactly
  * "application/epub+zip", stored, unencrypted, with no extra field; META-INF/container.xml and the rest of META-INF
- * follow, then the package document, then the manifest's files in manifest order. Text files are deflated, which
- * OCF allows for every entry but mimetype; images, fonts, and media are already compressed and are stored. Files
- * the manifest does not list are left out and reported, and so are listed files that are missing.
+ * follow, then the package document, then the manifest's files in manifest order, then the local files that the
+ * metadata's link elements name (EPUB 3.3 §5.5.6: linked records such as ONIX are not listed in the manifest).
+ * Text files are deflated, which OCF allows for every entry but mimetype; images, fonts, and media are already
+ * compressed and are stored. Other files the manifest does not list are left out and reported, and so are listed
+ * files that are missing.
  */
 (function (root, factory) {
     if (typeof module === 'object' && module.exports) module.exports = factory(require('./zip.js'), require('./book.js'));
@@ -42,6 +44,8 @@
             if (item.remote || !item.path) return;
             if (exists(item.path)) add(item.path); else if (missing.indexOf(item.path) === -1) missing.push(item.path);
         });
+        // Linked records inside the container travel with the book though the manifest does not list them (EPUB 3.3 §5.5.6).
+        model.metadata.links.forEach((link) => { if (link.path && exists(link.path)) add(link.path); });
         const left = Array.from(new Set(Object.keys(entries).concat(binaries))).filter((p) => order.indexOf(p) === -1).sort();
         return { order: order, left: left, missing: missing, title: model.metadata.title || '' };
     }

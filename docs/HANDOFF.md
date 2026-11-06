@@ -14,7 +14,7 @@ Changes: [CHANGELOG.md](CHANGELOG.md). Older sessions and the Plainchant Web his
 
 ## Current state
 
-_Last updated: 2026-11-06, on `master`: Phases 0 to 4 are done but `P3-07`; Phase 5 is done through `P5-05` (the optional EPUBCheck run in the desktop app, D-041). See ROADMAP for each item._
+_Last updated: 2026-11-06, on `master`: Phases 0 to 4 are done but `P3-07`; Phase 5 is done through `P5-06`, whose round trip passes on seven books (D-042) and whose export the maintainer checked in the Calibre viewer. See ROADMAP for each item._
 
 **Where things stand, in one paragraph:** Phase 0 is done. Phase 1 is done: six pure modules, loaded by `app.html` since `P2-01` (`src/xhtml.js` since `P5-04`): `src/xml-ast.js` (`P1-01`, D-011) parses and splices XML; `src/book-template.js` (`P1-02`, D-012) makes a new book that passes EPUBCheck 5.4.0; `src/book.js` (`P1-03`, D-014) reads a package document into a model with its XmlAst nodes and reports package-rule problems; `src/opf-edit.js` (`P1-04`, D-015) turns metadata, manifest, and spine changes into splices of that OPF; `src/nav.js` (`P1-05`, D-016) reads and edits the nav document the same way; `src/xhtml.js` (`P1-06`, D-017) checks chapters, fixes HTML entities, and cleans pasted HTML. Since `P2-01` (D-018), New makes a book and Load Example Book opens a three-chapter guide; the Stage shows the open chapter as `application/xhtml+xml`, with reader settings (text size, margins, theme; D-020) paged or scroll layout (D-021), device presets (D-022), moving between chapters, the contents, and links (D-023), and Stage editing of chapters through the Design bridge (D-024). Phase 2 is complete. The Book tab in the Inspector edits the metadata (D-025), and the Chapters tab adds, renames, deletes, reorders, splits, and merges chapters with the toc and links following (D-026, D-027), and can generate the contents and landmarks from headings (D-028); the Book tab also sets or generates the cover (D-029) and edits the series and contributors (D-030). Phase 3 is complete. The Layout tab writes paragraph, opener, scene-break, and small-caps settings into the stylesheet, embeds fonts, adds footnotes and endnotes, and inserts figures, tables, poems, and quotes (D-031 to D-035); the Problems panel lints book CSS (D-036). Phase 4 is complete. Export makes an `.epub` that passes EPUBCheck, in the browser and (by a Save dialog) the desktop app (D-037), and Open file… imports an `.epub` as a new book after checking the archive (D-038); the Chapters tab imports Markdown and plain text as chapters (D-039). Old saved projects still open as web pages. The app is served on port 8081 with storage and cache of its own (D-013). The repository is public at `https://github.com/aedmark/plainchant-scribe`. Next: `P5-04`, the Book Problems tab.
 
@@ -22,7 +22,8 @@ _Last updated: 2026-11-06, on `master`: Phases 0 to 4 are done but `P3-07`; Phas
 
 | Suite | Result |
 | --- | --- |
-| `npm test` (EPUBCheck 5.4.0 on Java 27 included) | **276/276** (256 without EPUBCheck) |
+| `npm test` (EPUBCheck 5.4.0 on Java 27 included) | **281/281** (260 without EPUBCheck) |
+| `npm run roundtrip` (7 books, EPUBCheck 5.4.0, Calibre 9.14.0) | **7 passed** |
 | `cargo test --manifest-path src-tauri/Cargo.toml`, `cargo build` | **13/13**, passes |
 | `python3 tools/check_docs.py` | `0 error(s), 0 warning(s)` |
 | `python3 tools/manual.py check docs/plainchant-scribe.manual.json`, `python3 -m unittest tools/test_manual.py` | 2 sections, 5 entries; 6/6 OK |
@@ -33,10 +34,9 @@ _Last updated: 2026-11-06, on `master`: Phases 0 to 4 are done but `P3-07`; Phas
 - **Removal guard** (`P0-04`): a structure test fails if a removed file, element, or identifier returns.
 - **Manuscript look** (`P0-06`, D-008): light and dark palettes, EB Garamond headings, Match system / Light / Dark in Settings; contrast and palette-parity tests. New home page (`P0-05`).
 - **Documentation schemes** (`P0-01`, D-007).
-- **EPUBCheck in the desktop app** (`P5-05`, D-041): Run EPUBCheck in the Problems tab (`src/app/epubcheck-ui.js`) packs the book with `packOpenBook` (`src/app/epub-export-ui.js`) and calls the Rust `epubcheck_run` (`src-tauri/src/epubcheck.rs`); `EpubcheckReport` (`src/epubcheck-report.js`) makes the rows of the EPUBCheck category.
+- **Round trip** (`P5-06`, D-042): `npm run roundtrip` (`tools/roundtrip.js`) on the books listed in `test/corpus.json`, kept in `.tools/corpus/`. **EPUBCheck in the desktop app** (`P5-05`, D-041): Run EPUBCheck in the Problems tab (`src/app/epubcheck-ui.js`) packs the book with `packOpenBook` (`src/app/epub-export-ui.js`) and calls the Rust `epubcheck_run` (`src-tauri/src/epubcheck.rs`); `EpubcheckReport` (`src/epubcheck-report.js`) makes the rows of the EPUBCheck category.
 - **Book Problems tab** (`P5-04`, D-040): `BookCheck` in `src/book-check.js` gives the Problems tab its book rules (new Package category) and Export its errors check (`bookProblems` in `src/app/problems-ui.js`); `test/book-check-cases.js` holds BookCheck and EPUBCheck to the same broken books. The Stylesheets category is `CssLint` (`P4-06`, D-036).
-- **Import** (`P5-02`, `P5-03`, D-038, D-039): `Epub.read` in `src/epub.js` checks an `.epub`, then `importEpub` in `src/app/import.js` opens it as a new project; `MarkdownImport` in `src/markdown-import.js`, behind Import text… in the Chapters tab, adds chapters with `BookNotes.insertAt` and `BookBlocks.listImage`.
-- **Export** (`P5-01`, D-037): the Export dialog's .epub section for books (`src/app/epub-export-ui.js`); `BookExport` packs with `Zip` (now with deflated entries); the Rust `save_book_file` command saves on the desktop.
+- **Import** (`P5-02`, `P5-03`, D-038, D-039): `Epub.read` in `src/epub.js` checks an `.epub`, then `importEpub` in `src/app/import.js` opens it as a new project; `MarkdownImport` in `src/markdown-import.js`, behind Import text… in the Chapters tab, adds chapters with `BookNotes.insertAt` and `BookBlocks.listImage`. **Export** (`P5-01`, D-037): the Export dialog's .epub section for books (`src/app/epub-export-ui.js`); `BookExport` packs with `Zip` (now with deflated entries); the Rust `save_book_file` command saves on the desktop.
 - **Blocks** (`P4-05`, D-035): the Layout tab's figures, tables, poems, and quotes section; `BookBlocks` writes and places them; the Assets panel's Insert makes a figure in a book.
 - **Notes** (`P4-04`, D-034): the Layout tab's Notes section; `BookNotes` adds and removes noterefs with their footnotes or endnotes and renumbers in reading order.
 - **Embedded fonts** (`P4-03`, D-033): the Layout tab's Fonts section; `FontInfo` reads TTF and OTF tables; `BookFonts` keeps the file, manifest item, and `@font-face` rule together.
@@ -94,7 +94,7 @@ _Last updated: 2026-11-06, on `master`: Phases 0 to 4 are done but `P3-07`; Phas
 
 ## Next steps (in order)
 
-1. `P5-06` (round-trip evidence on a corpus of public-domain EPUBs). Ask the design questions first; it may need Q-004 answered for a Kindle result.
+1. `P5-07` (send to reader). Ask the design questions first.
 2. Known gap for later: images imported through Assets join the manifest only when they become the cover or a figure; the Problems tab now warns about them (not-in-manifest), but nothing lists them yet.
 
 ## Open questions for maintainers

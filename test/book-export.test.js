@@ -58,6 +58,20 @@ test('book-export: only the manifest’s files go in; the rest and missing files
     assert.throws(() => BookExport.plan(broken), /cannot be exported/);
 });
 
+test('book-export: a linked record inside the book goes in, though the manifest does not list it (P5-06)', async () => {
+    const files = bxBook();
+    files['OEBPS/content.opf'] = files['OEBPS/content.opf'].replace('</metadata>', '<link href="onix.xml" media-type="application/xml" properties="onix" rel="record"/><link href="https://example.com/record" rel="record" media-type="text/html"/><link href="gone.xml" rel="record" media-type="application/xml"/><link href="content.opf" rel="alternate" media-type="application/oebps-package+xml"/></metadata>');
+    files['OEBPS/onix.xml'] = '<ONIXMessage/>';
+    const links = Book.read(files).model.metadata.links;
+    assert.deepEqual(links.map((l) => l.path), ['OEBPS/onix.xml', null, 'OEBPS/gone.xml', null], 'a remote record and the package itself are not files to carry');
+    const p = BookExport.plan(files);
+    assert.equal(p.order[p.order.length - 1], 'OEBPS/onix.xml');
+    assert.deepEqual(p.left, []);
+    assert.deepEqual(p.missing, [], 'a linked record that is not there is not a missing manifest file');
+    assert.ok(Zip.list((await BookExport.pack(files, {})).bytes).some((e) => e.path === 'OEBPS/onix.xml'));
+    assert.ok(!BookCheck.check(files).problems.some((x) => x.code === 'not-in-manifest'), 'BookCheck does not call it unlisted');
+});
+
 test('book-export: file names come from the title', () => {
     assert.equal(BookExport.fileName('Les Misérables: Tome I'), 'les-miserables-tome-i.epub');
     assert.equal(BookExport.fileName('  '), 'book.epub');

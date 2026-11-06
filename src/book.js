@@ -167,6 +167,9 @@
                     entryFor.set(el, entry);
                 } else if (el.ns === NS.opf && el.local === 'link') {
                     const entry = { rel: tokens(attr(el, 'rel')), href: attr(el, 'href'), mediaType: attr(el, 'media-type'), properties: tokens(attr(el, 'properties')), refines: attr(el, 'refines'), id: attr(el, 'id'), hreflang: attr(el, 'hreflang'), node: el, refinements: [] };
+                    // A linked record inside the container (EPUB 3.3 §5.5.6, such as an ONIX file) is a file of the book that the manifest must not list.
+                    const r = entry.href == null ? null : resolveHref(opfPath, entry.href);
+                    entry.path = r && !r.outside && !r.invalid && r.path !== opfPath ? r.path : null;
                     md.links.push(entry);
                     entryFor.set(el, entry);
                 }

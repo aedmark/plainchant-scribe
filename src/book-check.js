@@ -154,8 +154,10 @@
             if (!model.cover && model.manifest.node) opfAt('cover-missing', 'warning', 'No image is marked as the cover (properties="cover-image"), so stores and libraries show a blank or a page of text. Set a cover in the Book tab.', model.manifest.node);
             const byPath = new Map();
             model.manifest.items.forEach((it) => { if (it.path && !byPath.has(it.path)) byPath.set(it.path, it); });
+            // Linked records (EPUB 3.3 §5.5.6) are exported though the manifest must not list them.
+            const linked = new Set(model.metadata.links.map((l) => l.path).filter(Boolean));
             all.forEach((path) => {
-                if (path === 'mimetype' || path === opf || /^META-INF\//.test(path) || byPath.has(path)) return;
+                if (path === 'mimetype' || path === opf || /^META-INF\//.test(path) || byPath.has(path) || linked.has(path)) return;
                 push({ path: path, code: 'not-in-manifest', severity: 'warning', message: '"' + path + '" is not in the manifest, so it is left out of the exported book. Remove it, or link it from a chapter and list it.' }, 'package');
             });
             const spine = new Set(model.spine.itemrefs.map((r) => r.item && r.item.path).filter(Boolean));

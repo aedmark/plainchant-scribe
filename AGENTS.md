@@ -1,6 +1,6 @@
 # Plainchant Scribe
 
-An EPUB studio spun off from Plainchant Web (`aedmark/plainchant-web`): make, lay out, check, and export reflowable EPUB 3.3 books from the book's own `.xhtml`, `.css`, and `content.opf` files, which stay the single source of truth. Built for authors and small presses who want visual control over a book without a tool rewriting their files. Static HTML, CSS, and vanilla JavaScript with no frontend build step, running in any modern browser or as a native desktop app via Tauri v2. **Status: early development.** Phases 0 to 4 are done but `P3-07`, and Phase 5 through `P5-04`: a book can be made or imported, laid out, checked in the Problems tab, and exported as a `.epub`. Next are the optional EPUBCheck run, round-trip evidence, and the accessibility and store phases.
+An EPUB studio spun off from Plainchant Web (`aedmark/plainchant-web`): make, lay out, check, and export reflowable EPUB 3.3 books from the book's own `.xhtml`, `.css`, and `content.opf` files, which stay the single source of truth. Built for authors and small presses who want visual control over a book without a tool rewriting their files. Static HTML, CSS, and vanilla JavaScript with no frontend build step, running in any modern browser or as a native desktop app via Tauri v2. **Status: early development.** Phases 0 to 4 are done but `P3-07`, and Phase 5 through `P5-06`, whose round trip passes on seven books: a book can be made or imported, laid out, checked in the Problems tab, and exported as a `.epub`. Next are sending to a reader and the accessibility and store phases.
 
 This is the canonical instruction file for coding agents. `CLAUDE.md` imports it; do not duplicate these rules in tool-specific files. Project facts belong in the documents linked below, not in an agent's private memory.
 
@@ -110,6 +110,7 @@ Things an agent must not change without explicit permission. Every rule includes
 | `docs/manual.schema.json` | JSON Schema for the 3x manual source |
 | `docs/archive/` | Historical material no longer current, including the Plainchant Web lineage digest |
 | `tools/check_docs.py` | Documentation consistency checks (from `the-manifold`) |
+| `tools/roundtrip.js`, `test/corpus.json` | Round-trip evidence on public-domain books (`npm run roundtrip`, D-042) |
 | `tools/manual.py`, `tools/test_manual.py`, `tools/manual.LICENSE` | 3x manual generator (from `3x-documentation-scheme`), unit tests, and upstream licence |
 
 ## Engineering conventions
@@ -134,6 +135,7 @@ Things an agent must not change without explicit permission. Every rule includes
 - Setup: no npm install is needed for tests; the Rust toolchain is needed only for desktop builds.
 - Run in the browser: `python3 -m http.server 8081`, then open `http://localhost:8081/app.html`. Port 8081, not Plainchant Web's 8080: one origin would share one service worker scope and one storage quota between the two apps (D-013). Run the desktop app: `npm run tauri:dev`.
 - EPUBCheck (optional, needs Java): unzip a release from `w3c/epubcheck` into the ignored `.tools/` folder and `npm test` runs it as the oracle; without it the suite prints "not run" ([docs/TESTING.md](docs/TESTING.md)).
+- Round trip (P5-06): download the books in `test/corpus.json` into the ignored `.tools/corpus/`, then `npm run roundtrip`; it uses EPUBCheck and Calibre's `ebook-convert` when they are there.
 - Fast checks: `npm test`, `python3 tools/check_docs.py`, and `python3 tools/manual.py check docs/plainchant-scribe.manual.json`.
 - Rebuild the manual: `python3 tools/manual.py build docs/plainchant-scribe.manual.json --output docs/manual.html`.
 - Full checks: `npm test && python3 tools/check_docs.py && python3 -m unittest tools/test_manual.py && cargo build --manifest-path src-tauri/Cargo.toml`.

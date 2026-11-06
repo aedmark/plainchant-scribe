@@ -36,6 +36,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ### Fixed
 
+- **Export keeps linked records.** A book whose package links a record inside it, such as the `onix.xml` in Standard Ebooks books, lost that file on export, and the Problems tab called it unlisted. Both are fixed (EPUB 3.3 §5.5.6).
 - **Updates show on the next load.** The offline copy used to keep serving the old app after an update until the browser's site data was cleared; now the app is fetched fresh whenever the server can be reached, and the offline copy is used only when it cannot (`P0-07`, `D-019`).
 
 ### Removed

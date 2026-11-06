@@ -300,6 +300,13 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** Export's errors check still counts only Scribe's rules. EPUBCheck's results are not kept across reloads. The run is checked by `cargo test` (one real run when `.tools/` has the jar) and the browser pane with a stand-in shell, not in a real desktop window.
 **Review trigger:** A new EPUBCheck release changes its JSON report, or authors want EPUBCheck run on export.
 
+## D-042 Round-trip evidence on a public-domain corpus  (2026-11-06, status: accepted)
+**Context:** `P5-06` needed a corpus, a way to run it, a pass rule, and a plan for the Calibre check. The maintainer chose each point below on 2026-11-06.
+**Decision:** 1. Seven books: Project Gutenberg's EPUB 3 editions with images of Alice (#11), Frankenstein (#84), Sherlock Holmes (#1661), Moby-Dick (#2701), and the illustrated Pride and Prejudice (#1342, 24.9 MB, for the size limits), and Standard Ebooks' Frankenstein and Pride and Prejudice. `test/corpus.json` lists each with its URL, size, and SHA-256; the files go in the ignored `.tools/corpus/` and are never committed. 2. `npm run roundtrip` (`tools/roundtrip.js`) runs them, outside `npm test`, since it takes about 50 seconds. 3. A book passes when every file is byte-identical except the `dcterms:modified` value Export sets, nothing is left out, `mimetype` is first and stored, and EPUBCheck's messages (severity, ID, file, line) are the same before and after. Folder entries, which carry nothing, are not counted. 4. When `ebook-convert` is on the PATH, each export is converted to AZW3 as a smoke test of the Kindle route (D-010); the maintainer opens one or two in the Calibre viewer, and `P5-06` closes after that.
+**Alternatives:** Gutenberg only, or three books (rejected: one producer's habits, or too little); running in `npm test` (rejected: slower every run); EPUBCheck no worse as the only rule (rejected: it would miss silent changes that EPUBCheck accepts); leaving Calibre for later (rejected: the maintainer installed it).
+**Consequences:** Gutenberg regenerates its files, so a later download may be another edition; the tool says so and still runs. The pass rule is relative, so a book's own EPUBCheck errors (all seven have one, in their nav) do not fail it. The corpus found that linked records (EPUB 3.3 §5.5.6) were dropped on export; that is fixed and tested.
+**Review trigger:** A book from a new producer fails, Export starts changing files on purpose (for example a fix-on-export option), or Q-004 is answered and a Kindle result is wanted.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

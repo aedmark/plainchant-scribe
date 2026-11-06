@@ -72,6 +72,7 @@ require('./epub.test.js');
 require('./markdown-import.test.js');
 require('./book-check.test.js');
 require('./epubcheck-report.test.js');
+require('./roundtrip.test.js');
 require('./epubcheck.test.js');
 require('./hints.test.js');
 require('./preview.test.js');

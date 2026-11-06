@@ -108,3 +108,6 @@ test('epub: DRM is refused, but font obfuscation is not', async () => {
     await epRefused(epZip(base.concat({ name: 'META-INF/rights.xml', data: '<rights/>' })), 'drm', /Adobe DRM/);
     await epRefused(epZip(base.concat({ name: 'META-INF/sinf.xml', data: '<sinf/>' })), 'drm', /FairPlay/);
 });
+
+// The raw zip writer, shared with test/roundtrip.test.js.
+if (typeof module === 'object') module.exports = { epZip: epZip };

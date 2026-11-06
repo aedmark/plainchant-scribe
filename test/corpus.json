@@ -1,0 +1,61 @@
+{
+  "about": "The round-trip corpus (P5-06, D-042): public-domain EPUBs, downloaded by hand into .tools/corpus/ and never committed. Run: npm run roundtrip. SHA-256 and sizes observed 2026-11-06; Project Gutenberg regenerates its files, so a newer download may differ and is reported as another edition.",
+  "books": [
+    {
+      "file": "pg11-images-3.epub",
+      "title": "Alice's Adventures in Wonderland",
+      "producer": "Project Gutenberg #11",
+      "url": "https://www.gutenberg.org/cache/epub/11/pg11-images-3.epub",
+      "bytes": 189249,
+      "sha256": "4f81245d31380ac1d6eafb9a321e3691369bc70985736ae4bccf849a4f784036"
+    },
+    {
+      "file": "pg84-images-3.epub",
+      "title": "Frankenstein",
+      "producer": "Project Gutenberg #84",
+      "url": "https://www.gutenberg.org/cache/epub/84/pg84-images-3.epub",
+      "bytes": 440131,
+      "sha256": "0bfcc8cacdc72e132272844ed465c6198f1049a8d2b9e3f16806d02beee452e3"
+    },
+    {
+      "file": "pg1661-images-3.epub",
+      "title": "The Adventures of Sherlock Holmes",
+      "producer": "Project Gutenberg #1661",
+      "url": "https://www.gutenberg.org/cache/epub/1661/pg1661-images-3.epub",
+      "bytes": 379503,
+      "sha256": "310ddf29f2b98b870b0e970061d236c9ce7c65163e0e172c254a1db3d070d3f4"
+    },
+    {
+      "file": "pg2701-images-3.epub",
+      "title": "Moby-Dick",
+      "producer": "Project Gutenberg #2701",
+      "url": "https://www.gutenberg.org/cache/epub/2701/pg2701-images-3.epub",
+      "bytes": 814026,
+      "sha256": "c3a458e4dd8c37e2c2553622ce41250f61a95d7d7de73874e8663caa4b5c9bbd"
+    },
+    {
+      "file": "pg1342-images-3.epub",
+      "title": "Pride and Prejudice (illustrated)",
+      "producer": "Project Gutenberg #1342",
+      "url": "https://www.gutenberg.org/cache/epub/1342/pg1342-images-3.epub",
+      "bytes": 24864457,
+      "sha256": "fd519471687295a8b2492d9e413bc24bee21ade9808d8af29899a16e8599064e"
+    },
+    {
+      "file": "mary-shelley_frankenstein.epub",
+      "title": "Frankenstein",
+      "producer": "Standard Ebooks",
+      "url": "https://standardebooks.org/ebooks/mary-shelley/frankenstein/downloads/mary-shelley_frankenstein.epub?source=download",
+      "bytes": 685797,
+      "sha256": "0b5c070e2cde4d8bb36ef707f9d024465b00d0c49c078f0a148270f55b8c8780"
+    },
+    {
+      "file": "jane-austen_pride-and-prejudice.epub",
+      "title": "Pride and Prejudice",
+      "producer": "Standard Ebooks",
+      "url": "https://standardebooks.org/ebooks/jane-austen/pride-and-prejudice/downloads/jane-austen_pride-and-prejudice.epub?source=download",
+      "bytes": 831959,
+      "sha256": "85814417c1a74d2ca7f3b077b47454d0cfc728392d40d846d1c97d44f24c5279"
+    }
+  ]
+}
