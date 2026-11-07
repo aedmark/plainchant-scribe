@@ -102,6 +102,6 @@ Not committed. Decide only after the phases above ship.
 
 - [ ] P7-01 Fixed-layout books (viewport, rendition properties).
 - [ ] P7-02 SVG cover and image tooling.
-- [ ] P7-03 `.docx` import.
+- [x] P7-03 `.docx` import. Done 2026-11-07 (D-048): Import text… in the Chapters tab takes `.docx` beside Markdown and text, and Open file… or a drop makes a new book from one, with its title, author, and language. Each Heading 1 starts a chapter; headings, paragraphs, bold, italic, small caps, strikethrough, superscript and subscript, links (web and mail only), footnotes and endnotes as Scribe notes, nested lists, tables, images with Word's alt text and captions, block quotes, and scene breaks are kept; fonts, sizes, colours, and spacing are dropped. The archive gets the `.epub` import checks (`Epub.unzip`). Evidence: `test/docx.test.js` (5 tests on hand-built Word files, including hostile ones), a LibreOffice oracle that saves `test/fixtures/docx/manuscript.fodt` as `.docx` and imports it, EPUBCheck 5.4.0 with no messages on books made both ways, 27 of 29 deliberate bugs caught (one by a hang; the other two cannot change behaviour), and the browser pane: a LibreOffice `.docx` imported into the stored book as two chapters, its image, and a Notes chapter, undone exactly.
 - [ ] P7-04 EPUB 2 `toc.ncx` fallback. Note 2026-11-05 (`P5-04`): BookCheck does not read an NCX; check its links when this lands.
 - [ ] P7-05 Associate `.epub` files with the desktop app and open them directly.

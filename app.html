@@ -459,8 +459,8 @@
                     <button type="button" class="mini" id="chapterSplitBtn" title="Select a heading on the Stage, then split the chapter there: the heading and everything after it become a new chapter.">Split at heading</button>
                     <button type="button" class="mini" id="chapterAddBtn">Add chapter&hellip;</button>
                     <button type="button" class="mini" id="matterBtn" title="Add a title page, copyright page, dedication, and other front and back matter, or a page saved in your library">Front and back matter&hellip;</button>
-                    <button type="button" class="mini" id="chapterImportBtn" title="Add chapters from Markdown (.md) or plain-text (.txt) files, after the chapter on the Stage. Each # heading starts a chapter.">Import text&hellip;</button>
-                    <input type="file" id="chapterImportInput" accept=".md,.markdown,.txt,text/markdown,text/plain" multiple hidden>
+                    <button type="button" class="mini" id="chapterImportBtn" title="Add chapters from Word (.docx), Markdown (.md), or plain-text (.txt) files, after the chapter on the Stage. Each Heading 1 or # heading starts a chapter.">Import text&hellip;</button>
+                    <input type="file" id="chapterImportInput" accept=".md,.markdown,.txt,.docx,text/markdown,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple hidden>
                     <button type="button" class="mini" id="tocGenerateBtn" title="Build the table of contents and landmarks from the chapters' headings">Generate contents&hellip;</button>
                     <button type="button" class="mini" id="pageListBtn" title="Build the navigation document's page list from the book's page breaks, in reading order">Build page list</button>
                 </span>
@@ -766,7 +766,7 @@
             </div>
             <button type="button" class="chip" id="libStarterBtn">Load Example Book</button>
             <button type="button" class="chip" id="libImport">Open file&hellip;</button>
-            <input type="file" id="importInput" accept=".epub,application/epub+zip,.html,.htm,.css,.js" multiple hidden>
+            <input type="file" id="importInput" accept=".epub,application/epub+zip,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.html,.htm,.css,.js" multiple hidden>
         </div>
         <div id="library-list" class="modal-body"></div>
         <div id="library-status" role="status" aria-live="polite"></div>
@@ -1098,6 +1098,8 @@
 <script src="src/book-alt.js"></script>
 <script src="src/book-order.js"></script>
 <script src="src/book-matter.js"></script>
+<script src="src/docx.js"></script>
+<script src="src/docx-import.js"></script>
 <script src="src/book-page.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>

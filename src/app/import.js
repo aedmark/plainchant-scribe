@@ -24,19 +24,40 @@ async function importEpub(file) {
     showNotice('Opened ' + (book.title || file.name) + ' from ' + file.name + ' as a new book.' + (notes.length ? ' ' + notes.join(' ') : ''), errors > 0);
 }
 
+// Import .docx as a new book (P7-03, D-048): the archive is checked as an .epub is, and the book takes the
+// document's title, author, and language.
+async function importDocx(file) {
+    if (file.size > Epub.LIMITS.total) { showNotice(file.name + ' is larger than ' + Math.round(Epub.LIMITS.total / 1048576) + ' MB, so it was not imported.', true); return; }
+    let made;
+    try { made = DocxImport.newBook(await Docx.read(new Uint8Array(await file.arrayBuffer())), { name: file.name }); } catch (e) { showNotice(file.name + ': ' + e.message, true); return; }
+    flushSave();
+    currentScriptId = newId();
+    selectedPcId = null;
+    clearLinkedFolder();
+    const assets = {};
+    Object.keys(made.binaries).forEach((p) => { assets[p] = new Blob([made.binaries[p]], { type: Project.mimeFor(p) }); });
+    loadProjectIntoEditor({ entries: made.entries, tree: Project.deriveTree(made.entries, null, Object.keys(assets)) }, { assets: assets });
+    saveScript(true);
+    saveProjectAssets();
+    render(false);
+    closeModal(libraryModal);
+    const left = made.skipped.length ? ' Left out: ' + made.skipped.slice(0, 3).join(', ') + '.' : '';
+    showNotice('Made ' + made.title + ' from ' + file.name + ': ' + made.added.length + (made.added.length === 1 ? ' chapter.' : ' chapters.') + left, made.skipped.length > 0);
+}
+
 async function importFiles(fileList) {
     const dropped = Array.from(fileList || []);
-    const epubs = dropped.filter((f) => /\.epub$/i.test(f.name));
-    if (epubs.length) {
-        if (dropped.length > 1) showNotice('Opening ' + epubs[0].name + ' only: import one .epub at a time.', true);
-        await importEpub(epubs[0]);
+    const books = dropped.filter((f) => /\.(epub|docx)$/i.test(f.name));
+    if (books.length) {
+        if (dropped.length > 1) showNotice('Opening ' + books[0].name + ' only: open one .epub or .docx at a time.', true);
+        await (/\.docx$/i.test(books[0].name) ? importDocx(books[0]) : importEpub(books[0]));
         return;
     }
     const images = dropped.filter((f) => ImageLib.isImage(f.name));
     if (images.length && typeof addImageFiles === 'function') addImageFiles(images);
     const files = dropped.filter((f) => Importing.accept(f.name) && !ImageLib.isImage(f.name));
     if (!files.length) {
-        if (!images.length) showNotice('Please choose an .epub book, or .html, .css, or .js files.', true);
+        if (!images.length) showNotice('Please choose an .epub book, a .docx document, or .html, .css, or .js files.', true);
         return;
     }
     const entries = {};

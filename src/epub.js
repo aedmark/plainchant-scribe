@@ -44,7 +44,7 @@
     }
 
     // The central directory, with every field bounds-checked: [{ name, method, flags, crc, compressed, size, local }].
-    function directory(b, limits) {
+    function directory(b, limits, kind) {
         const view = new DataView(b.buffer, b.byteOffset, b.byteLength);
         const u16 = (o) => { if (o < 0 || o + 2 > b.length) throw fail('damaged', 'The archive is damaged (a header runs past its end).'); return view.getUint16(o, true); };
         const u32 = (o) => { if (o < 0 || o + 4 > b.length) throw fail('damaged', 'The archive is damaged (a header runs past its end).'); return view.getUint32(o, true); };
@@ -53,11 +53,11 @@
         for (let i = b.length - 22; i >= 0 && i >= b.length - 22 - 65535; i--) {
             if (b[i] === 0x50 && b[i + 1] === 0x4B && b[i + 2] === 0x05 && b[i + 3] === 0x06) { end = i; break; }
         }
-        if (end === -1) throw fail('not-zip', 'This is not an .epub (zip) file.');
+        if (end === -1) throw fail('not-zip', 'This is not ' + kind.article + ' ' + kind.ext + ' (zip) file.');
         const count = u16(end + 10), size = u32(end + 12), start = u32(end + 16);
         if (u16(end + 4) !== 0 || u16(end + 6) !== 0) throw fail('spanned', 'The archive is split across several files, which EPUB does not allow (EPUB 3.3 §4.3.2).');
         if (count === 0xFFFF || size === 0xFFFFFFFF || start === 0xFFFFFFFF) throw fail('too-many', 'The archive is too large to import (more than ' + limits.entries + ' files or ' + Math.round(limits.total / MiB) + ' MB).');
-        if (count > limits.entries) throw fail('too-many', 'The book has ' + count + ' files; at most ' + limits.entries + ' can be imported.');
+        if (count > limits.entries) throw fail('too-many', 'The ' + kind.noun + ' has ' + count + ' files; at most ' + limits.entries + ' can be imported.');
         if (start + size > end) throw fail('damaged', 'The archive is damaged (its directory is out of place).');
         const decoder = new TextDecoder('utf-8');
         const out = [];
@@ -93,8 +93,8 @@
     }
 
     // Inflates raw DEFLATE data, stopping as soon as the output passes `cap` bytes.
-    async function inflateCapped(data, cap, name) {
-        if (typeof DecompressionStream !== 'function') throw fail('no-inflate', 'This browser cannot decompress .epub files. Try a current version of Chrome, Edge, Firefox, or Safari.');
+    async function inflateCapped(data, cap, name, kind) {
+        if (typeof DecompressionStream !== 'function') throw fail('no-inflate', 'This browser cannot decompress ' + kind.ext + ' files. Try a current version of Chrome, Edge, Firefox, or Safari.');
         const reader = new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw')).getReader();
         const chunks = [];
         let total = 0;
@@ -139,40 +139,53 @@
         });
     }
 
-    // Reads an .epub archive's bytes. Returns { entries: { path: text }, binaries: { path: Uint8Array }, skipped,
-    // warnings, title }, or throws an Error with a code and a message for the author.
-    async function read(bytes, options) {
-        const limits = Object.assign({}, LIMITS, (options && options.limits) || {});
+    const KINDS = { epub: { noun: 'book', ext: '.epub', article: 'an' }, docx: { noun: 'document', ext: '.docx', article: 'a' } };
+
+    // Every entry of a zip archive, checked as described above: { raw: { name: Uint8Array }, list, skipped }. kind
+    // ('epub' or 'docx', P7-03) names the file in messages. Throws an Error with a code and a message.
+    async function unzip(bytes, options) {
+        const o = options || {};
+        const kind = KINDS[o.kind] || KINDS.epub;
+        const limits = Object.assign({}, LIMITS, o.limits || {});
         const b = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes || []);
-        const list = directory(b, limits);
-        const skipped = [], warnings = [], keep = [], seen = new Map();
+        const list = directory(b, limits, kind);
+        const not = 'The ' + kind.noun + ' was not imported: ';
+        const skipped = [], keep = [], seen = new Map();
         let total = 0;
         list.forEach((e) => {
             if (e.name.endsWith('/') || JUNK.test(e.name)) { skipped.push(e.name); return; }
             const why = unsafeName(e.name);
-            if (why) throw fail('unsafe-name', 'The book was not imported: "' + e.name + '" is unsafe, as ' + why + '.', e.name);
+            if (why) throw fail('unsafe-name', not + '"' + e.name + '" is unsafe, as ' + why + '.', e.name);
             const key = e.name.normalize('NFC').toLowerCase();
-            if (seen.has(key)) throw fail('duplicate', 'The book was not imported: "' + e.name + '" and "' + seen.get(key) + '" are the same name (EPUB 3.3 §4.2.3).', e.name);
+            if (seen.has(key)) throw fail('duplicate', not + '"' + e.name + '" and "' + seen.get(key) + '" are the same name (EPUB 3.3 §4.2.3).', e.name);
             seen.set(key, e.name);
-            if (e.flags & 0x0001) throw fail('encrypted', 'The book was not imported: "' + e.name + '" is zip-encrypted, which EPUB does not allow.', e.name);
-            if (e.method !== 0 && e.method !== 8) throw fail('method', 'The book was not imported: "' + e.name + '" uses a compression method EPUB does not allow.', e.name);
-            if (e.size > limits.file) throw fail('too-large', 'The book was not imported: "' + e.name + '" is larger than ' + Math.round(limits.file / MiB) + ' MB.', e.name);
-            if (e.method === 0 && e.compressed !== e.size) throw fail('damaged', 'The book was not imported: "' + e.name + '" is damaged (its sizes disagree).', e.name);
+            if (e.flags & 0x0001) throw fail('encrypted', not + '"' + e.name + '" is zip-encrypted, which EPUB does not allow.', e.name);
+            if (e.method !== 0 && e.method !== 8) throw fail('method', not + '"' + e.name + '" uses a compression method EPUB does not allow.', e.name);
+            if (e.size > limits.file) throw fail('too-large', not + '"' + e.name + '" is larger than ' + Math.round(limits.file / MiB) + ' MB.', e.name);
+            if (e.method === 0 && e.compressed !== e.size) throw fail('damaged', not + '"' + e.name + '" is damaged (its sizes disagree).', e.name);
             total += e.size;
-            if (total > limits.total) throw fail('too-large', 'The book was not imported: it is larger than ' + Math.round(limits.total / MiB) + ' MB once decompressed.');
+            if (total > limits.total) throw fail('too-large', not + 'it is larger than ' + Math.round(limits.total / MiB) + ' MB once decompressed.');
             keep.push(e);
         });
         const view = new DataView(b.buffer, b.byteOffset, b.byteLength);
         const raw = {};
         for (const e of keep) {
-            if (!(e.local + 30 <= b.length) || view.getUint32(e.local, true) !== 0x04034B50) throw fail('damaged', 'The book was not imported: "' + e.name + '" is damaged (no local header).', e.name);
+            if (!(e.local + 30 <= b.length) || view.getUint32(e.local, true) !== 0x04034B50) throw fail('damaged', not + '"' + e.name + '" is damaged (no local header).', e.name);
             const start = e.local + 30 + view.getUint16(e.local + 26, true) + view.getUint16(e.local + 28, true);
-            if (start + e.compressed > b.length) throw fail('damaged', 'The book was not imported: "' + e.name + '" runs past the end of the archive.', e.name);
+            if (start + e.compressed > b.length) throw fail('damaged', not + '"' + e.name + '" runs past the end of the archive.', e.name);
             const data = b.subarray(start, start + e.compressed);
-            const out = e.method === 8 ? await inflateCapped(data, e.size, e.name) : data;
-            if (out.length !== e.size || Zip.crc32(out) !== e.crc) throw fail('damaged', 'The book was not imported: "' + e.name + '" is damaged (its checksum does not match).', e.name);
+            const out = e.method === 8 ? await inflateCapped(data, e.size, e.name, kind) : data;
+            if (out.length !== e.size || Zip.crc32(out) !== e.crc) throw fail('damaged', not + '"' + e.name + '" is damaged (its checksum does not match).', e.name);
             raw[e.name] = out;
         }
+        return { raw: raw, list: list, skipped: skipped };
+    }
+
+    // Reads an .epub archive's bytes. Returns { entries: { path: text }, binaries: { path: Uint8Array }, skipped,
+    // warnings, title }, or throws an Error with a code and a message for the author.
+    async function read(bytes, options) {
+        const z = await unzip(bytes, { limits: options && options.limits });
+        const raw = z.raw, list = z.list, skipped = z.skipped, warnings = [];
         const names = new Set(Object.keys(raw));
         checkEncryption(names, raw['META-INF/encryption.xml'] ? decodeText(raw['META-INF/encryption.xml']) : null);
         if (!raw['META-INF/container.xml']) throw fail('not-a-book', 'This is not an EPUB book: it has no META-INF/container.xml.');
@@ -196,5 +209,5 @@
         return { entries: entries, binaries: binaries, skipped: skipped, warnings: warnings, title: r.model.metadata.title || '', problems: r.problems };
     }
 
-    return { LIMITS: LIMITS, read: read };
+    return { LIMITS: LIMITS, read: read, unzip: unzip, decodeText: decodeText };
 });

@@ -418,6 +418,29 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** Books with a cover now carry the EPUB 2 tag, and EPUBCheck 5.4.0 reports nothing on them. Generate contents… keeps the toc landmark while the nav is in the spine (D-028), and never lists the contents page in itself.
 **Review trigger:** KDP or Kobo change these rules, or a reader shows the contents page twice.
 
+## D-048 Importing Word documents  (2026-11-07, status: accepted)
+**Context:** `P7-03`. Authors often draft in Word or a word processor that saves `.docx` (ECMA-376 Office Open XML). Markdown import (D-039) already turns text into chapters; a `.docx` is a zip archive of XML parts, so it is untrusted input like an `.epub` (D-038). The maintainer chose each point below on 2026-11-06.
+**Decision:**
+1. Both entry points: Import text… in the Chapters tab adds a `.docx`'s chapters after the one on the Stage, beside `.md` and `.txt`, in one undo step with its images. Open file… and drag-and-drop make a new book from one, titled from the document properties, else its Title paragraph, else the file name, with its author and language (a malformed tag falls back to `en`).
+2. Structure, not looks:
+   - Each Heading 1 (the style "heading 1", or outline level 0 directly or through `basedOn`) starts a chapter. Text before the first one is a chapter named from the file. Title and Subtitle paragraphs are not copied.
+   - Kept: deeper headings, paragraphs, bold, italic, small caps (Scribe's `.small-caps` class), strikethrough, superscript, subscript (direct or via the Strong and Emphasis styles), line breaks, links to `http`, `https`, and `mailto` only, nested bullet and numbered lists (from `numbering.xml`, on the paragraph or its style), tables (header rows, column spans), block quotes (Quote, Intense Quote, Block Text, and LibreOffice's Block Quotation), and scene breaks (a paragraph of only `*`, `#`, or ornaments, written as `<hr/>`).
+   - Footnotes and endnotes become Scribe notes of the same kind, as plain text (D-034).
+   - Images become figures (with a following Caption paragraph) or inline images, with Word's alt text, and `alt=""` when Word marks them decorative. Only PNG, JPEG, and GIF are kept, checked by their bytes; others (EMF, WMF, TIFF, SVG) and linked images are named in the notice as left out.
+   - Dropped: fonts, sizes, colours, spacing, alignment, comments, tracked deletions, field codes (their results are kept), and text boxes.
+3. Safety: `Epub.unzip` (split out of `Epub.read`) applies the archive checks of D-038. XmlAst never reads a DTD, so entities are not expanded and nothing outside the archive is fetched; a part that declares an external entity is refused as not well-formed. Style inheritance stops after 10 steps. Relationship targets that leave the package are refused.
+**Alternatives:**
+- Chapters tab only or new book only (rejected: authors start both ways).
+- Keeping Word paragraph styles as classes with CSS (rejected: the Layout tab owns the look, D-031).
+- Text only (rejected: notes, tables, and images are where hand conversion costs most).
+- A library such as mammoth.js (rejected: no runtime dependencies, D-001).
+**Consequences:**
+- Notes lose formatting inside the note (BookNotes takes plain text).
+- Rowspans (`vMerge`) come through as empty cells.
+- Equations (OMML) and charts are not imported.
+- The LibreOffice oracle checks one real word processor's output. Word's own output is covered only by hand-built files written from ECMA-376.
+**Review trigger:** authors need rowspans, equations, formatted notes, or Word styles kept, or a real Word file imports badly.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

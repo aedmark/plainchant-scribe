@@ -191,6 +191,16 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
+    test('epubcheck: a book made from a .docx, and .docx chapters added to a book, pass EPUBCheck with no messages (P7-03)', async () => {
+        const doc = await Docx.read(dxSample());
+        const made = DocxImport.newBook(doc, { name: 'draft.docx' });
+        let r = epubcheckBytes(oracle.jar, (await BookExport.pack(made.entries, made.binaries)).bytes);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], 'new book: ' + describeMessages(r));
+        const into = DocxImport.importInto(ExampleBook.create().files, doc, 'OEBPS/text/chapter-2.xhtml', { name: 'draft.docx' });
+        r = epubcheckBytes(oracle.jar, (await BookExport.pack(into.entries, into.binaries)).bytes);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], 'into a book: ' + describeMessages(r));
+    });
+
     test('epubcheck: BookOrder\'s two rules match EPUBCheck (OPF-096 for an unreachable non-linear chapter, NAV-011 for contents out of order) (P6-02)', () => {
         const base = ExampleBook.create().files;
         const hidden = Object.assign({}, base, {

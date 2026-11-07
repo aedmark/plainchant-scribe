@@ -21,7 +21,11 @@ function commitChapters(res, notice) {
     if (added) active = added;
     if (active && !tabs.includes(active)) tabs = tabs.concat(active);
     const page = removed.has(activeHtmlFile) || added ? (added || show || bookChapterFor(res.entries, null)) : activeHtmlFile;
-    commitFileChange(res.entries, { tree: tree, openTabs: tabs, activeFile: active, activeHtmlFile: page });
+    // New binary files (images from a .docx, P7-03) join the assets in the same undo step.
+    const binaries = res.binaries || {};
+    Object.keys(binaries).forEach((p) => { if (!(p in res.entries)) tree = Project.treeAfter(tree, { type: 'add', path: p }); });
+    const apply = Object.keys(binaries).length ? () => Object.keys(binaries).forEach((p) => addProjectAsset(p, new Blob([binaries[p]], { type: Project.mimeFor(p) }))) : undefined;
+    commitFileChange(res.entries, { tree: tree, openTabs: tabs, activeFile: active, activeHtmlFile: page, apply: apply });
     refreshChapters();
     if (notice) showNotice(notice);
 }
@@ -160,25 +164,44 @@ async function mergeChapter(c, i) {
 document.getElementById('chapterAddBtn').addEventListener('click', addChapter);
 document.getElementById('chapterSplitBtn').addEventListener('click', splitAtHeading);
 
-// Import text (P5-03, D-039): Markdown and plain-text files become chapters after the one on the Stage, as one undo
-// step. Footnotes follow the book's notes setting, and images are found by file name among the book's images.
+// Import text (P5-03, D-039; .docx P7-03, D-048): Markdown, plain-text, and Word files become chapters after the one
+// on the Stage, as one undo step. Markdown footnotes follow the book's notes setting; Word keeps footnotes and
+// endnotes apart. Markdown images are found by name among the book's images; a .docx brings its own.
 const chapterImportInput = document.getElementById('chapterImportInput');
 document.getElementById('chapterImportBtn').addEventListener('click', () => chapterImportInput.click());
 chapterImportInput.addEventListener('change', async () => {
     const picked = Array.from(chapterImportInput.files || []);
     chapterImportInput.value = '';
     if (!picked.length) return;
-    const tooBig = picked.find((f) => f.size > 10 * 1048576);
-    if (tooBig) { showNotice(tooBig.name + ' is larger than 10 MB, so nothing was imported.', true); return; }
+    const isDocx = (f) => /\.docx$/i.test(f.name);
+    const tooBig = picked.find((f) => f.size > (isDocx(f) ? 50 : 10) * 1048576);
+    if (tooBig) { showNotice(tooBig.name + ' is larger than ' + (isDocx(tooBig) ? 50 : 10) + ' MB, so nothing was imported.', true); return; }
     const files = [];
-    for (const f of picked) files.push({ name: f.name, text: Importing.decode(new Uint8Array(await f.arrayBuffer())) });
+    for (const f of picked) {
+        const bytes = new Uint8Array(await f.arrayBuffer());
+        if (!isDocx(f)) { files.push({ name: f.name, text: Importing.decode(bytes) }); continue; }
+        try { files.push({ name: f.name, docx: await Docx.read(bytes) }); } catch (e) { showNotice(f.name + ': ' + e.message, true); return; }
+    }
     const sheet = BookStyle.stylesheet(projectFiles.entries);
     const style = sheet ? BookStyle.read(projectFiles.entries[sheet]) : null;
     chapterAction((entries) => {
-        const r = MarkdownImport.importInto(entries, files, activeHtmlFile, { assets: Object.keys(projectAssets || {}), notes: style ? style.notes : 'footnotes' });
-        const missing = r.missing.length ? ' Images not in the book, kept as [alt text]: ' + r.missing.slice(0, 5).join(', ') + (r.missing.length > 5 ? ', and ' + (r.missing.length - 5) + ' more' : '') + '.' : '';
-        setTimeout(() => showNotice('Imported ' + r.added.length + (r.added.length === 1 ? ' chapter' : ' chapters') + ' from ' + files.map((f) => f.name).join(', ') + '.' + missing, r.missing.length > 0), 0);
-        return { entries: r.entries, path: r.added[0], removed: [] };
+        let next = entries, prev = activeHtmlFile;
+        const added = [], missing = [], skipped = [], binaries = {};
+        files.forEach((f) => {
+            const assets = Object.keys(projectAssets || {}).concat(Object.keys(binaries));
+            const r = f.docx ? DocxImport.importInto(next, f.docx, prev, { name: f.name, assets: assets })
+                : MarkdownImport.importInto(next, [f], prev, { assets: assets, notes: style ? style.notes : 'footnotes' });
+            next = r.entries;
+            if (r.added.length) prev = r.added[r.added.length - 1];
+            added.push(...r.added);
+            missing.push(...(r.missing || []));
+            skipped.push(...(r.skipped || []));
+            Object.assign(binaries, r.binaries || {});
+        });
+        const list = (label, xs) => (xs.length ? ' ' + label + ': ' + xs.slice(0, 5).join(', ') + (xs.length > 5 ? ', and ' + (xs.length - 5) + ' more' : '') + '.' : '');
+        const tail = list('Images not in the book, kept as [alt text]', missing) + list('Left out', skipped);
+        setTimeout(() => showNotice('Imported ' + added.length + (added.length === 1 ? ' chapter' : ' chapters') + ' from ' + files.map((f) => f.name).join(', ') + '.' + tail, missing.length + skipped.length > 0), 0);
+        return { entries: next, path: added[0], removed: [], binaries: binaries };
     }, null);
 });
 
