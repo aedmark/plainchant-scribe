@@ -60,6 +60,7 @@ const APP_FILES = [
     'src/book-alt.js',
     'src/book-order.js',
     'src/book-matter.js',
+    'src/book-ncx.js',
     'src/docx.js',
     'src/docx-import.js',
     'src/book-page.js',

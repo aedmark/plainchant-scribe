@@ -387,6 +387,49 @@ if (!oracle.jar) {
         assert.deepEqual(gone.messages.map((m) => m.severity + ' ' + m.ID), ['WARNING RSC-007w']);
     });
 
+    test('epubcheck: books with the NCX Scribe writes pass with no messages, nested, with pages, and with the contents page in the spine (P7-04)', () => {
+        const rich = ncRich();
+        rich['OEBPS/nav.xhtml'] = rich['OEBPS/nav.xhtml'].replace('text/chapter-3.xhtml#none', 'text/chapter-3.xhtml');
+        const inSpine = BookNcx.refresh(BookChapters.setNavInReading(BookNcx.enable(ExampleBook.create({}).files, []).entries, true).entries, []);
+        [BookNcx.enable(BookTemplate.create({ title: 'Ink & <Ash>', language: 'fr-CA' }).files, []).entries, BookNcx.enable(rich, []).entries, inSpine].forEach((files, i) => {
+            const r = epubcheck(oracle.jar, files);
+            assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], 'book ' + i + ': ' + describeMessages(r));
+            assert.deepEqual(BookNcx.rows(files, Book.read(files).model), []);
+        });
+    });
+
+    test('epubcheck: agrees with BookNcx on each broken NCX: an error row exactly when EPUBCheck reports the matching ID (P7-04)', () => {
+        const base = BookNcx.enable(ExampleBook.create({ uuid: '0f3c2a1e-6b7d-4e2a-9c1b-8a5d4f3e2b10' }).files, []).entries;
+        const cases = [
+            ['uid', (t) => t.replace('urn:uuid:0f3c', 'urn:uuid:ffff'), ['NCX-001']],
+            ['no uid', (t) => t.replace(/\n    <meta name="dtb:uid"[^>]*\/>/, ''), []],
+            ['no 1', (t) => t.replace('playOrder="1"', 'playOrder="4"'), ['RSC-005']],
+            ['gap', (t) => t.replace('playOrder="3"', 'playOrder="5"'), ['RSC-005']],
+            ['shared number', (t) => t.replace('playOrder="2"', 'playOrder="1"'), ['RSC-005']],
+            ['shared src', (t) => t.replace('src="text/chapter-2.xhtml"', 'src="text/chapter-1.xhtml"'), ['RSC-005']],
+            ['id', (t) => t.replace('id="navpoint-2"', 'id="navpoint-1"'), ['RSC-005']],
+            ['missing', (t) => t.replace('text/chapter-3.xhtml', 'text/chapter-9.xhtml'), ['RSC-007']],
+            ['fragment', (t) => t.replace('text/chapter-3.xhtml', 'text/chapter-3.xhtml#nowhere'), ['RSC-012']],
+            ['unlisted', (t) => t.replace('text/chapter-3.xhtml', 'extra.xhtml'), ['RSC-008']],
+            ['remote', (t) => t.replace('text/chapter-3.xhtml', 'https://example.com/'), []],
+            ['label', (t) => t.replace('<text>Chapters and Contents</text>', '<text> </text>'), []],
+            ['empty', (t) => t.replace(/<navPoint[\s\S]*<\/navPoint>\n/, ''), ['RSC-005']],
+            ['page value', (t) => t.replace('</navMap>', '</navMap>\n  <pageList><pageTarget type="normal" value="3" playOrder="1"><navLabel><text>3</text></navLabel><content src="text/chapter-1.xhtml"/></pageTarget><pageTarget type="normal" value="3" playOrder="2"><navLabel><text>3</text></navLabel><content src="text/chapter-2.xhtml"/></pageTarget></pageList>'), ['RSC-005']],
+            ['not well-formed', (t) => t.replace('</ncx>', ''), ['RSC-016']]
+        ];
+        cases.forEach(([name, edit, ids]) => {
+            const files = Object.assign({}, base, { 'OEBPS/toc.ncx': edit(base['OEBPS/toc.ncx']) });
+            if (name === 'unlisted') files['OEBPS/extra.xhtml'] = base['OEBPS/text/chapter-3.xhtml'];
+            const r = epubcheck(oracle.jar, files);
+            assert.deepEqual(Array.from(new Set(r.messages.filter((m) => m.severity === 'ERROR' || m.severity === 'FATAL').map((m) => m.ID))), ids, name + ': ' + describeMessages(r));
+            const errors = BookNcx.rows(files, Book.read(files).model).filter((p) => p.severity === 'error');
+            assert.equal(errors.length > 0, ids.length > 0, name + ': ' + errors.map((p) => p.code).join(', '));
+        });
+        const mt = Object.assign({}, base, { 'OEBPS/content.opf': base['OEBPS/content.opf'].replace('application/x-dtbncx+xml', 'application/xml') });
+        assert.ok(epubcheck(oracle.jar, mt).messages.some((m) => m.ID === 'OPF-050'));
+        assert.equal(BookNcx.rows(mt, Book.read(mt).model)[0].code, 'ncx-media-type');
+    });
+
     test('epubcheck: the desktop run reports HTML content-model errors that BookCheck leaves to it (P5-05)', () => {
         const files = BookTemplate.create({ title: 'Check' }).files;
         const chapter = 'OEBPS/text/chapter-1.xhtml';

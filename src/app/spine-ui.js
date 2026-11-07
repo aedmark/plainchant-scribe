@@ -6,6 +6,8 @@ const inspChaptersPane = document.getElementById('inspChaptersPane');
 const chaptersList = document.getElementById('chaptersList');
 const chaptersUnreadable = document.getElementById('chaptersUnreadable');
 const navInReadingBox = document.getElementById('navInReadingBox');
+const ncxBox = document.getElementById('ncxBox');
+const ncxRegenBtn = document.getElementById('ncxRegenBtn');
 let chapterDrag = null;
 
 // Commits a BookChapters result: new and deleted files, the tree, tabs, and the chapter to show.
@@ -110,6 +112,9 @@ function refreshChapters() {
     chaptersList.textContent = '';
     chapters.forEach((c, i) => chaptersList.appendChild(chapterRow(c, i, chapters.length, chapters[i + 1])));
     navInReadingBox.checked = BookChapters.navInReading(projectFiles.entries);
+    const ncx = BookNcx.state(projectFiles.entries, Object.keys(projectAssets || {}));
+    ncxBox.checked = ncx.on;
+    ncxRegenBtn.hidden = !ncx.on || ncx.owned;
 }
 
 async function addChapter() {
@@ -208,3 +213,43 @@ chapterImportInput.addEventListener('change', async () => {
 // KDP wants the contents as a page in the reading order (docs/STORES.md); D-047.
 navInReadingBox.addEventListener('change', () => { chapterAction((entries) => BookChapters.setNavInReading(entries, navInReadingBox.checked),
     navInReadingBox.checked ? 'The contents page is now in the reading order, after the front matter.' : 'The contents page is out of the reading order; reading apps still show the contents in their menus.'); refreshChapters(); });
+
+// The EPUB 2 NCX for older readers (P7-04, D-049): added or removed as one undo step; an imported one is kept until
+// the author regenerates it.
+function commitNcx(next, added, removed, notice) {
+    let tree = projectFiles.tree;
+    if (added) tree = Project.treeAfter(tree, { type: 'add', path: added });
+    removed.forEach((p) => { tree = Project.treeAfter(tree, { type: 'delete', path: p }); });
+    const tabs = openTabs.filter((p) => removed.indexOf(p) === -1);
+    const active = removed.indexOf(activeFile) === -1 ? activeFile : (tabs[0] || activeHtmlFile);
+    commitFileChange(next, { tree: tree, openTabs: tabs, activeFile: active, activeHtmlFile: activeHtmlFile });
+    refreshChapters();
+    showNotice(notice);
+}
+
+ncxBox.addEventListener('change', async () => {
+    syncBufferFromEditor();
+    const assets = Object.keys(projectAssets || {});
+    const on = ncxBox.checked;
+    try {
+        if (on) {
+            const r = BookNcx.enable(projectFiles.entries, assets);
+            commitNcx(r.entries, r.path, [], 'Added ' + r.path.split('/').pop() + ', the EPUB 2 contents. Scribe keeps it in step with the contents.');
+            return;
+        }
+        const state = BookNcx.state(projectFiles.entries, assets);
+        if (!state.owned && !await askConfirm({ title: 'Delete the book’s toc.ncx?', text: 'This toc.ncx came with the book. Turning the EPUB 2 contents off deletes it; undo puts it back.', confirm: 'Delete it' })) { refreshChapters(); return; }
+        const r = BookNcx.disable(projectFiles.entries, assets);
+        commitNcx(r.entries, null, r.removed, 'Removed ' + r.removed.map((p) => p.split('/').pop()).join(', ') + '. EPUB 3 readers use the contents in nav.xhtml.');
+    } catch (e) {
+        refreshChapters();
+        showNotice(e.message, true);
+    }
+});
+
+ncxRegenBtn.addEventListener('click', () => {
+    syncBufferFromEditor();
+    const next = BookNcx.refresh(projectFiles.entries, Object.keys(projectAssets || {}), { adopt: true });
+    if (next === projectFiles.entries) { showNotice('The contents list no links to write into toc.ncx. Generate the contents first.', true); return; }
+    commitNcx(next, null, [], 'Rewrote toc.ncx from the contents. Scribe now keeps it in step.');
+});

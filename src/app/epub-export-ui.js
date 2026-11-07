@@ -17,7 +17,8 @@ function refreshEpubExport() {
 async function packOpenBook(when) {
     const binaries = {};
     for (const path of Object.keys(projectAssets || {})) if (!(path in projectFiles.entries)) binaries[path] = new Uint8Array(await projectAssets[path].arrayBuffer());
-    return BookExport.pack(projectFiles.entries, binaries, when ? { when: when } : undefined);
+    // P7-04: Scribe's toc.ncx as the contents stand now, even after hand edits to nav.xhtml.
+    return BookExport.pack(BookNcx.refresh(projectFiles.entries, Object.keys(projectAssets || {})), binaries, when ? { when: when } : undefined);
 }
 
 async function exportEpub() {

@@ -441,6 +441,25 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 - The LibreOffice oracle checks one real word processor's output. Word's own output is covered only by hand-built files written from ECMA-376.
 **Review trigger:** authors need rowspans, equations, formatted notes, or Word styles kept, or a real Word file imports badly.
 
+## D-049 The EPUB 2 NCX fallback  (2026-11-07, status: accepted)
+**Context:** `P7-04`, deferred by D-004. EPUB 3.3 §5.9.5 lets a book carry an NCX (OPF 2.0.1 §2.4.1, ANSI/NISO Z39.86-2005) for EPUB 2 reading systems; EPUB 3 readers ignore it. No store in `docs/STORES.md` needs one, but older readers and some converters read only the NCX. BookCheck did not read an NCX (the `P5-04` note). The maintainer chose each point below on 2026-11-07.
+**Decision:**
+1. Stored, and refreshed by Scribe: a switch in the Chapters tab adds `toc.ncx` beside the nav, a manifest item, and the spine's `toc`, as one undo step. Scribe's NCX carries `<meta name="plainchant-scribe:generated">` and is a whole-file product of the toc and page-list navs: `BookNcx.refresh` rewrites it inside every `commitFileChange` (so in the same undo step as the change) and `packOpenBook` packs a refreshed copy, so Export, EPUBCheck, and send to reader never see a stale one. Hand edits to it are overwritten, and the Problems tab says so (info `ncx-rewritten`).
+2. Off by default, for new books and `.docx` books alike.
+3. An NCX that came with an imported book has no mark: it is kept as written and checked, warned about when its entries differ from the nav (`ncx-stale`), and replaced only by Regenerate. Turning the switch off deletes it after a confirmation; undo puts it back.
+4. What is written: `dtb:uid` from the unique identifier, `dtb:depth`, page counts, the title and every creator, a navPoint per toc entry (a `<span>` heading points at its first linked descendant), and a pageTarget per page-list entry (a unique number is `normal` with its value, roman numerals `front`, anything else `special`). playOrder follows the reading order (spine position, then the id's offset) and is shared by entries with the same `src`, as `ncx.sch` requires.
+5. Checks, as EPUBCheck 5.4.0 makes them: errors for NCX-001 (uid), RSC-005 (playOrder from 1 with no gaps and one per target, unique ids and page value/type pairs, an empty navMap), RSC-007, RSC-008, RSC-012 (links), RSC-016 (not well-formed), and OPF-050 (the spine's toc is not an NCX). A missing dtb:uid, an empty label, and a remote link, which EPUBCheck accepts, are warnings.
+**Alternatives:**
+- Warn when stale and update on request (rejected: a stale NCX could ship).
+- Generate it only into the exported file (rejected: the exported OPF would differ from the one the author edits, D-002).
+- Adopt an imported NCX on open (rejected: it rewrites a file the author did not ask to change).
+- On for new books (rejected: no store needs it, and it is one more file to explain).
+**Consequences:**
+- A hand-edited nav is followed at the next structured change or at export, not keystroke by keystroke.
+- The legacy-ncx info is hidden when the NCX is Scribe's, since the author asked for it.
+- The NCX's labels are plain text; nav labels made only of images get their alt text.
+**Review trigger:** a reader or converter in use needs an NCX feature not written here (navList, audio), or authors want to hand-edit the NCX.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

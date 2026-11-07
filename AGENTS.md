@@ -1,6 +1,6 @@
 # Plainchant Scribe
 
-An EPUB studio spun off from Plainchant Web (`aedmark/plainchant-web`): make, lay out, check, and export reflowable EPUB 3.3 books from the book's own `.xhtml`, `.css`, and `content.opf` files, which stay the single source of truth. Built for authors and small presses who want visual control over a book without a tool rewriting their files. Static HTML, CSS, and vanilla JavaScript with no frontend build step, running in any modern browser or as a native desktop app via Tauri v2. **Status: early development.** Phases 0 to 6 are done, and of Phase 7 `.docx` import (`P7-03`): a book can be made or imported (from `.epub` or `.docx`), laid out, given front and back matter, given accessibility metadata, page numbers, languages, and roles, checked in the Problems tab, exported as a `.epub`, and sent to a phone or e-reader on the same network from the desktop app, and [docs/STORES.md](docs/STORES.md) has a checklist per store. Phase 7 is not committed; the maintainer chooses what comes next.
+An EPUB studio spun off from Plainchant Web (`aedmark/plainchant-web`): make, lay out, check, and export reflowable EPUB 3.3 books from the book's own `.xhtml`, `.css`, and `content.opf` files, which stay the single source of truth. Built for authors and small presses who want visual control over a book without a tool rewriting their files. Static HTML, CSS, and vanilla JavaScript with no frontend build step, running in any modern browser or as a native desktop app via Tauri v2. **Status: early development.** Phases 0 to 6 are done, and of Phase 7 `.docx` import (`P7-03`) and the EPUB 2 NCX fallback (`P7-04`): a book can be made or imported (from `.epub` or `.docx`), laid out, given front and back matter, given accessibility metadata, page numbers, languages, and roles, checked in the Problems tab, exported as a `.epub`, and sent to a phone or e-reader on the same network from the desktop app, and [docs/STORES.md](docs/STORES.md) has a checklist per store. Phase 7 is not committed; the maintainer chooses what comes next.
 
 This is the canonical instruction file for coding agents. `CLAUDE.md` imports it; do not duplicate these rules in tool-specific files. Project facts belong in the documents linked below, not in an agent's private memory.
 
@@ -74,7 +74,7 @@ Things an agent must not change without explicit permission. Every rule includes
 | Book | The project: an OCF container's files held in the Studio, exported as one `.epub` | Plainchant Web's "project" of web pages |
 | Package document (OPF) | `content.opf`: metadata, manifest, spine. The book's source of truth for what it contains and in what order | `nav.xhtml` (the reader-facing table of contents) |
 | Manifest / Spine | The OPF's list of every file in the book / the reading order of its content documents | The Explorer's alphabetical file tree |
-| Nav document | `nav.xhtml`: table of contents, landmarks, and page list | `toc.ncx`, the EPUB 2 fallback (P7-04) |
+| Nav document | `nav.xhtml`: table of contents, landmarks, and page list | `toc.ncx`, the optional EPUB 2 fallback Scribe writes from it (P7-04, D-049) |
 | Reading Stage | The live reader view of a chapter (`#stageFrame`), reflowable, paged or scrolled, with device presets | Plainchant Web's Stage with Design and Live JS modes |
 | Studio Book Environment | The in-app working copy (IndexedDB), isolated from disk until exported | Direct disk sync |
 
@@ -119,7 +119,7 @@ Things an agent must not change without explicit permission. Every rule includes
 - Vanilla JavaScript (ES2020+), no frontend frameworks, no npm runtime dependencies. The only third-party runtime code is vendored, unmodified Prism, kept from Plainchant Web (D-001).
 - Classic `<script>` files in `src/app/*.js` and UMD modules in `src/*.js` so Node tests can `require()` them (D-001). Every file in `src/app/*.js` must be listed in `app.html` in load order, stay at or under 500 lines, and not redeclare a top-level name from another; any asset linked in `app.html` must be in `sw.js` `APP_FILES` (`test/structure.test.js`).
 - The book's files are the source of truth: edits are non-destructive splices of exact byte ranges, never a reserialisation of the file (D-002). Markdown is import-only.
-- Target EPUB 3.3, reflowable first; fixed layout and the EPUB 2 NCX fallback are deferred (D-004). Scribe produces EPUB only, not `.mobi` or `.azw3` (D-006).
+- Target EPUB 3.3, reflowable first; fixed layout is deferred (D-004); the EPUB 2 NCX is an opt-in fallback rewritten from the nav (D-049). Scribe produces EPUB only, not `.mobi` or `.azw3` (D-006).
 - Imported archives and files are untrusted input (see SECURITY).
 - Generated files: `docs/manual.html` is built from the manual JSON and committed; `src-tauri/dist/` and `src-tauri/target/` are build output and stay ignored.
 

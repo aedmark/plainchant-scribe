@@ -466,6 +466,7 @@
                 </span>
             </div>
             <label class="chapters-option" title="Some stores, such as Amazon KDP, want the contents as a page near the start of the book. Reading apps show the contents in their menus either way."><input type="checkbox" id="navInReadingBox"> Contents page in the reading order</label>
+            <div class="chapters-option"><label title="Adds toc.ncx, the EPUB 2 table of contents, for older reading systems and converters. EPUB 3 readers ignore it. Scribe rewrites it from the contents whenever they change and when you export."><input type="checkbox" id="ncxBox"> EPUB 2 contents (toc.ncx) for older readers</label> <button type="button" class="mini" id="ncxRegenBtn" title="This book's toc.ncx came with it. Replace it with one Scribe writes from the contents and keeps up to date." hidden>Regenerate</button></div>
             <ol id="chaptersList" class="chapters-list"></ol>
             <p id="chaptersUnreadable" class="parts-help" hidden></p>
         </div>
@@ -1098,6 +1099,7 @@
 <script src="src/book-alt.js"></script>
 <script src="src/book-order.js"></script>
 <script src="src/book-matter.js"></script>
+<script src="src/book-ncx.js"></script>
 <script src="src/docx.js"></script>
 <script src="src/docx-import.js"></script>
 <script src="src/book-page.js"></script>

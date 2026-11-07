@@ -38,6 +38,8 @@ function knownTreePaths() {
 }
 
 function commitFileChange(next, change) {
+    // P7-04, D-049: Scribe's own toc.ncx follows the contents in the same undo step.
+    if (isBookProject()) next = BookNcx.refresh(next, Object.keys(projectAssets || {}));
     currentSnapshot = captureSnapshot();
     pushUndoState();
     projectFiles.entries = next;
