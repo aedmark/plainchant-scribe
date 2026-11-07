@@ -458,6 +458,7 @@
                 <span class="chapters-actions">
                     <button type="button" class="mini" id="chapterSplitBtn" title="Select a heading on the Stage, then split the chapter there: the heading and everything after it become a new chapter.">Split at heading</button>
                     <button type="button" class="mini" id="chapterAddBtn">Add chapter&hellip;</button>
+                    <button type="button" class="mini" id="matterBtn" title="Add a title page, copyright page, dedication, and other front and back matter, or a page saved in your library">Front and back matter&hellip;</button>
                     <button type="button" class="mini" id="chapterImportBtn" title="Add chapters from Markdown (.md) or plain-text (.txt) files, after the chapter on the Stage. Each # heading starts a chapter.">Import text&hellip;</button>
                     <input type="file" id="chapterImportInput" accept=".md,.markdown,.txt,text/markdown,text/plain" multiple hidden>
                     <button type="button" class="mini" id="tocGenerateBtn" title="Build the table of contents and landmarks from the chapters' headings">Generate contents&hellip;</button>
@@ -856,6 +857,24 @@
     </div>
 </div>
 
+<div id="matter-modal" class="modal-overlay">
+    <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="matter-title">
+        <div class="modal-header">
+            <h2 id="matter-title">Front and Back Matter</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p class="parts-help">Each page is a new chapter in its place: front matter after the cover, back matter at the end. Title, author, publisher, ISBN, year, and rights come from the Book tab once; after that the text is yours, and the Problems tab says when it no longer matches.</p>
+            <h3 class="matter-head">Scribe's pages</h3>
+            <ul id="matterBuiltIn" class="matter-list"></ul>
+            <h3 class="matter-head">My library</h3>
+            <p id="matterLibraryEmpty" class="parts-help">Pages you save here can be added to any book in this Studio, such as an About the Author you use in every book.</p>
+            <ul id="matterLibrary" class="matter-list"></ul>
+            <button type="button" class="mini" id="matterSaveBtn" title="Keep the chapter on the Stage in your library, to add to other books">Save the chapter on the Stage&hellip;</button>
+        </div>
+    </div>
+</div>
+
 <div id="alt-modal" class="modal-overlay">
     <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="alt-title">
         <div class="modal-header">
@@ -1077,6 +1096,7 @@
 <script src="src/book-lang.js"></script>
 <script src="src/book-alt.js"></script>
 <script src="src/book-order.js"></script>
+<script src="src/book-matter.js"></script>
 <script src="src/book-page.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>
@@ -1105,6 +1125,7 @@
 <script src="src/app/cover-ui.js"></script>
 <script src="src/app/a11y-ui.js"></script>
 <script src="src/app/structure-ui.js"></script>
+<script src="src/app/matter-ui.js"></script>
 <script src="src/app/style-ui.js"></script>
 <script src="src/app/fonts-ui.js"></script>
 <script src="src/app/notes-ui.js"></script>

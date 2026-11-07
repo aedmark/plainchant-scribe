@@ -1544,3 +1544,10 @@ body.shaded #editor {
 
 h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.01em; }
 h2 { font-size: 1.1em; }
+
+/* Front and back matter dialog (P3-07) */
+.matter-head { font-size: 0.85rem; margin: 0.8rem 0 0.3rem; }
+.matter-list { list-style: none; margin: 0 0 0.6rem; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.matter-list li { display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.4rem; border: 1px solid var(--border-void); border-radius: 4px; }
+.matter-list li > span:first-child { flex: 1; }
+.matter-note { font-size: 0.75rem; color: var(--text-void-muted); }

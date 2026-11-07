@@ -169,6 +169,16 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
+    test('epubcheck: a book with every front and back matter page and a page from the library passes EPUBCheck with no messages (P3-07)', () => {
+        let files = ExampleBook.create().files;
+        files['OEBPS/content.opf'] = XmlAst.applyEdits(files['OEBPS/content.opf'], BookMeta.setIsbn('978-0-306-40615-7')[0](Book.read(files).model));
+        BookMatter.KINDS.forEach((k) => { files = BookMatter.add(files, { kind: k.key }, new Date('2026-11-06')).entries; });
+        const note = BookMatter.save('<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>x</title></head><body epub:type="backmatter"><section id="note" aria-labelledby="note-h"><h1 id="note-h">A Note on the Type</h1><p>Set in <a href="https://example.org/">EB Garamond</a>.</p></section></body></html>', 'A Note on the Type');
+        files = BookMatter.add(files, note, new Date('2026-11-06')).entries;
+        const r = epubcheck(oracle.jar, files);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+    });
+
     test('epubcheck: BookOrder\'s two rules match EPUBCheck (OPF-096 for an unreachable non-linear chapter, NAV-011 for contents out of order) (P6-02)', () => {
         const base = ExampleBook.create().files;
         const hidden = Object.assign({}, base, {

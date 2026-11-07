@@ -378,6 +378,32 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 - Landmarks were already generated in `P3-04` and are unchanged.
 **Review trigger:** pageBreakSource becomes a defined EPUB property under another name, Ace's mapping changes, or authors need language detection or a registry check.
 
+## D-046 Front and back matter, and a library of saved pages  (2026-11-06, status: accepted)
+**Context:** `P3-07` asked for reusable front and back matter "from Plainchant Web's shared parts". Those parts (`src/parts.js`) keep marked regions of `.html` pages in step with one part file within a project. They do nothing for `.xhtml` chapters, and one book has little to share between its own chapters. The maintainer chose each point below.
+**Decision:**
+1. Front and back matter… in the Chapters tab adds a page as a new chapter. The built-in pages are a title page, copyright, dedication, and epigraph in front, and acknowledgements, about the author, and also by at the back.
+   - Each page uses the EPUB Structural Semantics Vocabulary 1.1 type where there is one (`titlepage`, `copyright-page`, `dedication`, `epigraph`, `acknowledgments`), with its DPUB-ARIA role where there is one. Body `epub:type` is `frontmatter` or `backmatter`.
+   - Placement: front matter goes after the cover and any front pages that rank before it; back matter goes at the end, before any back pages that rank after it.
+   - Back matter is added to the contents after the entry of the page before it. Front matter is not added; readers reach it in reading order.
+   - A book holds one page of each built-in kind. A second is refused, naming the file.
+2. Fill once, then the author's: elements marked `data-pc-field` (title, creators, publisher, isbn, year, rights) are filled from the Book tab when the page is added. The Problems tab warns (`matter-stale`) when one no longer matches; removing the attribute stops the check. Lines with no value in this book are left out of the built-in pages. The year is `dc:date`'s, else the year the page was added. Labels are English.
+3. My library: Save the chapter on the Stage keeps its body, by name, in this Studio's local storage (`plainchant_scribe_matter`).
+   - Any later book can add it, and its fields are refilled from that book. A field the new book has no value for is left empty and named, so no value of the first book is carried over.
+   - Saving is refused when the page has `img`, `svg`, media, `script`, `style`, form controls, or other elements that load or run something, when it links to a file in the book (web, `mailto:`, and in-page links are kept), or when it has an event handler attribute.
+   - Limits: 64 KB per page and 50 pages. Storage is checked again whenever it is read.
+4. The inherited Parts tab and Make Part… are hidden in books, and still show for old web projects. Nothing was deleted.
+**Alternatives:**
+- Built-in templates only (rejected: an About the Author written once should be reusable).
+- `pc:part` regions in `.xhtml` kept in step across chapters (rejected: little in one book repeats).
+- Prose sections (foreword, preface, prologue, epilogue) as built-ins (rejected for now: Add chapter covers them).
+- Fields kept in step with the metadata (rejected: it would overwrite the author's edits).
+- Showing the Parts tab in books, empty (rejected: it misleads).
+**Consequences:**
+- `data-pc-field` attributes stay in the exported book. They are valid HTML, and EPUBCheck 5.4.0 reports nothing on a book with every page.
+- The library is per browser profile (or per desktop app), not synced, and leaves with the site's storage.
+- Pages of a known kind keep the kind's file name, so a saved copyright page is `copyright.xhtml`.
+**Review trigger:** authors want images in saved pages (the library would need to carry the files), other languages for the labels, or the library synced between devices.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

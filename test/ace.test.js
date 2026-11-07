@@ -69,4 +69,13 @@ if (!aceOracle.cli) {
         const r = aceRun(aceOracle, (await BookExport.pack(withList, {})).bytes);
         assert.deepEqual(r.failed.filter((t) => t === 'epub-type-has-matching-role'), []);
     });
+
+    test('ace: front and back matter pages add no Ace failures to the book (P3-07 oracle)', async () => {
+        const base = ExampleBook.create().files;
+        let files = base;
+        BookMatter.KINDS.forEach((k) => { files = BookMatter.add(files, { kind: k.key }, new Date('2026-11-06')).entries; });
+        const before = new Set(aceRun(aceOracle, (await BookExport.pack(base, {})).bytes).failed);
+        const after = aceRun(aceOracle, (await BookExport.pack(files, {})).bytes);
+        assert.deepEqual(Array.from(new Set(after.failed)).filter((t) => !before.has(t)), [], 'Ace ' + after.version);
+    });
 }

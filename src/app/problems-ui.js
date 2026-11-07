@@ -46,7 +46,7 @@ function bookProblems(entries) {
     const model = Book.read(e, { assets: assets }).model;
     const docs = model ? model.manifest.items.filter((i) => i.mediaType === 'application/xhtml+xml' && i.path && typeof e[i.path] === 'string').map((i) => i.path) : [];
     // P6-02: roles, page numbers, language tags, and reading order join the accessibility category.
-    const more = model ? [].concat(BookA11y.rows(model), BookRoles.rows(e, docs), BookPages.rows(e, model), BookLang.rows(e, docs), BookOrder.rows(e, model)) : [];
+    const more = model ? [].concat(BookA11y.rows(model), BookRoles.rows(e, docs), BookPages.rows(e, model), BookLang.rows(e, docs), BookOrder.rows(e, model), BookMatter.rows(e, model)) : [];
     return bookChecker.check(e, { assets: assets, heads: heads }).problems.concat(cssLintChecker.check(e).problems, more);
 }
 

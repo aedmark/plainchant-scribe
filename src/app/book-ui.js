@@ -17,7 +17,11 @@ function syncBookTab() {
     bookTabBtn.hidden = !book;
     document.getElementById('chaptersTabBtn').hidden = !book;
     document.getElementById('layoutTabBtn').hidden = !book;
+    // Shared parts sync marked regions between .html pages; a book's chapters are .xhtml, so books do not show them (P3-07).
+    document.querySelector('.insp-tab[data-insp="parts"]').hidden = book;
+    document.getElementById('inspPartBtn').hidden = book;
     if (!book && ['book', 'chapters', 'layout'].indexOf(activeInspectorTab) !== -1) switchInspectorTab('props');
+    if (book && activeInspectorTab === 'parts') switchInspectorTab('props');
     if (book && typeof refreshChapters === 'function') refreshChapters();
 }
 
