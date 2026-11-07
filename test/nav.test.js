@@ -244,7 +244,7 @@ test('nav: landmarks and the page list are set, added as hidden navs, and remove
     assert.equal(back.text, files[NV], 'adding it back writes the template\'s own markup');
     assert.deepEqual(nvRun(files, (n) => Nav.removeLandmark(n, 'index')).edits, []);
     const pages = nvRun(files, (n) => Nav.setPageList(n, [{ label: 'i', path: 'OEBPS/text/chapter-1.xhtml', fragment: 'p-i' }, { label: '1', path: 'OEBPS/text/chapter-1.xhtml', fragment: 'p1' }]));
-    assert.ok(pages.text.indexOf('  </nav>\n  <nav epub:type="page-list" id="page-list" hidden="">\n    <ol>\n      <li><a href="text/chapter-1.xhtml#p-i">i</a></li>\n      <li><a href="text/chapter-1.xhtml#p1">1</a></li>\n    </ol>\n  </nav>\n</body>') !== -1, pages.text);
+    assert.ok(pages.text.indexOf('  </nav>\n  <nav epub:type="page-list" role="doc-pagelist" id="page-list" hidden="">\n    <ol>\n      <li><a href="text/chapter-1.xhtml#p-i">i</a></li>\n      <li><a href="text/chapter-1.xhtml#p1">1</a></li>\n    </ol>\n  </nav>\n</body>') !== -1, pages.text);
     assert.deepEqual(pages.read.problems, []);
     const again = nvRun(pages.files, (n) => Nav.setPageList(n, [{ label: '2', path: 'OEBPS/text/chapter-1.xhtml', fragment: 'p2' }]));
     assert.deepEqual(again.read.nav.pageList.entries.map((e) => e.label), ['2']);

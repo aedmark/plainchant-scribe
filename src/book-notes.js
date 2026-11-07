@@ -130,7 +130,7 @@
         if (mode === 'endnotes') {
             const doc = ensureNotesDoc(entries, path);
             next = doc.entries;
-            const ref = '<a epub:type="noteref" class="noteref" href="' + Book.hrefFor(path, doc.path) + '#endnote-' + tmp + '" id="endref-' + tmp + '">0</a>';
+            const ref = '<a epub:type="noteref" role="doc-noteref" class="noteref" href="' + Book.hrefFor(path, doc.path) + '#endnote-' + tmp + '" id="endref-' + tmp + '">0</a>';
             next = Object.assign({}, next, { [path]: XmlAst.applyEdits(next[path], [{ start: block.closeStart, end: block.closeStart, text: ref }]) });
             const nast = XmlAst.parse(next[doc.path]);
             const section = nast.elements.find((e) => types(e).indexOf('endnotes') !== -1);
@@ -139,8 +139,8 @@
             const edits = ol ? XmlAst.insert(nast, ol, 'append', li) : XmlAst.insert(nast, section, 'append', '<ol>\n  ' + li + '\n</ol>');
             next = Object.assign({}, next, { [doc.path]: XmlAst.applyEdits(next[doc.path], edits) });
         } else {
-            const ref = '<a epub:type="noteref" class="noteref" href="#note-' + tmp + '" id="ref-' + tmp + '">0</a>';
-            const aside = '<aside epub:type="footnote" class="footnote" id="note-' + tmp + '"><p><a href="#ref-' + tmp + '">0.</a> ' + XmlAst.escapeText(body) + '</p></aside>';
+            const ref = '<a epub:type="noteref" role="doc-noteref" class="noteref" href="#note-' + tmp + '" id="ref-' + tmp + '">0</a>';
+            const aside = '<aside epub:type="footnote" role="doc-footnote" class="footnote" id="note-' + tmp + '"><p><a href="#ref-' + tmp + '">0.</a> ' + XmlAst.escapeText(body) + '</p></aside>';
             const edits = [{ start: block.closeStart, end: block.closeStart, text: ref }].concat(XmlAst.insert(ast, footnoteContainer(ast), 'append', aside));
             next = Object.assign({}, next, { [path]: XmlAst.applyEdits(next[path], edits) });
         }

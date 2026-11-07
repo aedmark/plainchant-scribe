@@ -40,7 +40,7 @@
         {
             id: 'chapter-3', title: 'A Page of Typical Elements',
             body: [
-                '<p>Most books need only a few elements: paragraphs, <em>emphasis</em> and <strong>strong importance</strong>, lists, quotations, and the occasional note.<a epub:type="noteref" href="#note-1" id="ref-1">1</a></p>',
+                '<p>Most books need only a few elements: paragraphs, <em>emphasis</em> and <strong>strong importance</strong>, lists, quotations, and the occasional note.<a epub:type="noteref" role="doc-noteref" href="#note-1" id="ref-1">1</a></p>',
                 '<h2 id="lists">Lists</h2>',
                 '<ol>',
                 '  <li>Write the chapter.</li>',
@@ -49,7 +49,7 @@
                 '</ol>',
                 '<h2 id="notes">Notes</h2>',
                 '<p>A note is an <code>aside</code> marked as a footnote, linked from the text. Many readers show it in a pop-up.</p>',
-                '<aside epub:type="footnote" id="note-1" class="note">',
+                '<aside epub:type="footnote" role="doc-footnote" id="note-1" class="note">',
                 '  <p><a href="#ref-1">1.</a> Like this one.</p>',
                 '</aside>'
             ]
@@ -76,8 +76,8 @@
         const ind = '    ';
         const body = ch.body.map((line) => ind + line).join('\n');
         return template.replace('<title>Chapter 1</title>', '<title>' + XmlAst.escapeText(ch.title) + '</title>')
-            .replace(/<section epub:type="chapter" id="chapter-1" aria-labelledby="chapter-1-title">[\s\S]*<\/section>/,
-                '<section epub:type="chapter" id="' + ch.id + '" aria-labelledby="' + ch.id + '-title">\n' + ind + '<h1 id="' + ch.id + '-title">' + XmlAst.escapeText(ch.title) + '</h1>\n' + body + '\n  </section>');
+            .replace(/<section epub:type="chapter" role="doc-chapter" id="chapter-1" aria-labelledby="chapter-1-title">[\s\S]*<\/section>/,
+                '<section epub:type="chapter" role="doc-chapter" id="' + ch.id + '" aria-labelledby="' + ch.id + '-title">\n' + ind + '<h1 id="' + ch.id + '-title">' + XmlAst.escapeText(ch.title) + '</h1>\n' + body + '\n  </section>');
     }
 
     // Applies one OpfEdit or Nav op to a fresh read, as the app does.

@@ -42,7 +42,7 @@ test('markdown-import: files become chapters at top-level headings, with notes a
     const first = r.entries[r.added[1]];
     assert.ok(first.indexOf('<figure class="figure">\n      <img src="../images/Map.PNG" alt="A map"/>\n      <figcaption>Our town</figcaption>\n    </figure>') !== -1, first);
     assert.ok(first.indexOf('Inline <img src="../images/Map.PNG" alt="tiny"/> and [gone].') !== -1);
-    assert.ok(/A note here<a epub:type="noteref" class="noteref" href="#note-1" id="ref-1">1<\/a> and there<a [^>]*href="#note-2"[^>]*>2<\/a>\./.test(first), first);
+    assert.ok(/A note here<a epub:type="noteref" role="doc-noteref" class="noteref" href="#note-1" id="ref-1">1<\/a> and there<a [^>]*href="#note-2"[^>]*>2<\/a>\./.test(first), first);
     assert.ok(first.indexOf('<a href="#ref-1">1.</a> First note.</p></aside>') !== -1 && first.indexOf('Second “note”.') !== -1, 'notes are plain text, typeset');
     assert.ok(/<h2>Part<\/h2>\n {4}<p>More<a [^>]*>1<\/a>\.<\/p>/.test(r.entries[r.added[2]]), 'notes number per chapter');
     assert.ok(r.entries[r.added[3]].indexOf('<p>One line.</p>\n    <p>Two “quoted”.</p>') !== -1, r.entries[r.added[3]]);
@@ -55,7 +55,7 @@ test('markdown-import: plain text without blank lines is a paragraph per line; e
     const t = r.entries[r.added[0]];
     assert.ok(t.indexOf('<h1 id="lines-title">Lines</h1>\n    <p>First line</p>\n    <p>Second &lt;line&gt; &amp; *stars*</p>\n  </section>') !== -1, t);
     const e = MarkdownImport.importInto(mdBook(), [{ name: 'n.md', text: 'Text[^1].\n\n[^1]: An endnote.' }], null, { notes: 'endnotes' });
-    assert.ok(/Text<a epub:type="noteref" class="noteref" href="notes.xhtml#endnote-1" id="endref-1">1<\/a>\./.test(e.entries[e.added[0]]));
+    assert.ok(/Text<a epub:type="noteref" role="doc-noteref" class="noteref" href="notes.xhtml#endnote-1" id="endref-1">1<\/a>\./.test(e.entries[e.added[0]]));
     assert.ok(e.entries['OEBPS/text/notes.xhtml'].indexOf('An endnote.') !== -1);
     mdClean(e.entries);
     const empty = MarkdownImport.importInto(mdBook(), [{ name: 'empty.md', text: '' }], null, {});

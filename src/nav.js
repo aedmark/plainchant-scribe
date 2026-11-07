@@ -364,7 +364,8 @@
         const q = epubType(scopeEl);
         if (q.decl === null) throw fail('unbound-prefix', 'The epub prefix is bound to another namespace here.');
         const unit = indentUnit(ast);
-        const open = '<nav ' + q.name + '="' + kind + '"' + q.decl + (ids.has(kind) ? '' : ' id="' + kind + '"') + ' hidden="">';
+        // DPUB-ARIA: a page list is role="doc-pagelist" (P6-02); landmarks have no role.
+        const open = '<nav ' + q.name + '="' + kind + '"' + q.decl + (kind === 'page-list' ? ' role="doc-pagelist"' : '') + (ids.has(kind) ? '' : ' id="' + kind + '"') + ' hidden="">';
         const code = open + '\n' + unit + renderList(nav, scopeEl, tree, unit).split('\n').join('\n' + unit) + '\n</nav>';
         return last ? XmlAst.insert(ast, last, 'after', code) : XmlAst.insert(ast, body, 'append', code);
     }

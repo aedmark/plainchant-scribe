@@ -348,6 +348,36 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 - The oracle checks only Ace's `metadata-*` rules.
 **Review trigger:** A new EPUB Accessibility or Vocabulary version changes the terms or the claim string, the template should carry a starting set of metadata, or a store requires values Scribe does not offer.
 
+## D-045 Page numbers, language of parts, matching roles, the alt-text pass, and reading order  (2026-11-06, status: accepted)
+**Context:** `P6-02` covers the content side of EPUB Accessibility 1.1 (W3C Recommendation, 17 October 2024) and its Techniques 1.1 (W3C Group Note, 13 March 2025). The maintainer chose each point below on 2026-11-06.
+**Decision:**
+1. Page numbers:
+   - Page break… inserts `<span epub:type="pagebreak" role="doc-pagebreak" id aria-label/>` (Techniques §5.1.1), offering the next number after the last marker in reading order.
+   - Build page list writes the nav's page list from every marker in reading order, since §3.4.1.3.2 requires links to all of them.
+   - The source is the `pageBreakSource` meta (Techniques §5.1.4): an ISBN as `urn:isbn:`, a description, or `none` for e-book-only numbers. The older `source-of` refinement is accepted but not written.
+2. Language of parts:
+   - Language… wraps a selection in `<span lang xml:lang>`, or sets both attributes on an element when the selection is exactly its content or there is no selection.
+   - It refuses a selection that cuts through markup.
+   - Tags are checked against RFC 5646 syntax, not the registry.
+3. Roles:
+   - Everything Scribe writes carries the DPUB-ARIA role matching its `epub:type` (Techniques §4.3.1).
+   - Add matching roles splices the rest into existing books, but only where ARIA in HTML allows the role (not on `body`) and never over an author's own role.
+   - The mapping is DAISY Ace 1.4.6's, read from its source, less implicit and deprecated roles. Landmarks entries are exempt.
+   - `role="doc-toc"` is not added to a nav with `aria-label` or `aria-labelledby`, because EPUBCheck 5.4.0 refuses that combination.
+4. The alt-text pass is one dialog listing every image, missing ones first, each saved on change as its own undo step.
+5. Reading order: an unreachable non-linear spine item is an error (EPUB 3.3 §5.7.2; EPUBCheck OPF-096), the contents out of spine order is a warning (NAV-011), and CSS that reorders content visually is a warning (WCAG 2 1.3.2). The new checks join the Problems tab's accessibility category, outside BookCheck, as D-044 did.
+**Alternatives:**
+- Page list from existing markers only (rejected: authors need to add markers).
+- Stepping through images on the Stage (rejected: one list shows what is missing).
+- Roles in new markup only (rejected: imported and older books keep failing Ace).
+- Language checks only (rejected: authors would hand-type attributes).
+**Consequences:**
+- The template, new chapters, notes, and the example book changed markup (D-012's template now has `role="doc-chapter"` and `role="doc-toc"`), so tests that matched the old markup were updated.
+- EPUBCheck counts a document's links to itself, so it misses an unreachable chapter that has footnotes; BookOrder does not.
+- Language tags are not checked against the IANA registry.
+- Landmarks were already generated in `P3-04` and are unchanged.
+**Review trigger:** pageBreakSource becomes a defined EPUB property under another name, Ace's mapping changes, or authors need language detection or a registry check.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

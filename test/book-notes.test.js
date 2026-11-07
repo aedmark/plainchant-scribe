@@ -3,7 +3,7 @@ const bnCh = (n) => 'OEBPS/text/chapter-' + n + '.xhtml';
 // The start offset of the k-th <p> (0-based) in a document.
 const bnP = (text, k) => XmlAst.parse(text).elements.filter((e) => e.local === 'p')[k].start;
 const bnProblems = (e) => Book.read(e).problems.map((p) => p.severity + ' ' + p.code).concat(Nav.read(e, Book.read(e).model).problems.map((p) => p.severity + ' ' + p.code));
-const bnRefs = (text) => Array.from(text.matchAll(/<a epub:type="noteref" class="noteref" href="([^"]*)" id="([^"]*)">(\d+)<\/a>/g)).map((m) => m[2] + ' ' + m[1] + ' ' + m[3]);
+const bnRefs = (text) => Array.from(text.matchAll(/<a epub:type="noteref" role="doc-noteref" class="noteref" href="([^"]*)" id="([^"]*)">(\d+)<\/a>/g)).map((m) => m[2] + ' ' + m[1] + ' ' + m[3]);
 
 test('book-notes: footnotes are numbered in reading order with links both ways (P4-04)', () => {
     let f = BookNotes.add(bnBook(), bnCh(1), bnP(bnBook()[bnCh(1)], 1), 'Second paragraph note.', 'footnotes').entries;
@@ -11,7 +11,7 @@ test('book-notes: footnotes are numbered in reading order with links both ways (
     f = BookNotes.add(f, bnCh(1), bnP(f[bnCh(1)], 0), 'First <paragraph> note & more.', 'footnotes').entries;
     const t = f[bnCh(1)];
     assert.deepEqual(bnRefs(t), ['ref-1 #note-1 1', 'ref-2 #note-2 2']);
-    const asides = Array.from(t.matchAll(/<aside epub:type="footnote" class="footnote" id="(note-\d)"><p><a href="(#ref-\d)">(\d\.)<\/a> ([^<]*)<\/p><\/aside>/g)).map((m) => m.slice(1).join(' '));
+    const asides = Array.from(t.matchAll(/<aside epub:type="footnote" role="doc-footnote" class="footnote" id="(note-\d)"><p><a href="(#ref-\d)">(\d\.)<\/a> ([^<]*)<\/p><\/aside>/g)).map((m) => m.slice(1).join(' '));
     assert.deepEqual(asides, ['note-1 #ref-1 1. First &lt;paragraph&gt; note &amp; more.', 'note-2 #ref-2 2. Second paragraph note.'], 'notes are in number order, escaped');
     assert.ok(t.indexOf('</aside>\n  </section>') !== -1, 'footnotes go at the end of the chapter’s section');
     assert.ok(/What you see in the Explorer is the whole book\.<a epub:type="noteref"/.test(t), 'the reference ends the paragraph');
@@ -28,7 +28,7 @@ test('book-notes: footnotes are numbered in reading order with links both ways (
 test('book-notes: a note added inside inline markup goes at the end of its block', () => {
     const code = XmlAst.parse(bnBook()[bnCh(1)]).elements.find((e) => e.local === 'code').start;
     const t = BookNotes.add(bnBook(), bnCh(1), code, 'On mimetype.', 'footnotes').entries[bnCh(1)];
-    assert.ok(t.indexOf('is an EPUB.<a epub:type="noteref" class="noteref" href="#note-1" id="ref-1">1</a></li>') !== -1, t);
+    assert.ok(t.indexOf('is an EPUB.<a epub:type="noteref" role="doc-noteref" class="noteref" href="#note-1" id="ref-1">1</a></li>') !== -1, t);
 });
 
 test('book-notes: endnotes go in a Notes chapter at the end, numbered across the book', () => {
@@ -55,7 +55,7 @@ test('book-notes: endnote numbering leaves a chapter’s own footnotes alone', (
     f = BookNotes.add(f, bnCh(1), bnP(f[bnCh(1)], 1), 'An endnote.', 'endnotes').entries;
     assert.deepEqual(bnRefs(f[bnCh(1)]), ['ref-1 #note-1 1', 'endref-1 notes.xhtml#endnote-1 1'], 'one numbering each, with distinct ids');
     assert.deepEqual(Xhtml.check(f[bnCh(1)], { path: bnCh(1) }).problems, []);
-    assert.ok(/<aside epub:type="footnote" class="footnote" id="note-1"><p><a href="#ref-1">1\.<\/a> A footnote\./.test(f[bnCh(1)]));
+    assert.ok(/<aside epub:type="footnote" role="doc-footnote" class="footnote" id="note-1"><p><a href="#ref-1">1\.<\/a> A footnote\./.test(f[bnCh(1)]));
     // A footnote inside the Notes chapter is the Notes chapter's own, not an endnote.
     const n = 'OEBPS/text/notes.xhtml';
     f = BookNotes.add(f, n, bnP(f[n], 0), 'A note on a note.', 'footnotes').entries;
@@ -95,7 +95,7 @@ test('book-notes: insertAt puts a reference at an exact place in the text, and o
     const f = bnBook(), t = f[bnCh(1)];
     const at = t.indexOf('Scribe keeps them') + 'Scribe keeps them'.length;
     const r = BookNotes.insertAt(f, bnCh(1), at, 'Mid-sentence.', 'footnotes').entries[bnCh(1)];
-    assert.ok(r.indexOf('Scribe keeps them<a epub:type="noteref" class="noteref" href="#note-1" id="ref-1">1</a> as they are.') !== -1, r);
+    assert.ok(r.indexOf('Scribe keeps them<a epub:type="noteref" role="doc-noteref" class="noteref" href="#note-1" id="ref-1">1</a> as they are.') !== -1, r);
     [t.indexOf('<p>') + 1, t.indexOf('</p>') + 2, t.indexOf('<title>') - 1, 0].forEach((bad) => assert.throws(() => BookNotes.insertAt(f, bnCh(1), bad, 'x', 'footnotes'), /text of a chapter/, 'offset ' + bad));
     const two = BookNotes.insertAt(BookNotes.insertAt(f, bnCh(1), at, 'A.', 'footnotes', { renumber: false }).entries, bnCh(1), at, 'B.', 'footnotes', { renumber: false }).entries;
     assert.equal(BookNotes.renumber(two, 'footnotes')[bnCh(1)].match(/id="note-\d"/g).join(' '), 'id="note-1" id="note-2"', 'notes added without renumbering get distinct ids, numbered later');

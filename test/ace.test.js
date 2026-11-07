@@ -61,4 +61,12 @@ if (!aceOracle.cli) {
         ['schema:accessMode', 'schema:accessibilityFeature', 'schema:accessibilityHazard', 'schema:accessibilitySummary', 'schema:accessModeSufficient', 'dcterms:conformsTo', 'a11y:certifiedBy', 'a11y:certifierCredential']
             .forEach((p) => assert.ok(after.metadata.present.indexOf(p) !== -1, p + ' is present for Ace'));
     });
+
+    test('ace: the books Scribe writes give no epub-type-has-matching-role failures (P6-02 oracle)', async () => {
+        const files = ExampleBook.create().files;
+        files['OEBPS/text/chapter-1.xhtml'] = BookPages.insertAt(files['OEBPS/text/chapter-1.xhtml'], files['OEBPS/text/chapter-1.xhtml'].indexOf('<p>'), '1').text;
+        const withList = BookPages.buildPageList(files, Book.read(files).model).entries;
+        const r = aceRun(aceOracle, (await BookExport.pack(withList, {})).bytes);
+        assert.deepEqual(r.failed.filter((t) => t === 'epub-type-has-matching-role'), []);
+    });
 }

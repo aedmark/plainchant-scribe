@@ -152,6 +152,37 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
+    test('epubcheck: page breaks, a page list, its source, matching roles, a language span, and alt text pass EPUBCheck with no messages (P6-02)', () => {
+        const ch = (n) => 'OEBPS/text/chapter-' + n + '.xhtml';
+        let files = ExampleBook.create().files;
+        files[ch(2)] = files[ch(2)].replace('</section>', '<p><img src="../css/book.css#x" alt=""/></p><aside epub:type="footnote" id="old-note"><p>Old.</p></aside></section>').replace('<img src="../css/book.css#x" alt=""/>', '');
+        files[ch(2)] = BookRoles.fix(files[ch(2)]).text;
+        files[ch(1)] = BookPages.insertAt(files[ch(1)], files[ch(1)].indexOf('<p>'), '1').text;
+        files[ch(3)] = BookPages.insertAt(files[ch(3)], files[ch(3)].indexOf('<p>'), '2').text;
+        files = BookPages.buildPageList(files, Book.read(files).model).entries;
+        BookPages.setSource('978-0-306-40615-7').forEach((op) => { files = Object.assign({}, files, { 'OEBPS/content.opf': XmlAst.applyEdits(files['OEBPS/content.opf'], op(Book.read(files).model)) }); });
+        const at = files[ch(1)].indexOf('Scribe keeps them');
+        files[ch(1)] = BookLang.apply(files[ch(1)], at, at + 6, 'fr-CA');
+        assert.includes(files[ch(1)], '<span lang="fr-CA" xml:lang="fr-CA">Scribe</span>');
+        assert.deepEqual(BookPages.rows(files, Book.read(files).model), []);
+        const r = epubcheck(oracle.jar, files);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+    });
+
+    test('epubcheck: BookOrder\'s two rules match EPUBCheck (OPF-096 for an unreachable non-linear chapter, NAV-011 for contents out of order) (P6-02)', () => {
+        const base = ExampleBook.create().files;
+        const hidden = Object.assign({}, base, {
+            'OEBPS/content.opf': base['OEBPS/content.opf'].replace('<itemref idref="chapter-2"/>', '<itemref idref="chapter-2" linear="no"/>'),
+            'OEBPS/nav.xhtml': base['OEBPS/nav.xhtml'].replace(/<li><a href="text\/chapter-2\.xhtml">[^<]*<\/a><\/li>/, '')
+        });
+        assert.deepEqual(BookOrder.rows(hidden, Book.read(hidden).model).map((x) => x.code), ['nonlinear-unreachable']);
+        assert.deepEqual(epubcheck(oracle.jar, hidden).messages.map((m) => m.severity + ' ' + m.ID), ['ERROR OPF-096']);
+        const ln = /<li><a href="text\/chapter-1\.xhtml">[^<]*<\/a><\/li>/.exec(base['OEBPS/nav.xhtml'])[0];
+        const swapped = Object.assign({}, base, { 'OEBPS/nav.xhtml': base['OEBPS/nav.xhtml'].replace(ln, '').replace(/(<li><a href="text\/chapter-3\.xhtml">[^<]*<\/a><\/li>)/, '$1' + ln) });
+        assert.deepEqual(BookOrder.rows(swapped, Book.read(swapped).model).map((x) => x.code), ['toc-order']);
+        assert.deepEqual(epubcheck(oracle.jar, swapped).messages.map((m) => m.severity + ' ' + m.ID), ['WARNING NAV-011']);
+    });
+
     test('epubcheck: a book reorganised with the chapters organiser, split and merged, passes EPUBCheck with no messages (P3-02, P3-03)', () => {
         let files = ExampleBook.create().files;
         files = BookChapters.add(files, 'The Long Road', 'OEBPS/text/chapter-1.xhtml').entries;

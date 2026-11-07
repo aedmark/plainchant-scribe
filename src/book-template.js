@@ -105,7 +105,7 @@
         // landmark to the nav itself while the nav is not a spine item (RSC-011).
         files[PATHS.nav] = lines(xhtmlHead(language, 'Contents', 'css/book.css').concat([
             '<body>',
-            '  <nav epub:type="toc" id="toc">',
+            '  <nav epub:type="toc" role="doc-toc" id="toc">',
             '    <h1>Contents</h1>',
             '    <ol>',
             '      <li><a href="text/chapter-1.xhtml">Chapter 1</a></li>',
@@ -121,7 +121,7 @@
         ]));
         files[PATHS.chapter] = lines(xhtmlHead(language, 'Chapter 1', '../css/book.css').concat([
             '<body epub:type="bodymatter">',
-            '  <section epub:type="chapter" id="chapter-1" aria-labelledby="chapter-1-title">',
+            '  <section epub:type="chapter" role="doc-chapter" id="chapter-1" aria-labelledby="chapter-1-title">',
             '    <h1 id="chapter-1-title">Chapter 1</h1>',
             '    <p>Begin writing here.</p>',
             '  </section>',

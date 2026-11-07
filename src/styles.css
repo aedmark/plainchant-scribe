@@ -1055,6 +1055,13 @@ body.shaded #editor {
 .a11y-claim { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 0.6rem; margin-top: 0.3rem; }
 .a11y textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 0.78rem; }
 #confirmText { white-space: pre-line; }
+.alt-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+.alt-item { display: grid; grid-template-columns: 6rem minmax(0, 1fr); gap: 0.6rem; padding: 0.5rem; border: 1px solid var(--border-void); border-radius: 4px; }
+.alt-item img { width: 6rem; max-height: 6rem; object-fit: contain; }
+.alt-item .alt-where { font-size: 0.75rem; color: var(--text-void-muted); margin: 0 0 0.3rem; }
+.alt-item textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 0.85rem; }
+.alt-item .alt-row { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.3rem; font-size: 0.8rem; }
+.alt-item.alt-missing { border-color: var(--danger-soft-text); }
 .book-creator { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 2fr) auto; gap: 0.4rem 0.5rem; align-items: end; }
 .book-creator-actions { display: inline-flex; gap: 0.2rem; }
 .book-creator .insp-field { min-width: 0; }

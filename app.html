@@ -429,7 +429,10 @@
                     <div class="a11y-actions">
                         <button type="button" class="mini" id="a11ySuggestBtn">Suggest from the book&hellip;</button>
                         <button type="button" class="mini" id="a11yDraftBtn" title="Write a summary from the answers below, replacing the current one">Draft summary</button>
+                        <button type="button" class="mini" id="altReviewBtn" title="Every image in the book, with its alt text, missing ones first">Review alt text&hellip;</button>
+                        <button type="button" class="mini" id="rolesFixBtn" title="Add the ARIA role that matches each epub:type, so screen readers know what each part is">Add matching roles</button>
                     </div>
+                    <label class="insp-field insp-wide"><span>Page numbers come from</span><input type="text" id="pageSourceInput" autocomplete="off" placeholder="The print edition's ISBN, or none if they exist only in this e-book"></label>
                     <fieldset class="a11y-set"><legend>How the content is perceived</legend><div id="a11yModes" class="a11y-checks"></div></fieldset>
                     <fieldset class="a11y-set"><legend>Enough on its own to read the whole book</legend><div id="a11ySufficient" class="a11y-checks"></div></fieldset>
                     <fieldset class="a11y-set"><legend>Features</legend><div id="a11yFeatures"></div></fieldset>
@@ -458,6 +461,7 @@
                     <button type="button" class="mini" id="chapterImportBtn" title="Add chapters from Markdown (.md) or plain-text (.txt) files, after the chapter on the Stage. Each # heading starts a chapter.">Import text&hellip;</button>
                     <input type="file" id="chapterImportInput" accept=".md,.markdown,.txt,text/markdown,text/plain" multiple hidden>
                     <button type="button" class="mini" id="tocGenerateBtn" title="Build the table of contents and landmarks from the chapters' headings">Generate contents&hellip;</button>
+                    <button type="button" class="mini" id="pageListBtn" title="Build the navigation document's page list from the book's page breaks, in reading order">Build page list</button>
                 </span>
             </div>
             <ol id="chaptersList" class="chapters-list"></ol>
@@ -543,6 +547,11 @@
             <div class="font-actions">
                 <button type="button" class="mini" id="noteAddBtn" title="Add a numbered note to the paragraph selected on the Stage">Add note&hellip;</button>
                 <button type="button" class="mini" id="noteRemoveBtn" title="Remove the note whose reference is selected on the Stage">Remove note</button>
+            </div>
+            <h4 class="book-sub">Page numbers and languages</h4>
+            <div class="font-actions">
+                <button type="button" class="mini" id="pageBreakBtn" title="Mark where a print page starts: before the element selected on the Stage, or at the cursor in the code editor">Page break&hellip;</button>
+                <button type="button" class="mini" id="langBtn" title="Say which language the text selected in the code editor, or the element selected on the Stage, is in">Language&hellip;</button>
             </div>
             <h4 class="book-sub">Figures, tables, poems, and quotes</h4>
             <label class="layout-check"><input type="checkbox" data-layout="blocks"> Keep them readable on any screen (images fit, nothing splits across pages)</label>
@@ -847,6 +856,19 @@
     </div>
 </div>
 
+<div id="alt-modal" class="modal-overlay">
+    <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="alt-title">
+        <div class="modal-header">
+            <h2 id="alt-title">Alt Text</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="altSummary" class="parts-help"></p>
+            <ol id="altList" class="alt-list"></ol>
+        </div>
+    </div>
+</div>
+
 <div id="export-modal" class="modal-overlay">
     <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="export-title">
         <div class="modal-header">
@@ -1050,6 +1072,11 @@
 <script src="src/epubcheck-report.js"></script>
 <script src="src/qr.js"></script>
 <script src="src/book-a11y.js"></script>
+<script src="src/book-roles.js"></script>
+<script src="src/book-pages.js"></script>
+<script src="src/book-lang.js"></script>
+<script src="src/book-alt.js"></script>
+<script src="src/book-order.js"></script>
 <script src="src/book-page.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>
@@ -1077,6 +1104,7 @@
 <script src="src/app/contents-ui.js"></script>
 <script src="src/app/cover-ui.js"></script>
 <script src="src/app/a11y-ui.js"></script>
+<script src="src/app/structure-ui.js"></script>
 <script src="src/app/style-ui.js"></script>
 <script src="src/app/fonts-ui.js"></script>
 <script src="src/app/notes-ui.js"></script>

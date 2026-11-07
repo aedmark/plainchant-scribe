@@ -44,7 +44,10 @@ function bookProblems(entries) {
     const assets = Object.keys(projectAssets || {});
     // The accessibility metadata rules (P6-01) join BookCheck's accessibility category.
     const model = Book.read(e, { assets: assets }).model;
-    return bookChecker.check(e, { assets: assets, heads: heads }).problems.concat(cssLintChecker.check(e).problems, model ? BookA11y.rows(model) : []);
+    const docs = model ? model.manifest.items.filter((i) => i.mediaType === 'application/xhtml+xml' && i.path && typeof e[i.path] === 'string').map((i) => i.path) : [];
+    // P6-02: roles, page numbers, language tags, and reading order join the accessibility category.
+    const more = model ? [].concat(BookA11y.rows(model), BookRoles.rows(e, docs), BookPages.rows(e, model), BookLang.rows(e, docs), BookOrder.rows(e, model)) : [];
+    return bookChecker.check(e, { assets: assets, heads: heads }).problems.concat(cssLintChecker.check(e).problems, more);
 }
 
 function runProblemsCheck() {

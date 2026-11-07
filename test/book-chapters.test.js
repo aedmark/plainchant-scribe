@@ -91,7 +91,7 @@ test('book-chapters: split moves a heading and what follows into a new chapter, 
     assert.equal(r.path, 'OEBPS/text/notes.xhtml');
     assert.deepEqual(bcTitles(r.entries), ['A Book Is a Folder of Files', 'Chapters and Contents', 'A Page of Typical Elements', 'Notes']);
     assert.ok(fresh.indexOf('<title>Notes</title>') !== -1);
-    assert.ok(fresh.indexOf('<section epub:type="chapter">\n    <h2 id="notes">Notes</h2>') !== -1, 'the wrapper is copied without its id or aria-labelledby');
+    assert.ok(fresh.indexOf('<section epub:type="chapter" role="doc-chapter">\n    <h2 id="notes">Notes</h2>') !== -1, 'the wrapper is copied without its id or aria-labelledby');
     assert.equal(kept.indexOf('id="notes"'), -1);
     assert.ok(kept.indexOf('href="notes.xhtml#note-1"') !== -1, 'a link in the old chapter to a moved note follows it');
     assert.ok(fresh.indexOf('href="chapter-3.xhtml#ref-1"') !== -1, 'a link in the moved part to an id left behind names the old chapter');

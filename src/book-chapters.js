@@ -72,7 +72,7 @@
         ].concat(stylesheets.map((href) => '  <link rel="stylesheet" type="text/css" href="' + XmlAst.escapeAttr(href) + '"/>'), [
             '</head>',
             '<body epub:type="bodymatter">',
-            '  <section epub:type="chapter" id="' + id + '" aria-labelledby="' + id + '-title">',
+            '  <section epub:type="chapter" role="doc-chapter" id="' + id + '" aria-labelledby="' + id + '-title">',
             '    <h1 id="' + id + '-title">' + t + '</h1>',
             '    <p></p>',
             '  </section>',
