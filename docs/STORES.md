@@ -27,7 +27,7 @@ Read: [File Types & Sizes](https://kobowritinglife.zendesk.com/hc/en-us/articles
 - [ ] **Scribe** EPUB 3.3 is accepted (Kobo's guide supports 3.3 back to 2.0.1).
 - [ ] **Scribe / You** Kobo validates every upload. Critical errors block publishing; non-critical ones do not, except for OverDrive, which needs none at all. Kobo's guide says it runs EPUBCheck 4.2.6, older than the 5.4.0 Scribe is tested with, so results may differ.
 - [ ] **Scribe** The cover is in its own XHTML file (Kobo's guide requires this; Scribe's `cover.xhtml`, D-029).
-- [ ] **You** Kobo's guide shows the EPUB 2 `<meta name="cover" content="…"/>` pointing to the cover item. Scribe keeps one when the book already has it, but does not add one; add it in `content.opf` if Kobo shows no cover.
+- [ ] **Scribe** Kobo's guide shows the EPUB 2 `<meta name="cover" content="…"/>` pointing to the cover item. Setting a cover in the Book tab writes it, and removing the cover removes it (D-047).
 - [ ] **You** The cover image is JPG or PNG, portrait, and under 5 MB. Kobo suggests a width of ¾ of the height (3:4). Scribe's generated cover is 1600 × 2560 (5:8), which is portrait but narrower.
 - [ ] **Scribe** A `toc` nav. Kobo ignores an NCX in EPUB 3 books, so the nav is what it reads (P1-05).
 - [ ] **You** Embedded fonts are TTF, OTF, or WOFF 1.0 (P4-03 embeds TTF and OTF). Kobo advises against naming fonts in CSS that the book does not embed.
@@ -55,10 +55,10 @@ Scribe exports EPUB only; KDP converts it for Kindle (D-006). Read: [What file f
 
 - [ ] **You** Open the `.epub` in Kindle Previewer before uploading (KDP's recommendation for EPUB). Calibre's `ebook-convert` is the project's own smoke test of this route (D-042), not a substitute.
 - [ ] **Scribe** A logical table of contents, which KDP requires: a `toc` nav or an NCX. Scribe writes the nav (P1-05); KDP devices prefer it when it exists.
-- [ ] **You** An HTML table of contents near the start of the book, made of links, without page numbers (required by KDP's navigation guidelines). The nav document can serve as one if it is in the spine; Scribe's is not, so add `<itemref idref="nav"/>` after the cover in `content.opf`. Checked 2026-11-06 on the example book: with the nav in the spine, EPUBCheck 5.4.0 reports nothing and Generate contents… adds the toc landmark.
+- [ ] **Scribe** An HTML table of contents near the start of the book, made of links, without page numbers (required by KDP's navigation guidelines). The nav document serves as one when it is in the spine: tick **Contents page in the reading order** in the Chapters tab, which puts it after the cover and front matter with a toc landmark (D-047). EPUBCheck 5.4.0 reports nothing on such a book.
 - [ ] **You** Kindle shows two levels of contents; deeper entries are not reachable from its menu.
 - [ ] **Scribe** The contents are in reading order (required). The Problems tab's `toc-order` warning catches one that is not (D-045).
-- [ ] **Scribe / You** Cover and toc landmarks, which Kindle's menu uses; without them those entries are greyed out. Setting a cover adds the cover landmark (D-029). Generate contents… adds a toc landmark only when the nav is in the spine (D-028), so do the HTML table of contents step above first, then generate.
+- [ ] **Scribe** Cover and toc landmarks, which Kindle's menu uses; without them those entries are greyed out. Setting a cover adds the cover landmark (D-029). The contents switch above adds the toc landmark, and Generate contents… keeps it (D-028, D-047).
 - [ ] **You** No transparent images (made white) and no TIFF or animated GIF inside the book. Images of text are better as text.
 - [ ] **Scribe** Every image has alt text; decorative images have `alt=""` (KDP's image guidelines). Review alt text… (D-045).
 - [ ] **Store** The cover, uploaded separately: JPEG or TIFF, RGB, under 50 MB; ideally 2560 × 1600 (height × width), at least 1000 × 625. The generated cover is 2560 × 1600 but PNG, so convert it to JPEG for this upload.

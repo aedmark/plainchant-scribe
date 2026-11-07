@@ -13,6 +13,7 @@
     'use strict';
 
     const XHTML = 'http://www.w3.org/1999/xhtml';
+    const EPUB = 'http://www.idpf.org/2007/ops';
 
     function fail(code, message) {
         const e = new Error(message);
@@ -46,11 +47,58 @@
         return pick('title') || ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].map(pick).find(Boolean) || path.split('/').pop();
     }
 
-    // The spine's XHTML chapters: { path, id, title, linear }.
+    // The spine's XHTML chapters: { path, id, title, linear, nav }. nav marks the navigation document when it is in
+    // the reading order (setNavInReading); it can be moved, but not renamed, deleted, split, or merged.
     function list(entries) {
         const model = readBook(entries);
+        const navPath = model.nav ? model.nav.path : null;
         return model.spine.itemrefs.filter((r) => r.item && r.item.mediaType === 'application/xhtml+xml' && r.item.path)
-            .map((r) => ({ path: r.item.path, id: r.item.id, title: titleOf(entries[r.item.path], r.item.path), linear: r.linear }));
+            .map((r) => ({ path: r.item.path, id: r.item.id, title: titleOf(entries[r.item.path], r.item.path), linear: r.linear, nav: r.item.path === navPath }));
+    }
+
+    const navGuard = (entries, path, what) => {
+        const model = readBook(entries);
+        if (model.nav && model.nav.path === path && model.spine.itemrefs.some((r) => r.item && r.item.path === path)) throw fail('nav', 'The contents page cannot be ' + what + '. Turn off "Contents page in the reading order" to take it out.');
+    };
+
+    function navInReading(entries) {
+        const model = readBook(entries);
+        return !!(model.nav && model.spine.itemrefs.some((r) => r.item && r.item.path === model.nav.path));
+    }
+
+    // Puts the navigation document in the reading order, after the cover and front matter, with a toc landmark; or
+    // takes it out, with the landmark (EPUBCheck 5.4.0 refuses a landmark to a nav outside the spine, RSC-011). KDP
+    // wants an HTML table of contents near the start of the book, and accepts the toc nav as one when it is in the
+    // spine (KDP Navigation Guidelines, read 2026-11-06; docs/STORES.md).
+    function setNavInReading(entries, on) {
+        const model = readBook(entries);
+        if (!model.nav) throw fail('no-nav', 'The book has no navigation document.');
+        const navPath = model.nav.path;
+        const navItem = model.manifest.items.find((i) => i.path === navPath);
+        const ref = model.spine.itemrefs.find((r) => r.item && r.item.path === navPath);
+        if (!!ref === !!on) return { entries: entries, path: navPath, removed: [] };
+        let next;
+        if (on) {
+            const front = (r) => {
+                const ast = r.item && typeof entries[r.item.path] === 'string' ? XmlAst.parse(entries[r.item.path]) : null;
+                const body = ast && ast.elements.find((e) => e.local === 'body' && e.ns === XHTML);
+                if (!body) return false;
+                const first = XmlAst.elementChildren(body)[0];
+                const types = (XmlAst.getAttr(body, 'type', EPUB) || '') + ' ' + (first ? XmlAst.getAttr(first, 'type', EPUB) || '' : '');
+                return /(^|\s)(cover|frontmatter|titlepage|copyright-page|dedication|epigraph|halftitlepage)(\s|$)/.test(types);
+            };
+            let index = 0;
+            while (index < model.spine.itemrefs.length && front(model.spine.itemrefs[index])) index++;
+            next = withOpf(entries, (m) => OpfEdit.addItemref(m, navItem.id, { index: index }));
+            next = withNav(next, (nav) => {
+                const label = nav.toc.heading ? nav.toc.heading.text : '';
+                return Nav.setLandmark(nav, 'toc', nav.toc.id ? { path: navPath, fragment: nav.toc.id } : { path: navPath }, label || 'Contents');
+            });
+        } else {
+            next = withNav(entries, (nav) => Nav.removeLandmark(nav, 'toc'));
+            next = withOpf(next, (m) => OpfEdit.removeItemref(m, navItem.id));
+        }
+        return { entries: next, path: navPath, removed: [] };
     }
 
     function slug(title) {
@@ -119,6 +167,7 @@
     function rename(entries, path, title) {
         const name = String(title || '').trim();
         if (!name) throw fail('invalid-title', 'Enter a title for the chapter.');
+        navGuard(entries, path, 'renamed here; edit its heading in the code editor');
         const ast = XmlAst.parse(entries[path] || '');
         if (!ast.wellFormed) throw fail('not-well-formed', path + ' is not well-formed; fix it in the code editor first.');
         const titleEl = ast.elements.find((e) => e.local === 'title' && e.ns === XHTML);
@@ -152,6 +201,7 @@
     // Deletes a chapter: its file, manifest item, itemref, and the entries pointing at it in every nav (outermost only).
     // A landmarks, page-list, or other nav left with no entries goes too; an emptied toc stays for Problems to report.
     function remove(entries, path) {
+        navGuard(entries, path, 'deleted');
         const model = readBook(entries);
         const item = model.manifest.items.find((i) => i.path === path);
         if (!item) throw fail('not-a-chapter', path + ' is not in the manifest.');
@@ -252,6 +302,7 @@
     // Splits a chapter at the heading starting at offset `start`: the heading (or the wrapper it opens) and everything
     // after it in the body move to a new chapter right after, named from the heading, with matching wrappers.
     function split(entries, path, start) {
+        navGuard(entries, path, 'split');
         const model = readBook(entries);
         const text = entries[path];
         const ast = XmlAst.parse(text || '');
@@ -308,6 +359,7 @@
         if (at === -1) throw fail('not-a-chapter', path + ' is not in the spine.');
         const other = chapters[at + 1];
         if (!other) throw fail('no-next', 'This is the last chapter, so there is nothing to merge into it.');
+        if (chapters[at].nav || other.nav) throw fail('nav', 'The contents page cannot be merged with a chapter.');
         const a = XmlAst.parse(entries[path] || ''), b = XmlAst.parse(entries[other.path] || '');
         if (!a.wellFormed || !b.wellFormed) throw fail('not-well-formed', 'Both chapters must be well-formed; fix them in the code editor first.');
         const bodyA = a.elements.find((e) => e.local === 'body' && e.ns === XHTML), bodyB = b.elements.find((e) => e.local === 'body' && e.ns === XHTML);
@@ -352,5 +404,5 @@
         return { entries: next, path: path, removed: [other.path], renamedIds: Array.from(rename.entries()), lostStylesheets: lost };
     }
 
-    return { list: list, titleOf: titleOf, add: add, rename: rename, remove: remove, move: move, incomingLinks: incomingLinks, slug: slug, split: split, merge: merge };
+    return { list: list, navInReading: navInReading, setNavInReading: setNavInReading, titleOf: titleOf, add: add, rename: rename, remove: remove, move: move, incomingLinks: incomingLinks, slug: slug, split: split, merge: merge };
 });

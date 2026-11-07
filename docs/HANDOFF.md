@@ -22,7 +22,7 @@ _Last updated: 2026-11-06, on `master`: Phases 0 to 4 are done (`P3-07` last, fr
 
 | Suite | Result |
 | --- | --- |
-| `npm test` (EPUBCheck 5.4.0 on Java 27, DAISY Ace 1.4.6 on Chrome, qrencode 4.1.1, and zbarimg 0.23.95 included) | **318/318** (290 without EPUBCheck and Ace) |
+| `npm test` (EPUBCheck 5.4.0 on Java 27, DAISY Ace 1.4.6 on Chrome, qrencode 4.1.1, and zbarimg 0.23.95 included) | **321/321** (292 without EPUBCheck and Ace) |
 | `npm run roundtrip` (7 books, EPUBCheck 5.4.0, Calibre 9.14.0) | **7 passed** |
 | `cargo test --manifest-path src-tauri/Cargo.toml`, `cargo build` | **14/14**, passes |
 | `python3 tools/check_docs.py` | `0 error(s), 0 warning(s)` |
@@ -95,7 +95,7 @@ _Last updated: 2026-11-06, on `master`: Phases 0 to 4 are done (`P3-07` last, fr
 ## Next steps (in order)
 
 1. The maintainer tries Send to reader in the desktop app (`npm run tauri:dev`) with a phone on the same Wi-Fi; record what they saw in `P5-07`.
-2. Phase 7 is not committed: ask the maintainer which item comes next. Two small gaps from `P6-03` could come first: Scribe's nav is not an HTML table of contents in the spine (KDP wants one), and no EPUB 2 cover meta is added (Kobo's guide shows one). See [STORES.md](STORES.md).
+2. `P7-03` (`.docx` import), chosen by the maintainer on 2026-11-06, after the two `P6-03` gaps (D-047).
 3. Known gap for later: images imported through Assets join the manifest only when they become the cover or a figure; the Problems tab now warns about them (not-in-manifest), but nothing lists them yet.
 4. Re-read the store pages in STORES.md before relying on them; they were read on 2026-11-06.
 

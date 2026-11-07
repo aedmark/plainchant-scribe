@@ -404,6 +404,20 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 - Pages of a known kind keep the kind's file name, so a saved copyright page is `copyright.xhtml`.
 **Review trigger:** authors want images in saved pages (the library would need to carry the files), other languages for the labels, or the library synced between devices.
 
+## D-047 The contents page in the reading order, and the EPUB 2 cover tag  (2026-11-06, status: accepted)
+**Context:** Writing the store checklists (`P6-03`, `docs/STORES.md`) found two gaps. KDP's Navigation Guidelines require an HTML table of contents near the start of the book and accept the toc nav as one when it is in the spine; Scribe's nav was not in the spine. Kobo's EPUB guide shows the EPUB 2 `<meta name="cover">`, which Scribe kept but never added. The maintainer chose each point below.
+**Decision:**
+1. A Chapters tab switch, **Contents page in the reading order**, off by default (new books are unchanged).
+   - On: the nav's itemref goes after the cover and leading front matter (body or first element typed `cover`, `frontmatter`, `titlepage`, `copyright-page`, `dedication`, `epigraph`, or `halftitlepage`), and a `toc` landmark points at the toc nav.
+   - Off: the landmark and the itemref go, restoring the book byte for byte. EPUBCheck 5.4.0 refuses a landmark to a nav outside the spine (RSC-011).
+   - In the chapter list the contents page can move, but rename, delete, split, and merge (with it or into it) are refused.
+2. Setting a cover always writes `<meta name="cover" content="ID"/>` at the end of the metadata when there is none. EPUB 3.3 §5.9.3 keeps OPF 2 `meta` for compatibility; removing the cover removes it, as before (D-029).
+**Alternatives:**
+- The contents page in every new book's reading order (rejected: most readers show the contents in their menus, and only some stores ask for the page).
+- Leaving both to the checklist (rejected: an author should not edit `content.opf` by hand to meet a store's rule).
+**Consequences:** Books with a cover now carry the EPUB 2 tag, and EPUBCheck 5.4.0 reports nothing on them. Generate contents… keeps the toc landmark while the nav is in the spine (D-028), and never lists the contents page in itself.
+**Review trigger:** KDP or Kobo change these rules, or a reader shows the contents page twice.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

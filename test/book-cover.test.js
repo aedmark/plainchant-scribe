@@ -70,9 +70,12 @@ test('book-cover: the typographic layout wraps the title, shrinks it to fit four
     assert.equal(BookCover.mediaTypeFor('a/B.JPG'), 'image/jpeg');
 });
 
-test('book-cover: remove also drops the EPUB 2 cover meta', () => {
+test('book-cover: set writes the EPUB 2 cover meta Kobo reads, once, and remove drops it', () => {
     const f = BookCover.set(cvBook(), 'OEBPS/images/cover.png', CV_ASSETS).entries;
-    f['OEBPS/content.opf'] = f['OEBPS/content.opf'].replace('  </metadata>', '    <meta name="cover" content="cover-image"/>\n  </metadata>');
+    assert.equal(f['OEBPS/content.opf'].split('<meta name="cover" content="cover-image"/>').length, 2, 'exactly one');
+    assert.ok(/<meta name="cover" content="cover-image"\/>\n  <\/metadata>/.test(f['OEBPS/content.opf']), 'last in the metadata, indented');
+    const again = BookCover.set(f, 'OEBPS/images/cover.png', CV_ASSETS).entries;
+    assert.equal(again['OEBPS/content.opf'].split('name="cover"').length, 2, 'setting it again adds no second one');
     const r = BookCover.remove(f, CV_ASSETS);
     assert.equal(r.entries['OEBPS/content.opf'].indexOf('name="cover"'), -1);
     assert.deepEqual(cvProblems(r.entries), []);

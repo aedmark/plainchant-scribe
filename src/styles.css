@@ -1551,3 +1551,5 @@ h2 { font-size: 1.1em; }
 .matter-list li { display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.4rem; border: 1px solid var(--border-void); border-radius: 4px; }
 .matter-list li > span:first-child { flex: 1; }
 .matter-note { font-size: 0.75rem; color: var(--text-void-muted); }
+
+.chapters-option { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; margin: 0.3rem 0.5rem; }

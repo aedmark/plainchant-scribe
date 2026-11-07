@@ -179,6 +179,18 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
+    test('epubcheck: the cover tag Kobo reads and the contents page in the reading order pass EPUBCheck with no messages (D-047)', () => {
+        let files = BookCover.set(ExampleBook.create().files, 'OEBPS/images/cover.png', ['OEBPS/images/cover.png']).entries;
+        files['OEBPS/images/cover.png'] = Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'));
+        files = BookMatter.add(files, { kind: 'titlepage' }, new Date('2026-11-06')).entries;
+        files = BookChapters.setNavInReading(files, true).entries;
+        files = BookContents.apply(files, BookContents.plan(files));
+        assert.includes(files['OEBPS/nav.xhtml'], 'epub:type="toc" href="nav.xhtml#toc"');
+        assert.includes(files['OEBPS/content.opf'], '<meta name="cover" content="cover-image"/>');
+        const r = epubcheck(oracle.jar, files);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+    });
+
     test('epubcheck: BookOrder\'s two rules match EPUBCheck (OPF-096 for an unreachable non-linear chapter, NAV-011 for contents out of order) (P6-02)', () => {
         const base = ExampleBook.create().files;
         const hidden = Object.assign({}, base, {

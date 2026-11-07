@@ -5,6 +5,7 @@
 const inspChaptersPane = document.getElementById('inspChaptersPane');
 const chaptersList = document.getElementById('chaptersList');
 const chaptersUnreadable = document.getElementById('chaptersUnreadable');
+const navInReadingBox = document.getElementById('navInReadingBox');
 let chapterDrag = null;
 
 // Commits a BookChapters result: new and deleted files, the tree, tabs, and the chapter to show.
@@ -34,7 +35,7 @@ function chapterAction(run, notice) {
     }
 }
 
-function chapterRow(c, i, count) {
+function chapterRow(c, i, count, next) {
     const li = document.createElement('li');
     li.className = 'chapter-row';
     li.draggable = true;
@@ -49,7 +50,7 @@ function chapterRow(c, i, count) {
     open.className = 'chapter-open';
     open.textContent = c.title;
     const file = document.createElement('small');
-    file.textContent = c.path.split('/').pop() + (c.linear ? '' : ' · not in the main reading order');
+    file.textContent = c.path.split('/').pop() + (c.nav ? ' · the contents page' : '') + (c.linear ? '' : ' · not in the main reading order');
     open.appendChild(file);
     open.addEventListener('click', () => openFileInEditor(c.path));
     const mini = (text, label, fn, disabled) => {
@@ -66,9 +67,9 @@ function chapterRow(c, i, count) {
     li.append(grip, open,
         mini('↑', 'Move up', () => chapterAction((e) => BookChapters.move(e, c.path, i - 1), 'Moved ' + c.title + ' up.'), i === 0),
         mini('↓', 'Move down', () => chapterAction((e) => BookChapters.move(e, c.path, i + 1), 'Moved ' + c.title + ' down.'), i === count - 1),
-        mini('Rename', 'Rename', () => renameChapter(c)),
-        mini('Merge', 'Merge with the next chapter', () => mergeChapter(c, i), i === count - 1),
-        mini('Delete', 'Delete', () => deleteChapter(c)));
+        mini('Rename', 'Rename', () => renameChapter(c), c.nav),
+        mini('Merge', 'Merge with the next chapter', () => mergeChapter(c, i), i === count - 1 || c.nav || (next && next.nav)),
+        mini('Delete', 'Delete', () => deleteChapter(c), c.nav));
     li.addEventListener('dragstart', (e) => { chapterDrag = { path: c.path, from: i }; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', c.path); });
     li.addEventListener('dragover', (e) => {
         if (!chapterDrag || chapterDrag.path === c.path) return;
@@ -103,7 +104,8 @@ function refreshChapters() {
     chaptersList.hidden = !chapters;
     if (!chapters) { chaptersUnreadable.textContent = 'content.opf cannot be read, so the chapters cannot be listed. Fix it in the code editor.'; return; }
     chaptersList.textContent = '';
-    chapters.forEach((c, i) => chaptersList.appendChild(chapterRow(c, i, chapters.length)));
+    chapters.forEach((c, i) => chaptersList.appendChild(chapterRow(c, i, chapters.length, chapters[i + 1])));
+    navInReadingBox.checked = BookChapters.navInReading(projectFiles.entries);
 }
 
 async function addChapter() {
@@ -179,3 +181,7 @@ chapterImportInput.addEventListener('change', async () => {
         return { entries: r.entries, path: r.added[0], removed: [] };
     }, null);
 });
+
+// KDP wants the contents as a page in the reading order (docs/STORES.md); D-047.
+navInReadingBox.addEventListener('change', () => { chapterAction((entries) => BookChapters.setNavInReading(entries, navInReadingBox.checked),
+    navInReadingBox.checked ? 'The contents page is now in the reading order, after the front matter.' : 'The contents page is out of the reading order; reading apps still show the contents in their menus.'); refreshChapters(); });

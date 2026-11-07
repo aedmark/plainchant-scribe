@@ -151,3 +151,14 @@ test('P6-02: the buttons, the alt-text dialog, and the Problems rows are wired i
     const ui = read('src/app/structure-ui.js');
     assert.ok(/BookRoles\.fix[\s\S]*askConfirm[\s\S]*commitBookFiles/.test(ui), 'roles are added only after the author confirms');
 });
+
+test('wiring: the Chapters tab has the contents switch, and the contents page row cannot be renamed, merged, or deleted (D-047)', () => {
+    const fs = require('fs');
+    const read = (p) => fs.readFileSync(require('path').join(__dirname, '..', p), 'utf8');
+    assert.includes(read('app.html'), '<input type="checkbox" id="navInReadingBox"> Contents page in the reading order');
+    const ui = read('src/app/spine-ui.js');
+    assert.includes(ui, "mini('Rename', 'Rename', () => renameChapter(c), c.nav)");
+    assert.includes(ui, "mini('Delete', 'Delete', () => deleteChapter(c), c.nav)");
+    assert.includes(ui, '|| c.nav || (next && next.nav)');
+    assert.includes(ui, 'navInReadingBox.checked = BookChapters.navInReading(projectFiles.entries);');
+});

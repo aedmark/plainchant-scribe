@@ -115,9 +115,16 @@
         });
         item = readBook(next, assets).manifest.items.find((i) => i.path === imagePath);
         if (item.properties.indexOf('cover-image') === -1) next = withOpf(next, (m) => OpfEdit.setItemProperties(m, item.id, item.properties.concat('cover-image')), assets);
-        // The EPUB 2 <meta name="cover"> some older readers use follows the cover when it is there.
+        // The EPUB 2 <meta name="cover">, which Kobo's EPUB guide and some older readers use, names the cover too
+        // (EPUB 3.3 §5.9.3 keeps OPF 2 meta for compatibility; P6-03 found Kobo shows it). Added when missing.
         model = readBook(next, assets);
         if (model.legacy.cover && model.legacy.cover.content !== item.id) next = withOpf(next, (m) => XmlAst.setAttr(m.ast, m.legacy.cover.node, 'content', item.id), assets);
+        if (!model.legacy.cover) {
+            next = withOpf(next, (m) => {
+                const metadata = m.ast.elements.find((e) => e.local === 'metadata' && e.parentId === m.ast.documentElement.id);
+                return XmlAst.insert(m.ast, metadata, 'append', '<meta name="cover" content="' + XmlAst.escapeAttr(item.id) + '"/>');
+            }, assets);
+        }
         model = readBook(next, assets);
         const title = model.metadata.title || 'this book';
         const page = coverPage(next, model);

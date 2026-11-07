@@ -146,3 +146,31 @@ test('book-chapters: splitting then merging gives back the same body and content
     assert.ok(m.entries[bcCh(3)].indexOf('href="#note-1"') !== -1 && m.entries[bcCh(3)].indexOf('href="#ref-1"') !== -1, 'the note links are fragment-only again');
     assert.deepEqual(bcProblems(m.entries), []);
 });
+
+test('book-chapters: the contents page goes into the reading order after the front matter, with a toc landmark, and comes out exactly (D-047)', () => {
+    let e = BookCover.set(bcBook(), 'OEBPS/images/cover.png', ['OEBPS/images/cover.png']).entries;
+    e = BookMatter.add(e, { kind: 'titlepage' }, new Date('2026-11-06')).entries;
+    assert.equal(BookChapters.navInReading(e), false);
+    const on = BookChapters.setNavInReading(e, true).entries;
+    assert.equal(BookChapters.navInReading(on), true);
+    assert.deepEqual(BookChapters.list(on).map((c) => c.path.split('/').pop() + (c.nav ? '*' : '')), ['cover.xhtml', 'titlepage.xhtml', 'nav.xhtml*', 'chapter-1.xhtml', 'chapter-2.xhtml', 'chapter-3.xhtml']);
+    assert.includes(on['OEBPS/nav.xhtml'], '<li><a epub:type="toc" href="nav.xhtml#toc">Contents</a></li>');
+    assert.deepEqual(bcProblems(on).filter((p) => !/cover-missing|item-file-missing/.test(p)), [], 'the cover image is a binary asset, not in these text entries');
+    assert.equal(BookChapters.setNavInReading(on, true).entries, on, 'already on: nothing changes');
+    // It can move, but nothing else that would damage it.
+    bcThrows(() => BookChapters.rename(on, 'OEBPS/nav.xhtml', 'Index'), 'nav');
+    bcThrows(() => BookChapters.remove(on, 'OEBPS/nav.xhtml'), 'nav');
+    bcThrows(() => BookChapters.split(on, 'OEBPS/nav.xhtml', on['OEBPS/nav.xhtml'].indexOf('<h1>')), 'nav');
+    bcThrows(() => BookChapters.merge(on, 'OEBPS/nav.xhtml'), 'nav');
+    bcThrows(() => BookChapters.merge(on, 'OEBPS/text/titlepage.xhtml'), 'nav');
+    const moved = BookChapters.move(on, 'OEBPS/nav.xhtml', 4).entries;
+    assert.equal(BookChapters.list(moved)[4].path, 'OEBPS/nav.xhtml');
+    // Generate contents now keeps the toc landmark and does not list the contents page in itself.
+    const plan = BookContents.plan(on);
+    assert.ok(plan.landmarks.some((l) => l.type === 'toc'), 'toc landmark planned');
+    const after = BookContents.apply(on, plan);
+    assert.ok(Nav.entries(Nav.read(after, Book.read(after).model).nav.toc).every((x) => x.target.path !== 'OEBPS/nav.xhtml'));
+    assert.equal(JSON.stringify(BookChapters.setNavInReading(on, false).entries), JSON.stringify(e), 'off restores every byte');
+    // With no front matter it goes first.
+    assert.equal(BookChapters.list(BookChapters.setNavInReading(bcBook(), true).entries)[0].path, 'OEBPS/nav.xhtml');
+});
