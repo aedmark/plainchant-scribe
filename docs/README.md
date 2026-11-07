@@ -15,6 +15,7 @@ to it instead of copying it.
 | [DECISIONS.md](DECISIONS.md) | Future decision-makers | Rationale and alternatives for durable choices | Routine implementation detail |
 | [TESTING.md](TESTING.md) | Contributors and release owners | Verification commands, coverage boundaries, known pitfalls | A duplicate of current test results |
 | [SECURITY.md](SECURITY.md) | Users and developers | Sensitive assets, trust boundaries, reporting, secure defaults | Full operational incident history |
+| [STORES.md](STORES.md) | Authors and small presses | Each store's upload rules as read on a stated date, and who handles each | A claim that a store or reader accepts a book (D-010) |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contributors | Setup, change, review, and submission workflow | Agent-only instructions |
 | [CHANGELOG.md](CHANGELOG.md) | Users | Released and unreleased user-visible changes | Commit-by-commit history |
 | [plainchant-scribe.manual.json](plainchant-scribe.manual.json), [manual.html](manual.html) | Newcomers and maintainers | Evidence-linked 3x What / How / Why synthesis and its generated standalone HTML view | Authoritative topic detail or chronological history |

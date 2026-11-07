@@ -1,6 +1,6 @@
 # Plainchant Scribe
 
-An EPUB studio spun off from Plainchant Web (`aedmark/plainchant-web`): make, lay out, check, and export reflowable EPUB 3.3 books from the book's own `.xhtml`, `.css`, and `content.opf` files, which stay the single source of truth. Built for authors and small presses who want visual control over a book without a tool rewriting their files. Static HTML, CSS, and vanilla JavaScript with no frontend build step, running in any modern browser or as a native desktop app via Tauri v2. **Status: early development.** Phases 0 to 5 are done but `P3-07`, and Phase 6 through `P6-02`: a book can be made or imported, laid out, given accessibility metadata, page numbers, languages, and roles, checked in the Problems tab, exported as a `.epub`, and sent to a phone or e-reader on the same network from the desktop app. Next are the store checklists (`P6-03`).
+An EPUB studio spun off from Plainchant Web (`aedmark/plainchant-web`): make, lay out, check, and export reflowable EPUB 3.3 books from the book's own `.xhtml`, `.css`, and `content.opf` files, which stay the single source of truth. Built for authors and small presses who want visual control over a book without a tool rewriting their files. Static HTML, CSS, and vanilla JavaScript with no frontend build step, running in any modern browser or as a native desktop app via Tauri v2. **Status: early development.** Phases 0 to 6 are done but `P3-07`: a book can be made or imported, laid out, given accessibility metadata, page numbers, languages, and roles, checked in the Problems tab, exported as a `.epub`, and sent to a phone or e-reader on the same network from the desktop app, and [docs/STORES.md](docs/STORES.md) has a checklist per store. Phase 7 is not committed; the maintainer chooses what comes next.
 
 This is the canonical instruction file for coding agents. `CLAUDE.md` imports it; do not duplicate these rules in tool-specific files. Project facts belong in the documents linked below, not in an agent's private memory.
 
@@ -104,6 +104,7 @@ Things an agent must not change without explicit permission. Every rule includes
 | `docs/DECISIONS.md` | Append-only architectural and product decisions; open questions |
 | `docs/TESTING.md` | Test strategy, commands, limitations, and environment recipes |
 | `docs/SECURITY.md` | Assets, trust boundaries (imported EPUBs), secret handling, and reporting |
+| `docs/STORES.md` | Publishing checklist per store (Kobo, Apple Books, KDP, Google Play), dated and cited |
 | `docs/CONTRIBUTING.md` | Human and agent contribution workflow |
 | `docs/CHANGELOG.md` | User-visible release notes |
 | `docs/plainchant-scribe.manual.json`, `docs/manual.html` | 3x What / How / Why manual source and generated standalone HTML manual |
