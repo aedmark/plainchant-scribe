@@ -52,6 +52,8 @@ const APP_FILES = [
     'src/xhtml.js',
     'src/book-check.js',
     'src/epubcheck-report.js',
+    'src/qr.js',
+    'src/book-page.js',
     'src/importing.js',
     'src/app/core.js',
     'src/app/layout.js',

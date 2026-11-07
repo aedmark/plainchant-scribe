@@ -23,5 +23,12 @@
         return Object.keys(assets || {}).sort().map((p) => p + ':' + assets[p].size).join('|');
     }
 
-    return { urls: urls, entryFor: entryFor, assetSignature: assetSignature };
+    // Whether two byte arrays hold the same bytes (send to reader skips sending an unchanged .epub).
+    function sameBytes(a, b) {
+        if (!a || !b || a.length !== b.length) return false;
+        for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+        return true;
+    }
+
+    return { urls: urls, entryFor: entryFor, assetSignature: assetSignature, sameBytes: sameBytes };
 });

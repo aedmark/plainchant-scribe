@@ -41,7 +41,7 @@
                     <button id="folderBtn" type="button" class="menu-item" role="menuitem" title="Open a folder as a project (a folder that is already a project opens that project)"><span>Open folder&hellip;</span></button>
                     <button id="libraryBtn" type="button" class="menu-item" role="menuitem" title="Open a project from your library"><span>Open project&hellip;</span></button>
                     <button id="exportBtn" type="button" class="menu-item" role="menuitem" title="Export project to disk or bundle"><span>Export&hellip;</span></button>
-                    <button id="previewBtn" type="button" class="menu-item" role="menuitem" title="Preview the project in a real browser or on a phone"><span>Preview&hellip;</span></button>
+                    <button id="previewBtn" type="button" class="menu-item" role="menuitem" title="Send the book to a phone, tablet, or e-reader on your network, or preview a page in a real browser"><span>Send to reader&hellip;</span></button>
                 </div>
             </div>
             <div class="menu-wrap">
@@ -792,7 +792,7 @@
 <div id="preview-modal" class="modal-overlay">
     <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="preview-title">
         <div class="modal-header">
-            <h2 id="preview-title">Preview in a Browser or on a Phone</h2>
+            <h2 id="preview-title">Send to a Reader</h2>
             <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
         </div>
         <div class="modal-body">
@@ -804,17 +804,20 @@
                 </div>
             </section>
             <section class="export-option" id="previewNetSection">
-                <h3>Live preview on this network</h3>
+                <h3 id="previewNetTitle">Live preview on this network</h3>
+                <p id="previewBookNote" hidden>Shares the open book read-only over HTTP, so a phone, tablet, or e-reader browser on the same Wi-Fi can download the .epub or read each chapter with the book's own styles. It serves only the files Export puts in the .epub, runs none of the book's scripts, and updates a moment after each edit. Anyone on your network who has the link can open it, so share it only on a network you trust. Sharing is off until you start it and stops when you press Stop or quit the app.</p>
+                <p id="previewKindleNote" hidden>A Kindle cannot open an .epub from its browser. Use Send to Kindle, or convert the book with Calibre and copy it over USB.</p>
                 <p id="previewNetNote">Serves the open project, including unsaved edits and added images, read-only over HTTP so you can open it in any browser or on a phone on the same Wi-Fi. Pages reload by themselves when you edit. Anyone on your network who has the link can view it, so share it only on a network you trust. Sharing is off until you start it and stops when you press Stop or quit the app.</p>
                 <div class="export-buttons">
                     <button type="button" class="btn primary" id="previewToggleBtn">Start sharing</button>
                     <button type="button" class="btn" id="previewOpenBtn" hidden>Open in this computer's browser</button>
                 </div>
+                <div id="previewQr" class="preview-qr" hidden></div>
                 <div id="previewUrls" class="preview-urls" hidden></div>
             </section>
             <section class="export-option" id="previewDesktopOnly" hidden>
                 <h3>Live preview on this network</h3>
-                <p>Preview on a phone or in another browser needs the desktop app, which can serve the project on your network. In this browser, use the new tab above, or export the project to a folder and serve it yourself.</p>
+                <p>Sending to a phone or e-reader, or previewing in another browser, needs the desktop app, which can serve the book on your network. In this browser, export the .epub and copy it to the reader, or use the new tab above for a page.</p>
             </section>
         </div>
     </div>
@@ -1021,6 +1024,8 @@
 <script src="src/xhtml.js"></script>
 <script src="src/book-check.js"></script>
 <script src="src/epubcheck-report.js"></script>
+<script src="src/qr.js"></script>
+<script src="src/book-page.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>
 <script src="src/app/layout.js"></script>

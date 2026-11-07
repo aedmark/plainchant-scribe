@@ -58,6 +58,8 @@ fn mime_for_path(path: &Path) -> &'static str {
         .as_str()
     {
         "html" | "htm" => "text/html; charset=utf-8",
+        "xhtml" => "application/xhtml+xml; charset=utf-8",
+        "epub" => "application/epub+zip",
         "css" => "text/css; charset=utf-8",
         "js" | "mjs" => "text/javascript; charset=utf-8",
         "json" | "webmanifest" => "application/json; charset=utf-8",

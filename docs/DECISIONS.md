@@ -307,6 +307,27 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Consequences:** Gutenberg regenerates its files, so a later download may be another edition; the tool says so and still runs. The pass rule is relative, so a book's own EPUBCheck errors (all seven have one, in their nav) do not fail it. The corpus found that linked records (EPUB 3.3 §5.5.6) were dropped on export; that is fixed and tested.
 **Review trigger:** A book from a new producer fails, Export starts changing files on purpose (for example a fix-on-export option), or Q-004 is answered and a Kindle result is wanted.
 
+## D-043 Send to reader: a book page, a live .epub, and a QR code  (2026-11-06, status: accepted)
+**Context:** `P5-07` adapts the inherited preview server (D-009, D-029) so a phone, tablet, or e-reader on the same network can get the book. The maintainer chose each point below on 2026-11-06.
+**Decision:**
+1. The link opens a book page with the title, authors, cover, a Download .epub link, and the chapters in reading order. Each chapter opens in the browser with the book's own stylesheets. The page and the `.epub` live under the server's own `__pc_book/` path.
+2. What is served is exactly what Export packs (`BookExport.plan`), and in book mode the server never falls back to the linked folder.
+3. The `.epub` is packed live, 1.2 seconds after the last edit, like Export but without touching `dcterms:modified`. One zip date is used for the whole session, so an unchanged book packs to the same bytes and is not sent to the server again.
+4. The dialog shows a QR code for the network link. Scribe draws it with its own encoder, `src/qr.js` (ISO/IEC 18004 byte mode, level M, versions 1 to 10), because D-001 rules out a dependency. The 32-character token stays.
+5. A short note, on the page and in the dialog, says that a Kindle cannot open an `.epub` from its browser and needs Send to Kindle or Calibre (D-006, D-010).
+6. Every page gets a Content-Security-Policy with a per-response nonce, so only the server's reload script runs and a book's or page's own scripts never do (D-004). For a book it is also `default-src 'self'`, so nothing loads from outside the server; inline styles and `data:` images and fonts are allowed.
+**Alternatives:**
+- Download only, or reading view only (rejected: one leaves nothing to read, the other no file).
+- A snapshot with a Refresh button (rejected: easy to send a stale copy).
+- A short typeable token (rejected: easier to guess on the network).
+- A QR library (rejected by D-001).
+**Consequences:**
+- Large books cost a pack and a base64 copy of the `.epub` after each edit while sharing.
+- Chapters are served as `application/xhtml+xml`, so a chapter that is not well-formed shows the browser's XML error, as a reading system would.
+- An e-reader without a camera still needs the link typed.
+- Checked with `cargo test` (a real HTTP run), qrencode and zbarimg as the QR oracles, and the browser pane with a stand-in shell, not in a real desktop window or on a real phone.
+**Review trigger:** Authors want to share without the desktop app, the live pack is too slow for large books, or the maintainer's devices cannot open the link.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

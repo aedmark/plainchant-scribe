@@ -17,3 +17,25 @@ test('Preview: URLs carry the token, the entry page follows the active page, and
     assert.ok(sig !== Preview.assetSignature({ 'images/a.png': { size: 11 }, 'b.png': { size: 5 } }));
     assert.equal(Preview.assetSignature({}), '');
 });
+
+test('Preview.sameBytes: equal only for the same bytes (P5-07)', () => {
+    const u = (a) => new Uint8Array(a);
+    assert.ok(Preview.sameBytes(u([1, 2, 3]), u([1, 2, 3])));
+    assert.ok(!Preview.sameBytes(u([1, 2, 3]), u([1, 2, 4])));
+    assert.ok(!Preview.sameBytes(u([1, 2, 3]), u([1, 2])));
+    assert.ok(!Preview.sameBytes(u([1, 2]), u([1, 2, 3])), 'a longer second array');
+    assert.ok(!Preview.sameBytes(u([1]), null));
+    assert.ok(!Preview.sameBytes(null, null), 'nothing sent yet is never the same');
+});
+
+test('Send to reader: a book shares the .epub, the book page, and a QR code, packed with one date (P5-07)', () => {
+    const fsP = require('fs'), pathP = require('path');
+    const ui = fsP.readFileSync(pathP.join(__dirname, '..', 'src/app/preview-ui.js'), 'utf8');
+    const html = fsP.readFileSync(pathP.join(__dirname, '..', 'app.html'), 'utf8');
+    assert.includes(ui, 'BookPage.share(');
+    assert.includes(ui, 'packOpenBook(previewWhen');
+    assert.includes(ui, 'Qr.encode(');
+    assert.ok(!/touchModified/.test(ui), 'sharing does not change dcterms:modified');
+    ['id="previewQr"', 'id="previewBookNote"', 'id="previewKindleNote"', 'Send to reader&hellip;'].forEach((n) => assert.includes(html, n));
+    assert.includes(fsP.readFileSync(pathP.join(__dirname, '..', 'src/app/epub-export-ui.js'), 'utf8'), 'async function packOpenBook(when)');
+});

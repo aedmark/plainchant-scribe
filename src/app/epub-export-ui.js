@@ -13,10 +13,11 @@ function refreshEpubExport() {
 }
 
 // The open book packed as Export writes it: the working copy's text files and its binary assets (P5-01, P5-05).
-async function packOpenBook() {
+// when: the date stamped on the zip entries (default now); send to reader keeps one, so the same book packs the same bytes.
+async function packOpenBook(when) {
     const binaries = {};
     for (const path of Object.keys(projectAssets || {})) if (!(path in projectFiles.entries)) binaries[path] = new Uint8Array(await projectAssets[path].arrayBuffer());
-    return BookExport.pack(projectFiles.entries, binaries);
+    return BookExport.pack(projectFiles.entries, binaries, when ? { when: when } : undefined);
 }
 
 async function exportEpub() {

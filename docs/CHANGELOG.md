@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ### Added
 
+- **Send to reader**: in the desktop app, File › Send to reader… shares the open book on your network. A phone, tablet, or e-reader browser can download the `.epub` or read each chapter with the book's own styles. A QR code carries the link to a phone, and the shared book updates a moment after each edit. Only the files the `.epub` holds are shared, and the book's scripts never run (`P5-07`, `D-043`).
 - **EPUBCheck in the desktop app**: Run EPUBCheck in the Problems tab checks the book with your own EPUBCheck jar (chosen once; needs Java) and lists its messages in a new EPUBCheck category, each one jumping to the tag it is about. Nothing is downloaded, and the book is checked as Export would save it.
 - **Book Problems tab**: for a book, the Problems tab now checks the whole book as EPUBCheck does: a new Package category (content.opf, the contents, file names, image formats, the cover, very long chapters), links and stylesheet `url()`s that point at missing, unlisted, or out-of-order files or at ids that do not exist, duplicate ids and mismatched languages, and accessibility warnings (missing alt text, skipped headings, links with no text). Each problem jumps to its text; export asks first if any are errors (`P5-04`, `D-040`).
 
