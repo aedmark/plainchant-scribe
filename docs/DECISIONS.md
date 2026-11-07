@@ -328,6 +328,26 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 - Checked with `cargo test` (a real HTTP run), qrencode and zbarimg as the QR oracles, and the browser pane with a stand-in shell, not in a real desktop window or on a real phone.
 **Review trigger:** Authors want to share without the desktop app, the live pack is too slow for large books, or the maintainer's devices cannot open the link.
 
+## D-044 Accessibility metadata: a Book tab section, suggestions the author confirms, an opt-in claim, and Ace as an oracle  (2026-11-06, status: accepted)
+**Context:** `P6-01` writes the metadata EPUB Accessibility 1.1 §2.2 requires of every book (W3C Recommendation, 17 October 2024): `schema:accessMode`, `accessibilityFeature`, and `accessibilityHazard` (MUST), and `accessibilitySummary` and `accessModeSufficient` (SHOULD). Its values come from the Accessibility Vocabulary 1.1 (W3C Community Group final report, 24 August 2026). The maintainer chose each point below on 2026-11-06.
+**Decision:**
+1. The metadata is edited in an Accessibility section of the Book tab, not a separate wizard. Each control writes on change, as one undo step of splices.
+2. Suggest from the book proposes values from what the files show: text, images and their alt text, audio and video, MathML, page-break markers, the contents and page list, an index, and media overlays. It gives the reason for each and writes them only after the author confirms. It only adds values and never removes one. Hazards cannot be seen in the files: `none` is proposed only when the book has no audio, video, scripts, or GIF images, and the dialog says to check the images.
+3. The conformance claim (`dcterms:conformsTo` "EPUB Accessibility 1.1 - WCAG x Level y", §3.5.2) is off by default and is the author's to tick. Ticking it requires an evaluator (`a11y:certifiedBy`, §3.5.3.1), which starts as the publisher or the first creator, and allows an optional credential. Other conformsTo statements are left alone.
+4. Values outside the vocabulary Scribe offers are kept as written. The Problems tab reports them, with the vocabulary's rules (deprecated terms, `none` and `unknown` alone, contradictory hazards), in the accessibility category. These rows come from `BookA11y.rows`, not BookCheck, so BookCheck's shared EPUBCheck cases are unchanged.
+5. DAISY Ace is an optional test oracle like EPUBCheck. It is installed by hand into the ignored `.tools/ace/`, runs on the installed Chrome, and reports "not run" when it is absent. It is never shipped.
+**Alternatives:**
+- A step-by-step dialog, or both (rejected: the section is always visible and editable).
+- Keeping the metadata in step with the book automatically (rejected: the claims could become wrong unseen).
+- No prefill (rejected: needless typing).
+- Never writing the claim (rejected: publishers need it).
+- No Ace (rejected: it is the checker stores and libraries use).
+**Consequences:**
+- New books from the template still have no accessibility metadata (D-012), so the Problems tab shows one warning until the author fills in the section.
+- Ace also reports chapter markup rules that P6-01 does not cover (`epub-type-has-matching-role`), noted on `P6-02`.
+- The oracle checks only Ace's `metadata-*` rules.
+**Review trigger:** A new EPUB Accessibility or Vocabulary version changes the terms or the claim string, the template should carry a starting set of metadata, or a store requires values Scribe does not offer.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

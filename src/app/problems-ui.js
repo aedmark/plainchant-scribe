@@ -41,7 +41,10 @@ function bookProblems(entries) {
     const e = entries || problemEntries();
     const heads = {};
     assetHeads.forEach((v, p) => { if (projectAssets && projectAssets[p] === v.blob) heads[p] = v.bytes; });
-    return bookChecker.check(e, { assets: Object.keys(projectAssets || {}), heads: heads }).problems.concat(cssLintChecker.check(e).problems);
+    const assets = Object.keys(projectAssets || {});
+    // The accessibility metadata rules (P6-01) join BookCheck's accessibility category.
+    const model = Book.read(e, { assets: assets }).model;
+    return bookChecker.check(e, { assets: assets, heads: heads }).problems.concat(cssLintChecker.check(e).problems, model ? BookA11y.rows(model) : []);
 }
 
 function runProblemsCheck() {

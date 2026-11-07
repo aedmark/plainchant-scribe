@@ -423,6 +423,30 @@
                     <button type="button" class="mini" id="bookAddContributor">Add</button>
                 </div>
                 <em class="book-err" id="bookErr-contributor" hidden></em>
+                <h4 class="book-sub" id="a11yHeading">Accessibility</h4>
+                <div class="a11y" role="group" aria-labelledby="a11yHeading">
+                    <p class="parts-help">What reading apps, stores, and libraries are told about how this book can be read (EPUB Accessibility 1.1). These are your claims: Suggest from the book ticks what Scribe can see, and you check the rest.</p>
+                    <div class="a11y-actions">
+                        <button type="button" class="mini" id="a11ySuggestBtn">Suggest from the book&hellip;</button>
+                        <button type="button" class="mini" id="a11yDraftBtn" title="Write a summary from the answers below, replacing the current one">Draft summary</button>
+                    </div>
+                    <fieldset class="a11y-set"><legend>How the content is perceived</legend><div id="a11yModes" class="a11y-checks"></div></fieldset>
+                    <fieldset class="a11y-set"><legend>Enough on its own to read the whole book</legend><div id="a11ySufficient" class="a11y-checks"></div></fieldset>
+                    <fieldset class="a11y-set"><legend>Features</legend><div id="a11yFeatures"></div></fieldset>
+                    <fieldset class="a11y-set"><legend>Hazards</legend><div id="a11yHazards" class="a11y-hazards"></div></fieldset>
+                    <label class="insp-field insp-wide"><span>Summary</span><textarea id="a11ySummary" rows="3" placeholder="What a reader should know, including anything that is not accessible"></textarea></label>
+                    <p id="a11yOther" class="parts-help" hidden></p>
+                    <fieldset class="a11y-set"><legend>Conformance</legend>
+                        <label class="a11y-check"><input type="checkbox" id="a11yClaim"> This book conforms to EPUB Accessibility 1.1</label>
+                        <p class="parts-help">Claim it only once the book has been checked against WCAG, for example with DAISY Ace and a manual review. Stores and libraries show the claim to readers.</p>
+                        <div id="a11yClaimFields" class="a11y-claim" hidden>
+                            <label class="insp-field"><span>WCAG version</span><select id="a11yWcag"></select></label>
+                            <label class="insp-field"><span>Level</span><select id="a11yLevel"></select></label>
+                            <label class="insp-field insp-wide"><span>Checked by (required)</span><input type="text" id="a11yCertifiedBy" autocomplete="off" placeholder="Small Press, or your name"></label>
+                            <label class="insp-field insp-wide"><span>Credential (optional)</span><input type="text" id="a11yCredential" autocomplete="off" placeholder="A certification the checker holds"></label>
+                        </div>
+                    </fieldset>
+                </div>
             </form>
         </div>
         <div id="inspChaptersPane" class="inspector-body" hidden>
@@ -1025,6 +1049,7 @@
 <script src="src/book-check.js"></script>
 <script src="src/epubcheck-report.js"></script>
 <script src="src/qr.js"></script>
+<script src="src/book-a11y.js"></script>
 <script src="src/book-page.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>
@@ -1051,6 +1076,7 @@
 <script src="src/app/spine-ui.js"></script>
 <script src="src/app/contents-ui.js"></script>
 <script src="src/app/cover-ui.js"></script>
+<script src="src/app/a11y-ui.js"></script>
 <script src="src/app/style-ui.js"></script>
 <script src="src/app/fonts-ui.js"></script>
 <script src="src/app/notes-ui.js"></script>

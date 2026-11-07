@@ -153,6 +153,7 @@ function refreshBookPanel(force) {
     const newCRole = document.getElementById('bookNewCRole');
     if (!newCRole.options.length) roleOptions(newCRole, 'edt');
     if (typeof refreshCover === 'function') refreshCover();
+    if (typeof refreshA11y === 'function') refreshA11y(r.model);
     const newRole = document.getElementById('bookNewRole');
     if (!newRole.options.length) roleOptions(newRole, 'aut');
 }

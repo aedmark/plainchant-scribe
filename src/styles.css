@@ -1042,6 +1042,19 @@ body.shaded #editor {
 .book-readonly code { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-strong); font-size: 0.74rem; }
 .book-sub { margin: 0.9rem 0 0.4rem; font-size: 0.78rem; color: var(--text-strong); }
 .book-creators { display: flex; flex-direction: column; gap: 0.4rem; }
+.a11y { display: flex; flex-direction: column; gap: 0.5rem; }
+.a11y-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.a11y-set { margin: 0; padding: 0.4rem 0.6rem 0.5rem; border: 1px solid var(--border-void); border-radius: 4px; min-width: 0; }
+.a11y-set legend { padding: 0 0.3rem; font-size: 0.74rem; color: var(--text-strong); }
+.a11y-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 0.3rem 0.6rem; }
+.a11y-check { display: flex; align-items: baseline; gap: 0.35rem; font-size: 0.76rem; min-width: 0; }
+.a11y-check code { display: block; font-size: 0.66rem; color: var(--text-void-muted); overflow-wrap: anywhere; }
+.a11y-group { margin-top: 0.3rem; }
+.a11y-group > summary { font-size: 0.74rem; cursor: pointer; color: var(--text-strong); }
+.a11y-hazards { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 0.4rem 0.6rem; }
+.a11y-claim { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 0.6rem; margin-top: 0.3rem; }
+.a11y textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 0.78rem; }
+#confirmText { white-space: pre-line; }
 .book-creator { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 2fr) auto; gap: 0.4rem 0.5rem; align-items: end; }
 .book-creator-actions { display: inline-flex; gap: 0.2rem; }
 .book-creator .insp-field { min-width: 0; }

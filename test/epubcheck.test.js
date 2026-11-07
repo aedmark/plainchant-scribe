@@ -142,6 +142,16 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
+    test('epubcheck: a book with full accessibility metadata and a conformance claim passes EPUBCheck with no messages (P6-01)', () => {
+        let files = ExampleBook.create().files;
+        const s = BookA11y.suggest(files, []);
+        s.state.conformance = { wcag: '2.2', level: 'AA', certifiedBy: 'Small Press', credential: 'Self-evaluated' };
+        BookA11y.ops(s.state).forEach((op) => { files = Object.assign({}, files, { 'OEBPS/content.opf': XmlAst.applyEdits(files['OEBPS/content.opf'], op(Book.read(files).model)) }); });
+        assert.includes(files['OEBPS/content.opf'], 'schema:accessibilitySummary');
+        const r = epubcheck(oracle.jar, files);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+    });
+
     test('epubcheck: a book reorganised with the chapters organiser, split and merged, passes EPUBCheck with no messages (P3-02, P3-03)', () => {
         let files = ExampleBook.create().files;
         files = BookChapters.add(files, 'The Long Road', 'OEBPS/text/chapter-1.xhtml').entries;
