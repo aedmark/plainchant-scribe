@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plainchant Scribe: make the book, keep the files</title>
     <meta name="description" content="Plainchant Scribe lets you write, lay out, check, and export EPUB books from your own XHTML, CSS, and package files, without a tool rewriting them. In development.">
+    <meta name="author" content="Andrew Edmark">
     <meta name="theme-color" content="#f4efe4">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -20,6 +21,7 @@
             <a href="#idea">The idea</a>
             <a href="#plan">The plan</a>
             <a href="#today">Today</a>
+            <a href="#suite">The suite</a>
             <a href="docs/manual.html">Manual</a>
         </nav>
     </div>
@@ -27,10 +29,11 @@
 
 <main id="main" class="folio">
     <header class="title-block" aria-labelledby="title">
-        <p class="kicker">EPUB 3.3 &middot; in development</p>
         <h1 id="title">Plainchant Scribe</h1>
         <p class="tagline">Make the book. Keep the files.</p>
-        <p class="lede">An EPUB studio that lets you write, lay out, check, and export a book from your own XHTML, CSS, and package files, without a tool rewriting them behind your back.</p>
+        <p class="byline">designed by <strong>Andrew Edmark</strong></p>
+        <p class="meta-strip"><span>Free &amp; Open Source</span></p>
+        <p class="lede">An EPUB book-typesetting studio that lets you write, lay out, check, and export books from pure XHTML, CSS, and package files, without a tool rewriting them behind your back.</p>
         <p class="actions">
             <a class="btn primary" href="app.html">Open the studio</a>
             <a class="btn" href="docs/manual.html">Read the manual</a>
@@ -55,7 +58,7 @@
             <li><strong>Import, export, and checks.</strong> Open an existing EPUB or Markdown, export a valid book, and find problems before a store does.</li>
             <li><strong>Accessibility and stores.</strong> Accessibility metadata, and a checklist for each store.</li>
         </ol>
-        <p>Scribe will not be a Markdown writing app, will not make Kindle-only formats (Amazon takes EPUB), and will not support scripted or interactive books.</p>
+        <p>Scribe focuses cleanly on open, standard EPUB 3.3 book typography. It reads and writes pure XHTML and CSS, compiling production-ready books accepted by major readers, stores, and e-ink devices.</p>
         <p class="ornament" aria-hidden="true">&#10086;</p>
     </section>
 
@@ -63,15 +66,38 @@
         <h2 id="today-title"><span class="numeral">III.</span>Where it stands today</h2>
         <p>The studio you can open now makes a new EPUB book or opens an existing one, imports Markdown and plain text as chapters, and shows each chapter beside its code the way a reading system would. You can set the metadata, order and split chapters, build the contents, choose a cover, style the book, and add fonts, notes, and figures. It checks the whole book for problems and exports a valid <code>.epub</code>. It edits ordinary files without rewriting them and works offline.</p>
         <p class="note"><strong>No account, no tracking.</strong> Your work stays on your device. The only network feature is an optional one that you switch on yourself, to send a book to a reader on your own network.</p>
+        <p class="ornament" aria-hidden="true">&#10086;</p>
+    </section>
+
+    <section id="suite" class="chapter" aria-labelledby="suite-title">
+        <h2 id="suite-title"><span class="numeral">IV.</span>The Plainchant Suite</h2>
+        <p>Plainchant Scribe is the book-typesetting studio in the three-part Plainchant family:</p>
+        <ul>
+            <li><strong><a href="https://github.com/aedmark/plainchant">Plainchant</a> (the screenplay studio).</strong> The OG distraction-free screenwriting app. Type simple Fountain text; live formatting handles the industry machinery.</li>
+            <li><strong>The visual web studio.</strong> A lightweight HTML5, CSS, and JavaScript studio where clicking and styling on the Stage splices only the exact bytes touched (in the Plainchant repository collection on <a href="https://github.com/aedmark/">GitHub</a>).</li>
+            <li><strong>Plainchant Scribe (the book studio).</strong> Pure EPUB 3.3 book typesetting where chapters, stylesheets, and package files remain human-readable files on your desk.</li>
+        </ul>
     </section>
 </main>
 
 <footer class="site-foot">
     <div class="wrap">
-        <p>Plainchant Scribe &mdash; make the book, keep the files.</p>
-        <div class="foot-links">
+        <div class="foot-col">
+            <p class="foot-brand">Plainchant Scribe <span>Make the book. Keep the files.</span></p>
+            <p class="foot-credit">Designed &amp; coded by <a href="https://github.com/aedmark/">Andrew Edmark</a></p>
+        </div>
+        <div class="foot-links-group">
+            <span class="foot-group-label">Studio &amp; Docs</span>
+            <a href="app.html">Open Studio</a>
             <a href="docs/manual.html">Manual</a>
+            <a href="https://github.com/aedmark/plainchant-scribe">Source (GitHub)</a>
             <a href="LICENSE">Licence</a>
+        </div>
+        <div class="foot-links-group">
+            <span class="foot-group-label">Plainchant Suite</span>
+            <a href="https://github.com/aedmark/plainchant">Plainchant (Screenplay)</a>
+            <a href="https://github.com/aedmark/">Plainchant (Web Studio)</a>
+            <a href="index.html">Plainchant Scribe (EPUB)</a>
         </div>
     </div>
 </footer>
