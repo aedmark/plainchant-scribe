@@ -10,6 +10,7 @@ const cssLintChecker = CssLint.createChecker();
 // A book's problems come from BookCheck (P5-04, D-040); images' first bytes are read once, for their media type.
 const bookChecker = BookCheck.createChecker();
 const assetHeads = new Map();
+const FIXED_OK = new Set(['css-position', 'css-fixed-size', 'css-font-size', 'css-line-height']);
 // The last EPUBCheck run (P5-05, D-041): its rows, the book it ran on, and the files as they were then.
 let epubcheckRun = null;
 let problemsResult = { problems: [], errors: 0, warnings: 0 };
@@ -75,10 +76,14 @@ function bookProblems(entries) {
     const model = Book.read(e, { assets: assets }).model;
     const docs = model ? model.manifest.items.filter((i) => i.mediaType === 'application/xhtml+xml' && i.path && typeof e[i.path] === 'string').map((i) => i.path) : [];
     // P6-02: roles, page numbers, language tags, and reading order join the accessibility category.
-    const more = model ? [].concat(BookA11y.rows(model), BookRoles.rows(e, docs), BookPages.rows(e, model), BookLang.rows(e, docs), BookOrder.rows(e, model), BookMatter.rows(e, model), BookNcx.rows(e, model), BookImages.rows(model, infos)) : [];
+    const more = model ? [].concat(BookA11y.rows(model), BookRoles.rows(e, docs), BookPages.rows(e, model), BookLang.rows(e, docs), BookOrder.rows(e, model), BookMatter.rows(e, model), BookNcx.rows(e, model), BookImages.rows(model, infos), BookLayout.rows(e, model)) : [];
     // An NCX the author switched on in the Chapters tab is not worth the legacy note (P7-04).
     const ncxOwned = BookNcx.state(e, assets).owned;
-    return bookChecker.check(e, { assets: assets, heads: heads }).problems.filter((p) => !(ncxOwned && p.code === 'legacy-ncx')).concat(cssLintChecker.check(e).problems, more);
+    // Positioned layouts and pixel sizes are how fixed-layout pages are made (P7-01), so the reflow lint skips them there.
+    const fixed = model ? new Set(BookLayout.fixedDocs(e, assets)) : new Set();
+    const allFixed = model && BookLayout.state(e, assets).on;
+    const lint = cssLintChecker.check(e).problems.filter((p) => !(FIXED_OK.has(p.code) && (/\.css$/i.test(p.file) ? allFixed : fixed.has(p.file))));
+    return bookChecker.check(e, { assets: assets, heads: heads }).problems.filter((p) => !(ncxOwned && p.code === 'legacy-ncx')).concat(lint, more);
 }
 
 function runProblemsCheck() {

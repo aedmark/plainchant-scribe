@@ -396,6 +396,45 @@ if (!oracle.jar) {
         assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
     });
 
+    test('epubcheck: fixed-layout books Scribe writes pass with no messages, and BookLayout agrees on each broken one (P7-01)', () => {
+        const base = BookLayout.enable(ExampleBook.create({}).files, [], { width: 1200, height: 1600, spread: 'landscape' });
+        const c1 = 'OEBPS/text/chapter-1.xhtml', opf = 'OEBPS/content.opf';
+        const edit = (path, from, to) => Object.assign({}, base, { [path]: base[path].replace(from, to) });
+        const vp = (c) => edit(c1, 'content="width=1200, height=1600"', 'content="' + c + '"');
+        const good = {
+            plain: base,
+            'nav in spine': BookLayout.refresh(BookChapters.setNavInReading(base, true).entries, []),
+            'device keywords': vp('width=device-width, height=device-height'),
+            'spaces and semicolons': vp('width = 1200 ;height=1600'),
+            'square, no spreads': BookLayout.setSpread(BookLayout.setSize(base, [], 1600, 1600), [], 'none')
+        };
+        Object.keys(good).forEach((k) => {
+            const r = epubcheck(oracle.jar, good[k]);
+            assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], k + ': ' + describeMessages(r));
+            assert.deepEqual(BookLayout.rows(good[k], Book.read(good[k]).model).filter((x) => x.severity === 'error'), [], k);
+        });
+        // [case, files, EPUBCheck ID, BookLayout code]
+        const bad = [
+            ['no viewport', edit(c1, /\n\s*<meta name="viewport"[^>]*\/>/, ''), 'HTM-046', 'viewport-missing'],
+            ['syntax', vp('width=1200,, height=1600=3'), 'HTM-047', 'viewport-syntax'],
+            ['no height', vp('width=1200'), 'HTM_056', 'viewport-height-missing'],
+            ['bad value', vp('width=0, height=abc'), 'HTM_057', 'viewport-value'],
+            ['repeated', vp('width=1200, width=1300, height=1600'), 'HTM_059', 'viewport-repeated'],
+            ['layout value', edit(opf, '>pre-paginated<', '>fixed<'), 'RSC-005', 'rendition-value'],
+            ['layout twice', edit(opf, '<meta property="rendition:spread">', '<meta property="rendition:layout">pre-paginated</meta><meta property="rendition:spread">'), 'RSC-005', 'rendition-repeated'],
+            ['both sides', edit(opf, '<itemref idref="chapter-1"', '<itemref properties="page-spread-left page-spread-right" idref="chapter-1"'), 'RSC-005', 'page-spread-both'],
+            ['two overrides', edit(opf, '<itemref idref="chapter-1"', '<itemref properties="rendition:layout-reflowable rendition:layout-pre-paginated" idref="chapter-1"'), 'RSC-005', 'rendition-override-repeated']
+        ];
+        bad.forEach(([name, files, id, code]) => {
+            const r = epubcheck(oracle.jar, files);
+            assert.deepEqual(r.messages.filter((m) => m.severity === 'ERROR').map((m) => m.ID), [id], name + ': ' + describeMessages(r));
+            assert.ok(BookLayout.rows(files, Book.read(files).model).some((x) => x.severity === 'error' && x.code === code), name + ' gives ' + code);
+        });
+        const portrait = edit(opf, '>landscape<', '>portrait<');
+        assert.deepEqual(epubcheck(oracle.jar, portrait).messages.map((m) => m.severity + ' ' + m.ID), ['WARNING OPF-086']);
+        assert.deepEqual(BookLayout.rows(portrait, Book.read(portrait).model).map((x) => x.severity + ' ' + x.code), ['warning rendition-spread-portrait']);
+    });
+
     test('epubcheck: books with the NCX Scribe writes pass with no messages, nested, with pages, and with the contents page in the spine (P7-04)', () => {
         const rich = ncRich();
         rich['OEBPS/nav.xhtml'] = rich['OEBPS/nav.xhtml'].replace('text/chapter-3.xhtml#none', 'text/chapter-3.xhtml');

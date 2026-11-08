@@ -55,7 +55,7 @@ function drawBookStage() {
     // Stage editing (P2-06, D-024): the copy carries HtmlAst's data-pc-id stamps and the Design bridge, as web pages do.
     const stamped = Object.assign({}, projectFiles.entries, { [path]: HtmlAst.stamp(projectFiles.entries[path], currentHtmlAst) });
     const res = BookStage.assemble(stamped, path, projectAssetUrls, {
-        css: BookStage.readerCss(readerPrefs()) + '\n' + BRIDGE_CSS,
+        css: (isFixedStagePage() ? '' : BookStage.readerCss(readerPrefs()) + '\n') + BRIDGE_CSS,
         script: buildBridgeScript(selectedPcId)
     });
     const old = stageBookUrl;

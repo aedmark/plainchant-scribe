@@ -17,6 +17,7 @@ Each line says who handles the rule:
 - [ ] **Scribe** Book tab: title, language, author, and an identifier. Put the ISBN in the identifier if you have one.
 - [ ] **Scribe** A cover image in the Book tab, which also puts a cover page first in the reading order (D-029).
 - [ ] **Scribe** Review alt text… in the Book tab: every image is described or marked decorative (D-045).
+- [ ] **Scribe** A fixed-layout book (Book tab, Page layout; D-052) meets EPUB 3.3's fixed-layout rules, which the Problems tab checks. The stores' own fixed-layout rules were not read for this checklist.
 - [ ] **You** Open the exported `.epub` on a real device or reader app for each store you upload to. Scribe's Stage is not any store's reader.
 
 ## Kobo (Kobo Writing Life)

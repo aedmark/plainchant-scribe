@@ -729,6 +729,9 @@ body.shaded #editor {
 .stage-frame-wrap[data-device] { position: relative; background: var(--bg-sunken); border-color: transparent; box-shadow: none; }
 .stage-frame-wrap[data-device] #stageFrame { position: absolute; top: 0; left: 0; transform-origin: 0 0; outline: 1px solid var(--border-strong); box-shadow: var(--shadow-sm); }
 .stage-frame-wrap[data-device="eink"] #stageFrame { filter: grayscale(1); }
+#stageFacing { position: absolute; top: 0; left: 0; transform-origin: 0 0; border: 0; background: var(--stage-paper); outline: 1px solid var(--border-strong); box-shadow: var(--shadow-sm); pointer-events: none; }
+.stage-facing-hit { position: absolute; background: transparent; border: 0; padding: 0; cursor: pointer; }
+.stage-facing-hit:hover, .stage-facing-hit:focus-visible { outline: 2px solid var(--accent); }
 .page-nav[hidden] { display: none; }
 .page-nav output { min-width: 6.5rem; text-align: center; font-size: 0.76rem; color: var(--text-strong); font-variant-numeric: tabular-nums; }
 

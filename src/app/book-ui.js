@@ -157,6 +157,7 @@ function refreshBookPanel(force) {
     const newCRole = document.getElementById('bookNewCRole');
     if (!newCRole.options.length) roleOptions(newCRole, 'edt');
     if (typeof refreshCover === 'function') refreshCover();
+    if (typeof refreshLayoutUi === 'function') refreshLayoutUi();
     if (typeof refreshA11y === 'function') refreshA11y(r.model);
     if (typeof refreshStructure === 'function') refreshStructure(r.model);
     const newRole = document.getElementById('bookNewRole');

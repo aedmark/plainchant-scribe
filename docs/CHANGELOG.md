@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ### Added
 
+- **Fixed-layout books**: a Page layout section in the Book tab makes the whole book fixed layout, with one page size from a preset or typed, and two-page spreads none, in landscape, or always. The Stage shows each page at its size, scaled to fit, with the facing page beside it when spreads are on, and the Problems tab checks the page sizes and layout settings. Imported fixed-layout books now show as pages instead of flowing text, and their positioned CSS no longer draws warnings.
 - **Image checks for each store**: a new Images category in the Problems tab warns when an image is too large for Apple Books or Google Play Books, is CMYK, has transparent parts Kindle would show as white, is animated, or when the cover is the wrong format, too big, not portrait, or too small for Kobo or KDP. Each warning names the store.
 - **Save the cover as JPEG**: a button in the Cover section saves a JPEG copy of the cover for KDP's cover upload, without changing the book.
 

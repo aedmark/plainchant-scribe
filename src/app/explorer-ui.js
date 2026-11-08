@@ -39,7 +39,8 @@ function knownTreePaths() {
 
 function commitFileChange(next, change) {
     // P7-04, D-049: Scribe's own toc.ncx follows the contents in the same undo step.
-    if (isBookProject()) next = BookNcx.refresh(next, Object.keys(projectAssets || {}));
+    // P7-01, D-052: a new page in a fixed-layout book gets the book's page size in the same step.
+    if (isBookProject()) next = BookNcx.refresh(BookLayout.refresh(next, Object.keys(projectAssets || {})), Object.keys(projectAssets || {}));
     currentSnapshot = captureSnapshot();
     pushUndoState();
     projectFiles.entries = next;

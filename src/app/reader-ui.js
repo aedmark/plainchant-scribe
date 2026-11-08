@@ -40,7 +40,7 @@ function showReaderPrefs() {
 // Paged mode (P2-03, D-021): the Stage copy is laid out in columns one viewport wide (BookStage.readerCss), and a page
 // turn sets the root's scrollLeft to a multiple of that width. Pages count within the open chapter.
 function pagedDoc() {
-    if (!stageBookUrl || readerPrefs().mode !== 'paged') return null;
+    if (!stageBookUrl || readerPrefs().mode !== 'paged' || isFixedStagePage()) return null;
     try { return stageFrame.contentDocument; } catch (e) { return null; }
 }
 
@@ -112,10 +112,12 @@ function pageKey(e) {
 
 // Called by stage-book.js each time a chapter copy has loaded.
 function onBookStageLoad(doc) {
-    applyReaderSize(doc);
+    // A fixed-layout page (P7-01) keeps its own type and is one page: no reader size, no paging.
+    const fixed = isFixedStagePage();
+    if (!fixed) applyReaderSize(doc);
     if (stagePage.path !== activeHtmlFile) stagePage = { path: activeHtmlFile, index: 0, count: 1 };
     doc.addEventListener('keydown', pageKey);
-    if (readerPrefs().mode === 'paged') {
+    if (readerPrefs().mode === 'paged' && !fixed) {
         const keep = () => goToPage(stagePage.index);
         doc.defaultView.addEventListener('resize', keep);
         // Anything else that scrolls the page (find in page, focus) snaps back to a page boundary.
@@ -131,8 +133,9 @@ function onBookStageLoad(doc) {
 
 function syncReaderUi() {
     const book = isBookProject();
-    readerWrap.hidden = !book;
-    if (!book) setReaderPanel(false);
+    const fixed = book && isFixedStagePage();
+    readerWrap.hidden = !book || fixed;
+    if (!book || fixed) setReaderPanel(false);
     if (typeof layoutDevice === 'function') layoutDevice();
     if (typeof syncChapterNav === 'function') syncChapterNav();
     if (typeof syncBookTab === 'function') syncBookTab();

@@ -12,6 +12,8 @@ function clearDeviceFrame() {
 }
 
 function layoutDevice() {
+    // A fixed-layout page (P7-01) is drawn at its own size instead of a device's.
+    if (typeof layoutFixedPage === 'function' && layoutFixedPage()) return;
     const book = isBookProject();
     const p = readerPrefs();
     deviceSwitch.hidden = !book;

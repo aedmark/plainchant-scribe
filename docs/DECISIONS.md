@@ -44,7 +44,7 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 **Alternatives:** Forking with full history (rejected: a long log mostly about features Scribe removes); a monorepo (rejected: different product, release cycle, and storage names).
 **Consequences:** `git blame` stops at the copy; the lineage digest and the commit hash are the trail. Fixes to code Scribe inherited are not automatically shared in either direction.
 
-## D-004 EPUB 3.3, reflowable first; fixed layout and the EPUB 2 fallback later  (2026-11-03, status: accepted)
+## D-004 EPUB 3.3, reflowable first; fixed layout and the EPUB 2 fallback later  (2026-11-03, status: accepted; point 2 superseded by D-049 and D-052)
 **Context:** The maintainer agreed (2026-11-03) to target the current W3C EPUB 3.3 recommendation, reflowable books first.
 **Decision:** 1. Books are EPUB 3.3 reflowable with XHTML content documents, a nav document, and a package document. 2. Fixed layout (`P7-01`) and the `toc.ncx` fallback (`P7-04`) are deferred. 3. Scripted and interactive content is out of scope; scripts in imported books are preserved but never run in the Reading Stage.
 **Alternatives:** Fixed layout first (rejected: far fewer authors need it, and its preview needs a different Stage); EPUB 2 (rejected: superseded).
@@ -494,6 +494,25 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 - The checks read each image in full once per change to its bytes; a 25 MB image is read and, if it may be transparent, decoded.
 - The limits will drift as stores change their rules; they live in `BookImages.LIMITS` and STORES.md and move together.
 **Review trigger:** a store changes a limit, an author needs an in-studio resize, or a store starts taking SVG covers.
+
+## D-052 Fixed-layout books, whole-book  (2026-11-07, status: accepted)
+**Context:** `P7-01`, deferred by D-004 point 2. Scribe had no fixed-layout code: an imported picture book showed as reflowable text, and its positioned layout drew CSS lint warnings. EPUB 3.3 §8.2.2 defines `rendition:layout`, `rendition:orientation`, and `rendition:spread` (each once, without refines, with spine overrides), spread placement (`page-spread-left`/`right`, `rendition:page-spread-center`), and requires a fixed-layout XHTML document's first viewport meta tag to give one positive width and height (§8.2.2.6, Appendix F); SVG pages use `viewBox`. The maintainer chose each point below on 2026-11-07.
+**Decision:**
+1. Whole-book: a switch in the Book tab's Page layout section makes the book `pre-paginated` and writes one size into the viewport of every spine XHTML page (after its `<title>`). Per-page overrides are not authored; those in imported books are kept, checked, and followed on the Stage. Turning the switch off removes the rendition metas and those pages' viewports after a confirmation.
+2. Page size from four presets (1200 × 1600, 1600 × 1200, 1536 × 2048, 1600 × 1600) or typed, whole pixels up to 10,000; changing it rewrites every fixed page's viewport. `BookLayout.refresh` runs in `commitFileChange`, so a page added later gets the size most pages use in the same undo step; it never touches a reflowable book.
+3. Spreads book-wide: `rendition:spread` none, landscape, or both. Per-page placement stays in the code editor. The Stage pairs pages as a spread fills: the first page in the second slot (a recto), `page-spread-*` moving a page, a centred page alone, and right to left when the spine says so.
+4. On the Stage a fixed page is drawn at its viewport size and scaled to fit, the reader settings (paged mode, size, margins, theme, devices) are hidden and not applied, and Stage editing stays. With spreads on (always, or landscape when the Stage is wider than tall) the facing page shows beside it in a second frame whose sandbox runs no scripts, and a click opens it. A page sized with `device-width`/`device-height` fills the Stage.
+5. Checks, as EPUBCheck 5.4.0 makes them: errors for a missing viewport (HTM-046), its syntax (HTM-047), a missing dimension (HTM-056), a bad value (HTM-057), a repeated one (HTM-059), an SVG page without `viewBox` (HTM-048), and, from its package schema (RSC-005), a bad or repeated rendition value, one used with refines, two overrides of one kind, or a page on both sides; a warning for the deprecated portrait spread (OPF-086); notes for a second viewport and a viewport in a reflowable page (EPUBCheck's usage-level HTM-060a/b). The CSS lint skips `css-position`, `css-fixed-size`, `css-font-size`, and `css-line-height` in fixed pages, and in stylesheets when the whole book is fixed.
+**Alternatives:**
+- Mixed books authored per chapter (rejected for now: more states to preview and test; imported ones still work).
+- Read and check only (rejected: authors of picture books could not start one in Scribe).
+- Per-page left, right, and centre controls (rejected for now: the code editor covers the rare book that needs them).
+- Preview only, with Stage editing off for fixed pages (rejected: text edits on a designed page are still useful).
+**Consequences:**
+- A fixed-layout book's text cannot be resized by readers; the switch says so.
+- Store-specific fixed-layout rules were not read for STORES.md; Scribe checks EPUB 3.3 only.
+- `rendition:orientation` is read and checked but not written.
+**Review trigger:** authors need mixed books or per-page placement, or a store's fixed-layout rules turn out to need more than EPUB 3.3's.
 
 ## Open questions
 

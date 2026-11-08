@@ -231,6 +231,8 @@
         </aside>
         <div id="stage-frame-wrap" class="stage-frame-wrap">
             <iframe id="stageFrame" title="WYSIWYG Stage" sandbox="allow-scripts allow-same-origin"></iframe>
+            <iframe id="stageFacing" title="Facing page" sandbox="allow-same-origin" tabindex="-1" hidden></iframe>
+            <button type="button" id="stageFacingHit" class="stage-facing-hit" hidden></button>
         </div>
     </div>
 
@@ -404,6 +406,17 @@
                             <button type="button" class="mini" id="coverJpegBtn" title="Save a JPEG copy of the cover for a store's cover upload; the book is not changed" disabled>Save as JPEG&hellip;</button>
                             <button type="button" class="mini" id="coverRemoveBtn" disabled>Remove</button>
                         </div>
+                    </div>
+                </div>
+                <h4 class="book-sub" id="fxlHeading">Page layout</h4>
+                <div class="book-layout" role="group" aria-labelledby="fxlHeading">
+                    <p class="parts-help">Reflowable text fits any screen and lets readers change the type. Fixed layout keeps each page exactly as designed, for picture books, comics, and cookbooks, but readers cannot resize its text.</p>
+                    <label class="chapters-option"><input type="checkbox" id="fxlBox"> Fixed layout: one designed page per chapter</label>
+                    <div id="fxlOptions" class="insp-grid" hidden>
+                        <label class="insp-field insp-wide"><span>Page size</span><select id="fxlPreset"></select></label>
+                        <label class="insp-field"><span>Width (px)</span><input type="number" id="fxlWidth" min="1" max="10000" step="1"></label>
+                        <label class="insp-field"><span>Height (px)</span><input type="number" id="fxlHeight" min="1" max="10000" step="1"></label>
+                        <label class="insp-field insp-wide"><span>Two-page spreads</span><select id="fxlSpread"><option value="none">None</option><option value="landscape">When the screen is landscape</option><option value="both">Always</option><option value="" hidden>Left to the reading app</option></select></label>
                     </div>
                 </div>
                 <h4 class="book-sub">Creators</h4>
@@ -1103,6 +1116,7 @@
 <script src="src/book-matter.js"></script>
 <script src="src/book-ncx.js"></script>
 <script src="src/book-images.js"></script>
+<script src="src/book-layout.js"></script>
 <script src="src/docx.js"></script>
 <script src="src/docx-import.js"></script>
 <script src="src/book-page.js"></script>
@@ -1131,6 +1145,7 @@
 <script src="src/app/spine-ui.js"></script>
 <script src="src/app/contents-ui.js"></script>
 <script src="src/app/cover-ui.js"></script>
+<script src="src/app/fixed-layout-ui.js"></script>
 <script src="src/app/a11y-ui.js"></script>
 <script src="src/app/structure-ui.js"></script>
 <script src="src/app/matter-ui.js"></script>
