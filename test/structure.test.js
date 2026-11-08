@@ -395,6 +395,8 @@ test('desktop: .epub files are associated with the app, as an editor that is nev
     assert.includes(shell, 'given.lock().unwrap().remove(&path)', 'the webview reads only a path the shell gave it, once');
     assert.includes(shell, 'const MAX_BYTES: u64 = 200 * 1024 * 1024;');
     assert.equal(Epub.LIMITS.total, 200 * 1024 * 1024, 'the shell refuses what Epub.read would');
+    ['deb', 'rpm'].forEach((k) => assert.equal(conf.bundle.linux[k].desktopTemplate, 'linux/plainchant-scribe.desktop', k));
+    assert.ok(/^Exec=\{\{exec\}\} %F$/m.test(readRoot('src-tauri/linux/plainchant-scribe.desktop')), 'Linux launchers pass the opened files (Desktop Entry Specification 1.5, the Exec key)');
     assert.deepEqual(JSON.parse(readRoot('src-tauri/capabilities/default.json')).permissions, ['core:event:allow-listen', 'core:event:allow-unlisten'], 'the window may hear books-opened, and nothing more');
     assert.includes(readRoot('src/app/main.js'), 'listenForDesktopBooks();');
 });

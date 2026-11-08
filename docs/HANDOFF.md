@@ -95,7 +95,7 @@ _Last updated: 2026-11-07, on `master`: Phases 0 to 4 are done (`P3-07` last, fr
 ## Next steps (in order)
 
 1. The maintainer tries Send to reader in the desktop app (`npm run tauri:dev`) with a phone on the same Wi-Fi; record what they saw in `P5-07`.
-2. Phase 7 is not committed beyond `P7-03`, `P7-04`, and `P7-05`: ask the maintainer which item comes next. `P7-05`'s association lives only in installers, which need the Tauri CLI (`cargo install tauri-cli`, not installed here); build one and double-click a `.epub` to see it.
+2. Phase 7 is not committed beyond `P7-03`, `P7-04`, and `P7-05`: ask the maintainer which item comes next. `P7-05` was checked through the Linux `.deb` and `.rpm` (`cargo tauri build --bundles deb,rpm` in `src-tauri/`, tauri-cli 2.12.4); the Windows and macOS installers are untried.
 3. Known gap for later: images imported through Assets join the manifest only when they become the cover or a figure; the Problems tab now warns about them (not-in-manifest), but nothing lists them yet.
 4. Re-read the store pages in STORES.md before relying on them; they were read on 2026-11-06.
 

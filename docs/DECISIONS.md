@@ -472,6 +472,7 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 - Default handler for `.epub` (rejected: authors have readers).
 - Reuse the library copy of a book opened before (rejected: it would ignore changes made on disk since).
 **Consequences:**
+- Linux installers use `src-tauri/linux/plainchant-scribe.desktop`, Tauri's template with `%F` added to `Exec`, since without a field code only some launchers pass the file. On Linux the rank has no effect: if Scribe is the only program for `.epub`, the desktop may pick it as the default.
 - Only the installers carry the association; `npm run tauri:dev` and `cargo build` do not, though the dev binary opens a path given to it.
 - An `.epub` exported from Scribe and opened again becomes another book in the library.
 **Review trigger:** authors ask to open a book back into the library entry it came from, or the browser build gains file handling (the web app manifest's `file_handlers`).

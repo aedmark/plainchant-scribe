@@ -30,7 +30,7 @@ A book is a set of files in the Studio's working copy: `mimetype`, `META-INF/con
 | Send to reader (preview server) | `src-tauri/src/preview.rs`, `src/book-page.js`, `src/qr.js`, `src/preview.js`, `src/app/preview-ui.js` | Done (D-043): book page, live `.epub`, QR code | `P5-07` |
 | Manuscript look (colour and type variables, light and dark) | `src/styles.css`, `src/home.css`, `fonts/`, `src/app/settings.js` | Rewritten (done, D-008) | `P0-06` |
 | Desktop shell | `src-tauri/` | Inherited, renamed | `P0-02`, `P0-03` |
-| Opening `.epub` files from the desktop | `bundle.fileAssociations` in `src-tauri/tauri.conf.json`, `src-tauri/src/open_files.rs`, `src-tauri/capabilities/default.json`, `openDesktopBooks` in `src/app/import.js` | Done (D-050) | `P7-05` |
+| Opening `.epub` files from the desktop | `bundle.fileAssociations` in `src-tauri/tauri.conf.json` (with the Linux desktop template `src-tauri/linux/plainchant-scribe.desktop`), `src-tauri/src/open_files.rs`, `src-tauri/capabilities/default.json`, `openDesktopBooks` in `src/app/import.js` | Done (D-050) | `P7-05` |
 
 File names are proposals; the roadmap items own the interfaces.
 

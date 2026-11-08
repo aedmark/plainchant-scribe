@@ -40,6 +40,14 @@
         "role": "Editor",
         "rank": "Alternate"
       }
-    ]
+    ],
+    "linux": {
+      "deb": {
+        "desktopTemplate": "linux/plainchant-scribe.desktop"
+      },
+      "rpm": {
+        "desktopTemplate": "linux/plainchant-scribe.desktop"
+      }
+    }
   }
 }
