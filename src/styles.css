@@ -1353,6 +1353,9 @@ body.shaded #editor {
 .problem-row { cursor: pointer; text-align: left; width: 100%; background: none; border-top: 0; border-left: 0; border-right: 0; color: inherit; font: inherit; }
 .problem-row:hover, .problem-row:focus-visible { background: var(--bg-raised); outline: none; }
 .problem-row .list-level { flex-basis: 3.4rem; }
+.problem-fix-row { display: flex; align-items: center; gap: 0.4rem; }
+.problem-fix-row > .problem-row { flex: 1; min-width: 0; }
+.problem-fix-row > .mini { flex: none; margin-right: 0.4rem; }
 .problem-warning .list-level { color: var(--warn); }
 .problem-error .list-level { color: var(--danger-soft-text); }
 .problem-row .list-src { text-decoration: none; }

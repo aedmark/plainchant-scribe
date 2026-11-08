@@ -477,6 +477,24 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 - An `.epub` exported from Scribe and opened again becomes another book in the library.
 **Review trigger:** authors ask to open a book back into the library entry it came from, or the browser build gains file handling (the web app manifest's `file_handlers`).
 
+## D-051 Image checks against the stores' limits, a JPEG cover copy, and listing imported images  (2026-11-07, status: accepted)
+**Context:** `P7-02` was written as "SVG cover and image tooling". D-029 had already rejected an SVG cover, since Kobo, Apple Books, and KDP want a JPEG or PNG one, and `docs/STORES.md` left the image limits to the author ("You"). Images imported through Assets were not listed in the manifest, so they were left out of the export. The maintainer chose each point below on 2026-11-07.
+**Decision:**
+1. No SVG cover; D-029 stands. `P7-02` becomes image checks: `BookImages.inspect` reads PNG (PNG 1.2 IHDR, tRNS, and APNG acTL), JPEG (ITU-T T.81 B.1.1.3 start-of-frame), GIF (GIF89a), and WebP (RIFF VP8, VP8L, VP8X) headers without decoding pixels. A format that can hold transparency is decoded once in the browser to see whether any pixel is transparent, so an opaque RGBA PNG is not flagged.
+2. The limits are the ones STORES.md recorded on 2026-11-06, shown as warnings in a new Images category of the Problems tab, each naming its store. None blocks export, since the author may not sell there. SVG images have no pixel size and get no rows.
+3. Save as JPEG… in the Cover section saves a JPEG copy of the cover at its own size, transparency made white, for KDP's cover upload, which does not take PNG. The book is not changed; the desktop app uses a native Save dialog (`save_cover_file`).
+4. An image imported into a book through Assets joins the manifest in the same undo step. An image already unlisted gets Add to manifest in its Problems row. Formats EPUB 3.3 has no core media type for (BMP, ICO, AVIF) are imported but not listed, and the Problems tab still reports them.
+**Alternatives:**
+- An SVG cover, with a warning (rejected: D-029's reasons stand, and no store in STORES.md takes one).
+- Shrink and convert-to-JPEG buttons that rewrite images in the book (rejected: a canvas re-encode drops colour profiles and metadata, and it rewrites the author's files).
+- Generate the cover as JPEG (rejected: its text would get JPEG artefacts).
+- Info rows (rejected: easy to miss before an upload).
+**Consequences:**
+- An image listed on import ships with the book even if no chapter uses it yet; EPUBCheck 5.4.0 accepts that with no messages.
+- The checks read each image in full once per change to its bytes; a 25 MB image is read and, if it may be transparent, decoded.
+- The limits will drift as stores change their rules; they live in `BookImages.LIMITS` and STORES.md and move together.
+**Review trigger:** a store changes a limit, an author needs an in-studio resize, or a store starts taking SVG covers.
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

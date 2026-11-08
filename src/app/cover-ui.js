@@ -19,6 +19,7 @@ function refreshCover() {
     if (url) { coverThumb.src = url; coverThumb.alt = 'The cover, ' + c.path.split('/').pop(); }
     coverStatus.textContent = c && c.path ? c.path + (c.page ? ', shown on ' + c.page.split('/').pop() : '') : 'No cover yet.';
     document.getElementById('coverRemoveBtn').disabled = !(c && (c.path || c.page));
+    document.getElementById('coverJpegBtn').disabled = !url;
 }
 
 // Commits a BookCover result as one undo step; `asset` is a new image { path, blob } to add with it.
@@ -98,3 +99,32 @@ document.getElementById('coverRemoveBtn').addEventListener('click', async () => 
     if (!await askConfirm({ title: 'Remove the cover?', text: 'The image stops being the cover and the cover page is deleted. The image itself stays in the book. Undo brings it all back.', confirm: 'Remove cover' })) return;
     coverAction(() => BookCover.remove(projectFiles.entries, coverAssets()), null, 'Removed the cover.');
 });
+
+// Save as JPEG (P7-02, D-051): KDP's cover upload takes JPEG or TIFF, not PNG, so this saves a JPEG copy at the cover's
+// own size, with any transparency made white as Kindle would. The book is not changed.
+async function saveCoverJpeg() {
+    let c = null;
+    try { c = BookCover.current(projectFiles.entries, coverAssets()); } catch (e) { c = null; }
+    const url = c && c.path ? projectAssetUrls[c.path] : null;
+    if (!url) { showNotice('This book has no cover image to save.', true); return; }
+    const img = new Image();
+    try { img.src = url; await img.decode(); } catch (e) { showNotice(c.path + ' could not be drawn.', true); return; }
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+    const blob = await new Promise((done) => canvas.toBlob(done, 'image/jpeg', 0.92));
+    if (!blob) { showNotice('The cover could not be saved as JPEG.', true); return; }
+    const model = Book.read(projectFiles.entries).model;
+    const name = BookExport.fileName(model && model.metadata.title).replace(/\.epub$/, '') + '-cover.jpg';
+    let where = name;
+    if (hasTauri()) {
+        try { where = await tauriInvoke('save_cover_file', { name: name, data: await blobToBase64(blob) }); } catch (e) { showNotice(String(e), true); return; }
+        if (!where) return;
+    } else downloadFile(name, blob, 'image/jpeg');
+    showNotice('Saved the cover as ' + where + ' (' + canvas.width + ' × ' + canvas.height + ', ' + Math.max(1, Math.round(blob.size / 1024)) + ' KB), for a store\'s cover upload. The book still uses ' + c.path.split('/').pop() + '.');
+}
+document.getElementById('coverJpegBtn').addEventListener('click', saveCoverJpeg);

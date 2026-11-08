@@ -8,6 +8,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ### Added
 
+- **Image checks for each store**: a new Images category in the Problems tab warns when an image is too large for Apple Books or Google Play Books, is CMYK, has transparent parts Kindle would show as white, is animated, or when the cover is the wrong format, too big, not portrait, or too small for Kobo or KDP. Each warning names the store.
+- **Save the cover as JPEG**: a button in the Cover section saves a JPEG copy of the cover for KDP's cover upload, without changing the book.
+
 - **Open books from the desktop**: installed builds list Scribe under Open With for `.epub` files, without making it the default reader. A book double-clicked or opened with Scribe opens as a new book; if Scribe is already running, it opens in that window, which comes to the front.
 - **EPUB 2 contents for older readers**: a Chapters tab switch adds `toc.ncx`, the table of contents EPUB 2 reading systems and some converters read, and keeps it in step with the contents as you edit and when you export. An NCX that came with an imported book is kept, checked in the Problems tab (including its links), and can be regenerated (`P7-04`, `D-049`).
 - **Import Word documents**: Import text… in the Chapters tab now takes `.docx` files, and Open file… or a drop makes a new book from one, with its title and author. Each Heading 1 starts a chapter; bold, italic, small caps, links, footnotes and endnotes, lists, tables, images with their alt text and captions, block quotes, and scene breaks come across, and Word's fonts and spacing are left to the Layout tab (`P7-03`, `D-048`).
@@ -44,6 +47,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ### Fixed
 
+- **Imported images are exported.** Images added through Assets to a book are now listed in `content.opf`, so they are exported with it; an image left unlisted before has an Add to manifest button in its Problems row.
 - **Export keeps linked records.** A book whose package links a record inside it, such as the `onix.xml` in Standard Ebooks books, lost that file on export, and the Problems tab called it unlisted. Both are fixed (EPUB 3.3 §5.5.6).
 - **Updates show on the next load.** The offline copy used to keep serving the old app after an update until the browser's site data was cleared; now the app is fetched fresh whenever the server can be reached, and the offline copy is used only when it cannot (`P0-07`, `D-019`).
 

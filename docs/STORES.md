@@ -28,7 +28,7 @@ Read: [File Types & Sizes](https://kobowritinglife.zendesk.com/hc/en-us/articles
 - [ ] **Scribe / You** Kobo validates every upload. Critical errors block publishing; non-critical ones do not, except for OverDrive, which needs none at all. Kobo's guide says it runs EPUBCheck 4.2.6, older than the 5.4.0 Scribe is tested with, so results may differ.
 - [ ] **Scribe** The cover is in its own XHTML file (Kobo's guide requires this; Scribe's `cover.xhtml`, D-029).
 - [ ] **Scribe** Kobo's guide shows the EPUB 2 `<meta name="cover" content="…"/>` pointing to the cover item. Setting a cover in the Book tab writes it, and removing the cover removes it (D-047).
-- [ ] **You** The cover image is JPG or PNG, portrait, and under 5 MB. Kobo suggests a width of ¾ of the height (3:4). Scribe's generated cover is 1600 × 2560 (5:8), which is portrait but narrower.
+- [ ] **Scribe** The cover image is JPG or PNG, portrait, and under 5 MB; the Problems tab's Images category warns when it is not (D-051). Kobo suggests a width of ¾ of the height (3:4). Scribe's generated cover is 1600 × 2560 (5:8), which is portrait but narrower.
 - [ ] **Scribe** A `toc` nav. Kobo ignores an NCX in EPUB 3 books, so the nav is what it reads (P1-05).
 - [ ] **You** Embedded fonts are TTF, OTF, or WOFF 1.0 (P4-03 embeds TTF and OTF). Kobo advises against naming fonts in CSS that the book does not embed.
 
@@ -42,7 +42,7 @@ Read: [Apple Books Asset Guide 5.3.1](https://help.apple.com/itc/booksassetguide
 - [ ] **You** No leading or trailing spaces in metadata values (required since 5.3.1). Scribe does not trim what you type.
 - [ ] **Scribe** A `toc` nav (required for every book). The page list is optional (D-045 builds one).
 - [ ] **You** At least one spine item is in the reading order (`linear="yes"`, required). New books and chapters are linear, and Scribe does not check this.
-- [ ] **You** Images inside the book are JPEG or PNG in RGB (sRGB recommended) and at most 5.6 million pixels each. Scribe's generated cover is 4.1 million. Apple says it rejects books whose images carry text that should be text.
+- [ ] **Scribe** Images inside the book are JPEG or PNG in RGB (sRGB recommended) and at most 5.6 million pixels each; the Images category warns about GIF, WebP, CMYK, and larger images (D-051). **You** choose sRGB. Scribe's generated cover is 4.1 million. Apple says it rejects books whose images carry text that should be text.
 - [ ] **Scribe** Every image has an `alt` attribute (required). Review alt text… and the Problems tab find the missing ones.
 - [ ] **Store** The marketing cover, uploaded separately: JPEG or PNG, RGB, at least 1400 pixels on the shorter side, not enlarged from a smaller image. The generated cover is 1600 pixels wide.
 - [ ] **You** Embedded fonts are OpenType, TrueType, or SVG and declared in both the manifest and the CSS (P4-03 does both). Apple also asks for its `ibooks:specified-fonts` meta set to `true`, which Scribe does not write.
@@ -59,10 +59,10 @@ Scribe exports EPUB only; KDP converts it for Kindle (D-006). Read: [What file f
 - [ ] **You** Kindle shows two levels of contents; deeper entries are not reachable from its menu.
 - [ ] **Scribe** The contents are in reading order (required). The Problems tab's `toc-order` warning catches one that is not (D-045).
 - [ ] **Scribe** Cover and toc landmarks, which Kindle's menu uses; without them those entries are greyed out. Setting a cover adds the cover landmark (D-029). The contents switch above adds the toc landmark, and Generate contents… keeps it (D-028, D-047).
-- [ ] **You** No transparent images (made white) and no TIFF or animated GIF inside the book. Images of text are better as text.
+- [ ] **Scribe** No transparent images (made white) and no TIFF or animated GIF inside the book; the Images category warns about transparent pixels and animation (D-051), and TIFF is not an EPUB core media type, so the Package category reports it. Images of text are better as text.
 - [ ] **Scribe** Every image has alt text; decorative images have `alt=""` (KDP's image guidelines). Review alt text… (D-045).
-- [ ] **Store** The cover, uploaded separately: JPEG or TIFF, RGB, under 50 MB; ideally 2560 × 1600 (height × width), at least 1000 × 625. The generated cover is 2560 × 1600 but PNG, so convert it to JPEG for this upload.
-- [ ] **You** The cover inside the book is full-page and at least 1200 pixels in width or height. The generated cover is.
+- [ ] **Store** The cover, uploaded separately: JPEG or TIFF, RGB, under 50 MB; ideally 2560 × 1600 (height × width), at least 1000 × 625. The generated cover is 2560 × 1600 but PNG: Save as JPEG… in the Cover section makes the copy for this upload (D-051).
+- [ ] **Scribe** The cover inside the book is full-page and at least 1200 pixels in width or height; the Images category warns when it is smaller (D-051). The generated cover is.
 
 ## Google Play Books
 
@@ -73,7 +73,7 @@ Read: [EPUB files](https://support.google.com/books/partner/answer/3316879) and 
 - [ ] **Scribe** The cover image is inside the `.epub` (required; a separate cover file is optional).
 - [ ] **You** Name the file after the electronic ISBN (`9781234567890.epub`). Scribe names it after the title (`BookExport.fileName`).
 - [ ] **You** The whole book is in the file; no excerpts or samples.
-- [ ] **You** Images are static GIF, JPEG, PNG, or SVG, at most 3200 pixels wide or tall (including the `width` and `height` attributes). Scribe's generated cover is 2560 pixels tall.
+- [ ] **Scribe** Images are static GIF, JPEG, PNG, or SVG, at most 3200 pixels wide or tall; the Images category warns about larger and animated ones (D-051). **You** check the `width` and `height` attributes, which Scribe does not. Scribe's generated cover is 2560 pixels tall.
 - [ ] **Store** A separate cover file, if you send one: JPEG, PNG, TIFF, or PDF, from 640 to 7200 pixels; each file under 2 GB.
 - [ ] **Scribe** Google's reader shows only the `toc` nav, not the landmarks or page list.
 - [ ] **You** No JavaScript or MathML; Google does not support them. Scribe writes neither.

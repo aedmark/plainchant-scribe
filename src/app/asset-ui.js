@@ -199,8 +199,22 @@ function assetImageFolder() {
     return model ? model.opfPath.slice(0, model.opfPath.lastIndexOf('/') + 1) + 'images' : 'images';
 }
 
+// In a book, imported images join the manifest in the same undo step, so they are exported (P7-02, D-051). A format
+// EPUB 3.3 has no core media type for (BMP, ICO, AVIF) is added but not listed; the Problems tab reports it.
+function addBookImages(added) {
+    const assets = Object.keys(projectAssets).concat(added.map((a) => a.path));
+    let next = projectFiles.entries, tree = projectFiles.tree;
+    added.forEach((a) => {
+        if (BookBlocks.mediaTypeFor(a.path)) { try { next = BookBlocks.listImage(next, a.path, assets); } catch (e) { /* an unreadable OPF: the image is still added */ } }
+        if (Array.isArray(tree)) tree = Project.treeAfter(tree, { type: 'add', path: a.path, is_text: false });
+    });
+    commitFileChange(next, { tree: tree, openTabs: openTabs, activeFile: activeFile, activeHtmlFile: activeHtmlFile, apply: () => added.forEach((a) => addProjectAsset(a.path, a.file)) });
+    if (typeof scheduleProblemsCheck === 'function') scheduleProblemsCheck();
+}
+
 function addImageFiles(files) {
     ensureEntries();
+    if (isBookProject()) syncBufferFromEditor();
     const taken = Object.keys(projectFiles.entries).concat(Object.keys(projectAssets), (projectFiles.tree || []).map((t) => t.path));
     let total = projectAssetBytes();
     const added = [];
@@ -210,17 +224,22 @@ function addImageFiles(files) {
         if (file.size > ASSET_MAX_FILE_BYTES || total + file.size > ASSET_MAX_TOTAL_BYTES) { skipped.push(file.name + ' (too large)'); return; }
         const path = ImageLib.uniquePath(taken, file.name, assetImageFolder());
         taken.push(path);
-        if (!added.length) beginAssetChange();
-        addProjectAsset(path, file);
         total += file.size;
-        if (Array.isArray(projectFiles.tree)) projectFiles.tree = Project.treeAfter(projectFiles.tree, { type: 'add', path: path, is_text: false });
-        added.push(path);
+        added.push({ path: path, file: file });
     });
     if (added.length) {
-        finishAssetChange();
+        if (isBookProject()) addBookImages(added);
+        else {
+            beginAssetChange();
+            added.forEach((a) => {
+                addProjectAsset(a.path, a.file);
+                if (Array.isArray(projectFiles.tree)) projectFiles.tree = Project.treeAfter(projectFiles.tree, { type: 'add', path: a.path, is_text: false });
+            });
+            finishAssetChange();
+        }
         if (assetsModal.classList.contains('active')) renderAssets();
     }
-    showNotice((added.length ? 'Added ' + added.join(', ') : 'No images added') + (skipped.length ? '. Skipped: ' + skipped.join(', ') + '.' : '.'), !added.length);
+    showNotice((added.length ? 'Added ' + added.map((a) => a.path).join(', ') : 'No images added') + (skipped.length ? '. Skipped: ' + skipped.join(', ') + '.' : '.'), !added.length);
 }
 
 document.getElementById('assetsBtn').addEventListener('click', () => openAssetManager());

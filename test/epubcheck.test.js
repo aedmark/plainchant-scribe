@@ -387,6 +387,15 @@ if (!oracle.jar) {
         assert.deepEqual(gone.messages.map((m) => m.severity + ' ' + m.ID), ['WARNING RSC-007w']);
     });
 
+    test('epubcheck: an image imported into a book and listed but not used yet passes with no messages (P7-02)', () => {
+        const png = Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'));
+        const files = BookBlocks.listImage(ExampleBook.create({}).files, 'OEBPS/images/later.png', ['OEBPS/images/later.png']);
+        files['OEBPS/images/later.png'] = png;
+        assert.deepEqual(BookImages.inspect(png), { format: 'png', width: 1, height: 1, animated: false, cmyk: false, mayHaveAlpha: true });
+        const r = epubcheck(oracle.jar, files);
+        assert.deepEqual(r.messages.map((m) => m.severity + ' ' + m.ID), [], describeMessages(r));
+    });
+
     test('epubcheck: books with the NCX Scribe writes pass with no messages, nested, with pages, and with the contents page in the spine (P7-04)', () => {
         const rich = ncRich();
         rich['OEBPS/nav.xhtml'] = rich['OEBPS/nav.xhtml'].replace('text/chapter-3.xhtml#none', 'text/chapter-3.xhtml');

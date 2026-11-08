@@ -401,6 +401,7 @@
                         <div class="book-cover-actions">
                             <button type="button" class="mini" id="coverChooseBtn">Choose image&hellip;</button>
                             <button type="button" class="mini" id="coverGenerateBtn">Generate&hellip;</button>
+                            <button type="button" class="mini" id="coverJpegBtn" title="Save a JPEG copy of the cover for a store's cover upload; the book is not changed" disabled>Save as JPEG&hellip;</button>
                             <button type="button" class="mini" id="coverRemoveBtn" disabled>Remove</button>
                         </div>
                     </div>
@@ -587,6 +588,7 @@
                 <button type="button" class="mini filter-btn problems-filter-btn" data-filter="accessibility" aria-pressed="false" title="Missing alt text, heading order, labels, and page language">Accessibility</button>
                 <button type="button" class="mini filter-btn problems-filter-btn" data-filter="markup" aria-pressed="false" title="Duplicate ids, unclosed or stray tags, and obsolete elements">Markup</button>
                 <button type="button" class="mini filter-btn problems-filter-btn" data-filter="stylesheets" aria-pressed="false" title="In a book: CSS that reading systems handle badly or not at all, in stylesheets and style attributes">Stylesheets</button>
+                <button type="button" class="mini filter-btn problems-filter-btn" data-filter="images" aria-pressed="false" title="In a book: images over a store's limits for size, colour, transparency, or animation, and the cover's own rules" hidden>Images</button>
                 <button type="button" class="mini filter-btn problems-filter-btn" data-filter="epubcheck" aria-pressed="false" title="In the desktop app: the messages from the last EPUBCheck run on this book" hidden>EPUBCheck</button>
             </div>
             <div class="panel-bar">
@@ -1100,6 +1102,7 @@
 <script src="src/book-order.js"></script>
 <script src="src/book-matter.js"></script>
 <script src="src/book-ncx.js"></script>
+<script src="src/book-images.js"></script>
 <script src="src/docx.js"></script>
 <script src="src/docx-import.js"></script>
 <script src="src/book-page.js"></script>

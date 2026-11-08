@@ -20,7 +20,7 @@ test('structure: the app scripts are loaded after the src/ modules they use, and
         'src/html-ast.js', 'src/css-ast.js', 'src/code-shade.js', 'src/dom-outline.js',
         'src/project.js', 'src/editing.js', 'src/suggest.js', 'src/library.js',
         'src/store.js', 'src/versions.js', 'src/filesync.js', 'src/importing.js',
-        'src/xml-ast.js', 'src/book-template.js', 'src/book.js', 'src/opf-edit.js', 'src/nav.js', 'src/book-stage.js', 'src/example-book.js', 'src/book-meta.js', 'src/book-chapters.js', 'src/book-contents.js', 'src/book-cover.js', 'src/book-style.js', 'src/font-info.js', 'src/book-fonts.js', 'src/book-notes.js', 'src/book-blocks.js', 'src/css-lint.js', 'src/book-export.js', 'src/epub.js', 'src/markdown-import.js', 'src/xhtml.js', 'src/book-check.js', 'src/epubcheck-report.js', 'src/qr.js', 'src/book-page.js', 'src/book-a11y.js', 'src/book-roles.js', 'src/book-pages.js', 'src/book-lang.js', 'src/book-alt.js', 'src/book-order.js', 'src/book-matter.js', 'src/book-ncx.js', 'src/docx.js', 'src/docx-import.js'
+        'src/xml-ast.js', 'src/book-template.js', 'src/book.js', 'src/opf-edit.js', 'src/nav.js', 'src/book-stage.js', 'src/example-book.js', 'src/book-meta.js', 'src/book-chapters.js', 'src/book-contents.js', 'src/book-cover.js', 'src/book-style.js', 'src/font-info.js', 'src/book-fonts.js', 'src/book-notes.js', 'src/book-blocks.js', 'src/css-lint.js', 'src/book-export.js', 'src/epub.js', 'src/markdown-import.js', 'src/xhtml.js', 'src/book-check.js', 'src/epubcheck-report.js', 'src/qr.js', 'src/book-page.js', 'src/book-a11y.js', 'src/book-roles.js', 'src/book-pages.js', 'src/book-lang.js', 'src/book-alt.js', 'src/book-order.js', 'src/book-matter.js', 'src/book-ncx.js', 'src/book-images.js', 'src/docx.js', 'src/docx-import.js'
     ].forEach((m) => {
         assert.ok(order.indexOf(m) !== -1 && order.indexOf(m) < order.indexOf('src/app/core.js'), m + ' must load before the app scripts');
     });
@@ -399,4 +399,12 @@ test('desktop: .epub files are associated with the app, as an editor that is nev
     assert.ok(/^Exec=\{\{exec\}\} %F$/m.test(readRoot('src-tauri/linux/plainchant-scribe.desktop')), 'Linux launchers pass the opened files (Desktop Entry Specification 1.5, the Exec key)');
     assert.deepEqual(JSON.parse(readRoot('src-tauri/capabilities/default.json')).permissions, ['core:event:allow-listen', 'core:event:allow-unlisten'], 'the window may hear books-opened, and nothing more');
     assert.includes(readRoot('src/app/main.js'), 'listenForDesktopBooks();');
+});
+
+test('book images: the Images filter, Save as JPEG, and the cover save command are wired (P7-02, D-051)', () => {
+    assert.includes(html, 'data-filter="images"');
+    assert.includes(html, 'id="coverJpegBtn"');
+    assert.includes(readRoot('src-tauri/src/main.rs'), '            save_cover_file,');
+    assert.includes(readRoot('src/app/problems-ui.js'), 'BookImages.rows(model, infos)');
+    assert.includes(readRoot('src/app/asset-ui.js'), 'if (isBookProject()) addBookImages(added);');
 });

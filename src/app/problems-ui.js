@@ -32,21 +32,50 @@ function loadAssetHeads() {
     const assets = typeof projectAssets === 'object' ? projectAssets : {};
     const wanted = Object.keys(assets).filter((p) => /\.(png|jpe?g|gif|webp)$/i.test(p) && assets[p] instanceof Blob && (!assetHeads.has(p) || assetHeads.get(p).blob !== assets[p]));
     if (!wanted.length) return;
-    Promise.all(wanted.map((p) => assets[p].slice(0, 16).arrayBuffer().then((b) => assetHeads.set(p, { blob: assets[p], bytes: new Uint8Array(b) }))))
+    Promise.all(wanted.map((p) => readImageHead(p, assets[p]).then((head) => assetHeads.set(p, head))))
         .then(() => { if (isBookProject()) runProblemsCheck(); }, () => {});
+}
+
+// An image's first bytes for BookCheck and its BookImages info (P7-02, D-051). A format that can carry transparency
+// is decoded once to see whether any pixel is transparent.
+async function readImageHead(path, blob) {
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    const info = BookImages.inspect(bytes);
+    if (info) {
+        info.size = blob.size;
+        info.transparent = info.mayHaveAlpha && info.width * info.height <= 50e6 ? await hasTransparentPixel(blob) : false;
+    }
+    return { blob: blob, bytes: bytes.slice(0, 16), info: info };
+}
+
+async function hasTransparentPixel(blob) {
+    try {
+        const bitmap = await createImageBitmap(blob);
+        const canvas = document.createElement('canvas');
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(bitmap, 0, 0);
+        bitmap.close();
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        for (let i = 3; i < data.length; i += 4) if (data[i] < 255) return true;
+        return false;
+    } catch (e) {
+        return false;
+    }
 }
 
 // Every problem BookCheck finds in the open book, with the stylesheet lint.
 function bookProblems(entries) {
     const e = entries || problemEntries();
-    const heads = {};
-    assetHeads.forEach((v, p) => { if (projectAssets && projectAssets[p] === v.blob) heads[p] = v.bytes; });
+    const heads = {}, infos = {};
+    assetHeads.forEach((v, p) => { if (projectAssets && projectAssets[p] === v.blob) { heads[p] = v.bytes; if (v.info) infos[p] = v.info; } });
     const assets = Object.keys(projectAssets || {});
     // The accessibility metadata rules (P6-01) join BookCheck's accessibility category.
     const model = Book.read(e, { assets: assets }).model;
     const docs = model ? model.manifest.items.filter((i) => i.mediaType === 'application/xhtml+xml' && i.path && typeof e[i.path] === 'string').map((i) => i.path) : [];
     // P6-02: roles, page numbers, language tags, and reading order join the accessibility category.
-    const more = model ? [].concat(BookA11y.rows(model), BookRoles.rows(e, docs), BookPages.rows(e, model), BookLang.rows(e, docs), BookOrder.rows(e, model), BookMatter.rows(e, model), BookNcx.rows(e, model)) : [];
+    const more = model ? [].concat(BookA11y.rows(model), BookRoles.rows(e, docs), BookPages.rows(e, model), BookLang.rows(e, docs), BookOrder.rows(e, model), BookMatter.rows(e, model), BookNcx.rows(e, model), BookImages.rows(model, infos)) : [];
     // An NCX the author switched on in the Chapters tab is not worth the legacy note (P7-04).
     const ncxOwned = BookNcx.state(e, assets).owned;
     return bookChecker.check(e, { assets: assets, heads: heads }).problems.filter((p) => !(ncxOwned && p.code === 'legacy-ncx')).concat(cssLintChecker.check(e).problems, more);
@@ -97,8 +126,8 @@ function jumpToProblem(problem) {
 function renderProblems() {
     const book = isBookProject();
     if (typeof refreshEpubcheckButton === 'function') refreshEpubcheckButton();
-    // Package and Stylesheets are book categories; EPUBCheck runs only in the desktop app.
-    const shown = (f) => f === 'epubcheck' ? book && hasTauri() : book || (f !== 'package' && f !== 'stylesheets');
+    // Package, Stylesheets, and Images are book categories; EPUBCheck runs only in the desktop app.
+    const shown = (f) => f === 'epubcheck' ? book && hasTauri() : book || (f !== 'package' && f !== 'stylesheets' && f !== 'images');
     const filter = shown(problemsFilter) ? problemsFilter : 'all';
     const problems = problemsResult.problems.filter((p) => filter === 'all' || p.category === filter);
     const errors = problems.filter((p) => p.severity === 'error').length;
@@ -143,8 +172,29 @@ function renderProblems() {
             row.classList.add('problem-static');
             row.title = p.file || 'The whole book';
         }
-        problemsList.appendChild(row);
+        problemsList.appendChild(problemFix(p, row));
     });
+}
+
+// An image left out of the manifest can be listed from its row (P7-02, D-051); other rows are returned as they are.
+function problemFix(p, row) {
+    if (p.code !== 'not-in-manifest' || !BookBlocks.mediaTypeFor(p.file || '')) return row;
+    const wrap = document.createElement('div');
+    wrap.className = 'problem-fix-row';
+    const fix = document.createElement('button');
+    fix.type = 'button';
+    fix.className = 'mini';
+    fix.textContent = 'Add to manifest';
+    fix.title = 'List ' + p.file + ' in content.opf so it is exported with the book';
+    fix.addEventListener('click', () => {
+        syncBufferFromEditor();
+        try {
+            commitFileChange(BookBlocks.listImage(projectFiles.entries, p.file, Object.keys(projectAssets || {})), { tree: projectFiles.tree, openTabs: openTabs, activeFile: activeFile, activeHtmlFile: activeHtmlFile });
+            showNotice('Listed ' + p.file + ' in the manifest.');
+        } catch (e) { showNotice(e.message, true); }
+    });
+    wrap.append(row, fix);
+    return wrap;
 }
 
 document.getElementById('problemsRecheckBtn').addEventListener('click', runProblemsCheck);

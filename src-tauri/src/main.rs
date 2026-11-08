@@ -385,6 +385,11 @@ fn save_project_folder(
 
 // A file name for the Save dialog: no folders, no control or reserved characters, ending in .epub.
 fn book_file_name(name: &str) -> String {
+    plain_file_name(name, "epub", "book")
+}
+
+// The same for any one extension: `name` without folders or reserved characters, ending in `.ext`.
+fn plain_file_name(name: &str, ext: &str, fallback: &str) -> String {
     let base: String = name
         .rsplit(|c| c == '/' || c == '\\')
         .next()
@@ -393,18 +398,41 @@ fn book_file_name(name: &str) -> String {
         .filter(|c| !c.is_control() && !matches!(c, '<' | '>' | ':' | '"' | '|' | '?' | '*'))
         .collect();
     let base = base.trim().trim_start_matches('.').to_string();
-    let stem = if base.to_ascii_lowercase().ends_with(".epub") { base[..base.len() - 5].to_string() } else { base };
-    format!("{}.epub", if stem.trim().is_empty() { "book" } else { stem.trim() })
+    let dot = format!(".{}", ext);
+    let stem = if base.to_ascii_lowercase().ends_with(&dot) { base[..base.len() - dot.len()].to_string() } else { base };
+    format!("{}{}", if stem.trim().is_empty() { fallback } else { stem.trim() }, dot)
 }
 
 // The chosen path with .epub added when the author typed another ending.
 fn with_epub_extension(path: PathBuf) -> PathBuf {
-    if path.extension().map(|e| e.eq_ignore_ascii_case("epub")).unwrap_or(false) {
+    with_extension(path, &["epub"], "epub")
+}
+
+fn with_extension(path: PathBuf, accepted: &[&str], ext: &str) -> PathBuf {
+    if path.extension().map(|e| accepted.iter().any(|a| e.eq_ignore_ascii_case(a))).unwrap_or(false) {
         return path;
     }
     let mut os = path.into_os_string();
-    os.push(".epub");
+    os.push(".");
+    os.push(ext);
     PathBuf::from(os)
+}
+
+// Save cover as JPEG (P7-02, D-051): a copy of the cover for a store's upload form, written where the author picks.
+#[tauri::command]
+fn save_cover_file(name: String, data: String) -> Result<Option<String>, String> {
+    let bytes = decode_base64(&data).ok_or_else(|| "The cover's data could not be read.".to_string())?;
+    let picked = rfd::FileDialog::new()
+        .set_title("Save the Cover as JPEG")
+        .set_file_name(plain_file_name(&name, "jpg", "cover"))
+        .add_filter("JPEG image", &["jpg", "jpeg"])
+        .save_file();
+    let Some(chosen) = picked else {
+        return Ok(None);
+    };
+    let path = with_extension(chosen, &["jpg", "jpeg"], "jpg");
+    fs::write(&path, bytes).map_err(|e| format!("{}: {}", path.display(), e))?;
+    Ok(Some(path.to_string_lossy().into_owned()))
 }
 
 // Export (P5-01, D-037): asks where to save the packed book and writes it. Ok(None) when the author cancels.
@@ -461,6 +489,10 @@ mod tests {
         assert_eq!(with_epub_extension(PathBuf::from("/tmp/My Book")), PathBuf::from("/tmp/My Book.epub"));
         assert_eq!(with_epub_extension(PathBuf::from("/tmp/a.EPUB")), PathBuf::from("/tmp/a.EPUB"));
         assert_eq!(with_epub_extension(PathBuf::from("/tmp/a.zip")), PathBuf::from("/tmp/a.zip.epub"));
+        assert_eq!(plain_file_name("../My Book-cover.JPG", "jpg", "cover"), "My Book-cover.jpg");
+        assert_eq!(plain_file_name("?", "jpg", "cover"), "cover.jpg");
+        assert_eq!(with_extension(PathBuf::from("/tmp/c.JPEG"), &["jpg", "jpeg"], "jpg"), PathBuf::from("/tmp/c.JPEG"));
+        assert_eq!(with_extension(PathBuf::from("/tmp/c.png"), &["jpg", "jpeg"], "jpg"), PathBuf::from("/tmp/c.png.jpg"));
     }
 
     #[test]
@@ -500,6 +532,7 @@ fn main() {
             use_project_folder,
             save_project_folder,
             save_book_file,
+            save_cover_file,
             open_files::take_opened_books,
             open_files::read_opened_book,
             epubcheck::epubcheck_run,
