@@ -6,6 +6,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-08
+
+The first release: make, import, lay out, check, and export EPUB 3.3 books, reflowable or fixed layout, in the browser or the desktop app.
+
 ### Added
 
 - **Fixed-layout books**: a Page layout section in the Book tab makes the whole book fixed layout, with one page size from a preset or typed, and two-page spreads none, in landscape, or always. The Stage shows each page at its size, scaled to fit, with the facing page beside it when spreads are on, and the Problems tab checks the page sizes and layout settings. Imported fixed-layout books now show as pages instead of flowing text, and their positioned CSS no longer draws warnings.
@@ -59,4 +63,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 ### Changed
 
 - **In-app dialogs for names and paths**: New file, New folder, renaming files, folders, and images, and Make shared part now ask in a Studio dialog that checks the name as you go, instead of the browser's prompt box.
-- The studio is now Plainchant Scribe: new name, bundle id, version (`0.1.0`), and separate browser storage. The editing features are still those of the web-page editor it was copied from; book features arrive phase by phase ([ROADMAP.md](../ROADMAP.md)).
+- **Plainchant Scribe**: the studio is spun off from Plainchant Web, with its own name, bundle id (`io.plainchant.scribe`), and browser storage, and its web-page features replaced by book ones ([ROADMAP.md](../ROADMAP.md)).
+
+[Unreleased]: https://github.com/aedmark/plainchant-scribe/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/aedmark/plainchant-scribe/releases/tag/v0.1.0
