@@ -1,6 +1,6 @@
 # Testing
 
-**Status:** the inherited Plainchant Web suites run (`npm test`, now 347 with the XML parser's, the template's, the book model's, the OPF edits', the nav's, the XHTML checker's, the Stage's, EPUBCheck's, the QR code's, the accessibility metadata's, and Ace's, and 15 Rust tests), minus the tests of the features removed in `P0-04`. The first book-format suite is the XML parser and splicer (`test/xml-ast.test.js`, `P1-01`); the rest are planned below and arrive with their roadmap items.
+**Status:** every suite below runs today: `npm test` (Node, structural and unit tests plus the optional oracles), `cargo test`, the round trip, and the documentation checks. Current counts and dates live in HANDOFF's "Verified" table, not here.
 
 ## Commands
 
@@ -10,12 +10,10 @@
 | 3x manual validates | `python3 tools/manual.py check docs/plainchant-scribe.manual.json` | under a second |
 | 3x manual tool tests | `python3 -m unittest tools/test_manual.py` | under a second |
 | Rebuild the manual | `python3 tools/manual.py build docs/plainchant-scribe.manual.json --output docs/manual.html` | under a second |
-| Full checks today | `python3 tools/check_docs.py && python3 -m unittest tools/test_manual.py` | under a second |
-
 | Unit and structural tests | `npm test` (Node, no install) | about 1 second; about 90 with EPUBCheck (it runs once per broken book) |
 | The same, without EPUBCheck, Ace, LibreOffice, or ImageMagick | `SCRIBE_SKIP_EPUBCHECK=1 SCRIBE_SKIP_ACE=1 SCRIBE_SKIP_SOFFICE=1 SCRIBE_SKIP_MAGICK=1 npm test` | about 1 second |
 | Round trip on the corpus (P5-06) | `npm run roundtrip` (books in `.tools/corpus/`, see below; EPUBCheck and Calibre when present) | about 50 seconds for the seven books |
-| Rust unit tests | `cargo test --manifest-path src-tauri/Cargo.toml` (15) | 1 to 60 seconds |
+| Rust unit tests | `cargo test --manifest-path src-tauri/Cargo.toml` | 1 to 60 seconds |
 | Desktop build | `cargo build --manifest-path src-tauri/Cargo.toml` | 1 to 60 seconds |
 
 The full command is in `AGENTS.md`, Run and verify.
@@ -27,7 +25,7 @@ The full command is in `AGENTS.md`, Run and verify.
 | `check_docs.py` | The documents agree with each other: IDs exist, links resolve, the layout table's paths exist | That any statement is true of the code |
 | `tools/manual.py check`, `test_manual.py` | The manual source is valid against the schema and builds | That its claims are accurate |
 
-## Planned strategy for the book code
+## The book suites
 
 - **Unit tests in Node** for every pure module: the book model, the zip and EPUB code, the checks, and the importers.
 - **The XML parser and splicer** (`test/xml-ast.test.js`, done): hand-written OPF, nav, XHTML, and `container.xml` fixtures in `test/fixtures/xml/` rebuild exactly from their node ranges; every splice operation is checked on them for the exact range it changes and for a well-formed result; well-formedness, namespace, and security errors each have a case. Cross-check recipe, run by hand on 2026-11-03 with 45 cases and 0 disagreements: write each case's `XmlAst.parse(src).wellFormed` to JSON with Node, then parse each case with Python's `xml.parsers.expat.ParserCreate(namespace_separator=' ')` and compare. Expat is a second opinion, not part of `npm test`.
@@ -73,7 +71,47 @@ The full command is in `AGENTS.md`, Run and verify.
 - **Theme tests** (`test/theme.test.js`) check contrast (4.5:1) for every text, button, and syntax pair in both modes, identical variable sets across themes, no colour outside the theme blocks, and that the home page palette matches the studio's.
 - **Structure tests** keep the inherited rules (no inline script, 500-line limit, no duplicate globals, offline cache list), run `sw.js` against fake caches and network (only Scribe's cache, network first, offline fallback, install past the HTTP cache; D-013, D-019), and a rename guard that fails if the old product name returns (`P0-03`).
 
+## Before any run
+
+- **Clean state:** `npm test` builds every book it needs in memory or in a fresh temporary folder, so no reset is needed. The browser app keeps books in IndexedDB on the `localhost:8081` origin (ARCHITECTURE, "State and caches"); a test book made by hand in the browser pane goes to Recently deleted afterwards. Never clear `.tools/`: the oracles and the corpus are downloaded by hand.
+- **Oracles present or skipped:** each oracle test prints "not run" with the reason when its tool is missing, never "passed" (D-005). The `SCRIBE_SKIP_EPUBCHECK`, `SCRIBE_SKIP_ACE`, `SCRIBE_SKIP_SOFFICE`, and `SCRIBE_SKIP_MAGICK` variables skip them on purpose.
+- **What runs leave behind:** `npm run roundtrip` writes its exports and `results.json` to `.tools/corpus/out/`, overwritten each run; the oracle tests write only to fresh temporary folders.
+- **Services it needs:** none for `npm test`. The browser checks need `npm run serve` (port 8081, D-013), or the untracked `.claude/launch.json` entry `scribe` in the agent's browser pane.
+
+## Change-to-check matrix
+
+| Changed area | Minimum checks | Additional evidence |
+| --- | --- | --- |
+| Documentation only | `python3 tools/check_docs.py` | `python3 tools/manual.py check docs/plainchant-scribe.manual.json` and a rebuilt `docs/manual.html` if the manual changed |
+| A pure module in `src/*.js` | `npm test` with EPUBCheck present | A deliberate bug in the fix (only the fix) fails the new test; cite the spec section behind an EPUB rule |
+| An app script in `src/app/` or `app.html` | `npm test` (structure: load order, 500 lines, globals, `sw.js` list) | The feature by hand in the browser pane on port 8081 |
+| Something a book contains or exports | `npm test` with EPUBCheck and Ace present | `npm run roundtrip`; the book in Calibre before a release (D-010) |
+| An import path (`.epub`, `.docx`, Markdown, fonts, images) | `npm test`, including its hostile-input cases | A hostile file by hand in the browser pane (SECURITY) |
+| The desktop shell (`src-tauri/`) | `cargo test` and `cargo build --manifest-path src-tauri/Cargo.toml` | The window opened by the maintainer; agent sessions cannot (HANDOFF, "Not verified") |
+| Storage, the service worker, or saved data | `npm test` (the `sw.js` tests) | An old saved project still opens; update and offline by hand in the browser pane |
+
+## Manual checks (before a release)
+
+Record who checked what, where, and when in HANDOFF.
+
+- Open the example book and an imported book in the browser app on port 8081: edit, reload, export, and import the export again; nothing is lost.
+- Open the exported books in Calibre (D-010). The legacy Kindle stays unchecked until Q-004 is answered.
+- In the desktop app: the Save dialog, Run EPUBCheck, opening an `.epub` from the file manager, and Send to reader with a phone on the same network.
+- Light and dark modes on the home page and in the Studio.
+
+## Environment recipes
+
+Every tool below is optional; without it the matching tests print "not run". Recipes were checked on Linux (CachyOS) on the dates given in HANDOFF's "Verified" table.
+
+- **EPUBCheck:** see "Setting up EPUBCheck" above; it needs `java` on the PATH, or `EPUBCHECK_JAR`.
+- **DAISY Ace:** `PUPPETEER_SKIP_DOWNLOAD=1 npm install --prefix .tools/ace @daisy/ace-cli`; it uses the installed Chrome.
+- **LibreOffice (`soffice`), ImageMagick (`magick`), `qrencode`, `zbarimg`, Calibre (`ebook-convert`):** from the system's package manager, found on the PATH.
+- **The round-trip corpus:** download each book in `test/corpus.json` into `.tools/corpus/`; `tools/roundtrip.js` checks each SHA-256 before reading it.
+- **Rust:** a stable toolchain with Cargo, only for `cargo test` and desktop builds.
+
 ## Known pitfalls
 
 - The 3x tools read `docs/plainchant-scribe.manual.json`; renaming the manual means updating `tools/test_manual.py`.
 - EPUB rules are easy to remember wrongly. A check that cites a spec section is stronger than one written from memory (see HANDOFF, "Not verified").
+- **A mutation check must break the fix, not the test.** Reverting a whole file can fail a test for an unrelated reason. Remove just the fix.
+- **A test that calls internals breaks when they are cleaned up.** Call what the app calls (its public entry point), and rerun the full set after deleting code.

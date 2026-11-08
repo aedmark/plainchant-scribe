@@ -12,7 +12,7 @@ to it instead of copying it.
 | [../ROADMAP.md](../ROADMAP.md) | Maintainers and contributors | Planned scope and status | Detailed implementation notes |
 | [HANDOFF.md](HANDOFF.md) | The next work session | Current state, active context, immediate next steps | Permanent design rules |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Developers | System shape, interfaces, invariants, data flow | Chronological history |
-| [DECISIONS.md](DECISIONS.md) | Future decision-makers | Rationale and alternatives for durable choices | Routine implementation detail |
+| [DECISIONS.md](DECISIONS.md) | Future decision-makers | Rationale and alternatives for durable choices, plus held tensions | Routine implementation detail |
 | [TESTING.md](TESTING.md) | Contributors and release owners | Verification commands, coverage boundaries, known pitfalls | A duplicate of current test results |
 | [SECURITY.md](SECURITY.md) | Users and developers | Sensitive assets, trust boundaries, reporting, secure defaults | Full operational incident history |
 | [STORES.md](STORES.md) | Authors and small presses | Each store's upload rules as read on a stated date, and who handles each | A claim that a store or reader accepts a book (D-010) |
@@ -30,7 +30,7 @@ Update documents because a relevant fact changed, not merely because a session e
 | --- | --- |
 | User-visible behaviour | README if onboarding changed; CHANGELOG |
 | Component, interface, dependency, or data-flow change | ARCHITECTURE |
-| Durable tradeoff or reversal | DECISIONS; mark the old decision superseded |
+| Durable tradeoff or reversal, or a tension held or resolved | DECISIONS; mark the old decision superseded, or resolve the held tension |
 | Test command, coverage, fixture, or environment change | TESTING |
 | Secret, trust boundary, sensitive data, or reporting-path change | SECURITY |
 | Behavior, architecture, or rationale covered by the 3x manual | `plainchant-scribe.manual.json`; rebuild `manual.html` |

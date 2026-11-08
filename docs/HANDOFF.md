@@ -14,9 +14,11 @@ Changes: [CHANGELOG.md](CHANGELOG.md). Older sessions and the Plainchant Web his
 
 ## Current state
 
-_Last updated: 2026-11-08, on `master`: Phases 0 to 4 are done (`P3-07` last, front and back matter, D-046); Phase 5 is done (the round trip, D-042, and send to reader, D-043), and Phase 6 is done (accessibility metadata, D-044; page numbers, language, roles, alt text, and reading order, D-045; the store checklists, `P6-03`, in `docs/STORES.md`, with their two gaps fixed, D-047); of Phase 7, `.docx` import (`P7-03`, D-048) the EPUB 2 NCX (`P7-04`, D-049), opening `.epub` files from the desktop (`P7-05`, D-050), image checks (`P7-02`, D-051), and fixed layout (`P7-01`, D-052), so Phase 7 is done; `0.1.0` released 2026-11-08. See ROADMAP for each item._
+_Last updated: 2026-11-08, session 11, on `master` after `bf361aa` (Release 0.1.0): the documentation and `tools/check_docs.py` follow the expanded Manifold (zones, fore-conceptions, held tensions, session ownership, inquiry rules); uncommitted. Phases 0 to 7 are done; see ROADMAP for each item._
 
-**Where things stand, in one paragraph:** Phase 0 is done. Phase 1 is done: six pure modules, loaded by `app.html` since `P2-01` (`src/xhtml.js` since `P5-04`): `src/xml-ast.js` (`P1-01`, D-011) parses and splices XML; `src/book-template.js` (`P1-02`, D-012) makes a new book that passes EPUBCheck 5.4.0; `src/book.js` (`P1-03`, D-014) reads a package document into a model with its XmlAst nodes and reports package-rule problems; `src/opf-edit.js` (`P1-04`, D-015) turns metadata, manifest, and spine changes into splices of that OPF; `src/nav.js` (`P1-05`, D-016) reads and edits the nav document the same way; `src/xhtml.js` (`P1-06`, D-017) checks chapters, fixes HTML entities, and cleans pasted HTML. Since `P2-01` (D-018), New makes a book and Load Example Book opens a three-chapter guide; the Stage shows the open chapter as `application/xhtml+xml`, with reader settings (text size, margins, theme; D-020) paged or scroll layout (D-021), device presets (D-022), moving between chapters, the contents, and links (D-023), and Stage editing of chapters through the Design bridge (D-024). Phase 2 is complete. The Book tab in the Inspector edits the metadata (D-025), and the Chapters tab adds, renames, deletes, reorders, splits, and merges chapters with the toc and links following (D-026, D-027), and can generate the contents and landmarks from headings (D-028); the Book tab also sets or generates the cover (D-029) and edits the series and contributors (D-030). Phase 3 is complete. The Layout tab writes paragraph, opener, scene-break, and small-caps settings into the stylesheet, embeds fonts, adds footnotes and endnotes, and inserts figures, tables, poems, and quotes (D-031 to D-035); the Problems panel lints book CSS (D-036). Phase 4 is complete. Export makes an `.epub` that passes EPUBCheck, in the browser and (by a Save dialog) the desktop app (D-037), and Open file… imports an `.epub` as a new book after checking the archive (D-038); the Chapters tab imports Markdown and plain text as chapters (D-039). Old saved projects still open as web pages. The app is served on port 8081 with storage and cache of its own (D-013). The repository is public at `https://github.com/aedmark/plainchant-scribe`. Phase 5 added the Problems tab (D-040, D-041), the round trip (D-042), and send to reader (D-043). Phase 6 added accessibility metadata (D-044), accessibility content (D-045), and the store checklists (`docs/STORES.md`). `P3-07` added front and back matter with a library of saved pages (D-046). `P7-03` added `.docx` import (D-048), and `P7-04` the EPUB 2 NCX (D-049). Next: the maintainer picks from Phase 7.
+**Session owner:** none. Session 11 (Claude Opus 5.5, on `master`) ended 2026-11-08; its documentation changes wait for the maintainer to review and commit.
+
+**Where things stand, in one paragraph:** Every roadmap phase (0 to 7) is done and `0.1.0` was released on 2026-11-08 (tag `v0.1.0`, with the Linux `.deb` and `.rpm`). A book can be made or imported (`.epub`, `.docx`, Markdown, or an `.epub` opened from the desktop), laid out reflowable or whole-book fixed layout, given front and back matter and accessibility metadata, checked in the Problems tab (with EPUBCheck in the desktop app), exported as an `.epub` that passes EPUBCheck, and sent to a reader on the same network; "What works" lists each part with its decision. The biggest gap is not code: nothing has been opened in Calibre or tried on a real phone yet ("Not verified", D-010, `P5-07`). The maintainer chooses what comes next.
 
 **Verified** (2026-11-08 for `npm test`, `cargo test` and the docs checks, otherwise 2026-11-03; Linux, Node, Python 3, Rust/Cargo; browser pane for the load check)
 
@@ -57,11 +59,7 @@ _Last updated: 2026-11-08, on `master`: Phases 0 to 4 are done (`P3-07` last, fr
 - **Reader settings** (`P2-02`, D-020): the Stage bar's Reader panel; saved in the Studio's settings; size scaling on load in `applyReaderSize`.
 - **Books in the Studio** (`P2-01`, D-018): New, Load Example Book, and the first run make books; the Stage renders chapters from a Blob URL as XHTML; checked by hand in the browser pane, not in the Tauri window.
 - **XHTML checks** (`P1-06`, D-017): `Xhtml.check`, `fixEntities`, and the paste normaliser `normalize`/`fromHtml`; a chapter with a normalised paste passes EPUBCheck.
-- **Nav document** (`P1-05`, D-016): `Nav.read(files, bookModel)` and its edit ops; an edited nav passes EPUBCheck with no messages.
-- **OPF edits** (`P1-04`, D-015): `OpfEdit` ops return XmlAst edits for a fresh model; an edited book passes EPUBCheck with no messages.
-- **Book model** (`P1-03`, D-014): `Book.read(files, { assets })`; problems are package rules only.
-- **New-book template** (`P1-02`, D-012): `BookTemplate.create()`; EPUBCheck runs on it in `npm test` when `.tools/` has the jar.
-- **XML parser and splicer** (`P1-01`, D-011): `XmlAst.parse` plus `applyEdits`, `setAttr`, `removeAttr`, `setText`, `insert`, `remove`; tested on the fixtures in `test/fixtures/xml/`; expat agreed on 45 verdicts.
+- **The book core** (`P1-01` to `P1-05`, D-011, D-012, D-014 to D-016): `XmlAst.parse` and its splices (expat agreed on 45 verdicts), `BookTemplate.create()`, `Book.read(files, { assets })` (package rules only), `OpfEdit` ops for a fresh model, and `Nav.read` with its edit ops; fixtures in `test/fixtures/xml/`, and edited books and navs pass EPUBCheck with no messages.
 
 **Not verified**
 - The desktop window was not opened (the EPUBCheck run and Save dialog included); the maintainer tested desktop paths by hand in Plainchant Web only. Nothing has been opened in Calibre yet (D-010).
@@ -108,6 +106,36 @@ Newest first. Copy the template for each new session. Work done between sessions
 agent) gets a short entry too, written by whoever notices it, so the log has no gaps. Past 10 entries, move the
 oldest to `docs/archive/` and leave a pointer here.
 
+Session 1: [archive/SESSION_LOG_2026_11.md](archive/SESSION_LOG_2026_11.md).
+
+### Session 11: 2026-11-08: adopt the expanded Manifold
+
+**Contributor:** Claude (Opus 5.5), with the maintainer
+**Goal:** Find what Scribe lacks from `the-manifold` since its 2026-11-04 and 2026-11-08 expansions, then add all of it.
+**Done:** none on the roadmap (documentation scheme upkeep, D-007)
+**Changed:** `tools/check_docs.py` replaced from `the-manifold` (held tensions `T-NNN`, invisible and bidirectional characters); `AGENTS.md` (Start here 4 and 5, Zones and untrusted context, six While working rules, the consolidation step, Writing and Asking preferences, three terms); DECISIONS (the fence paragraph, the Context line, Held tensions with T-001); `docs/README.md` (tension rows); ARCHITECTURE (Dependencies, State and caches, Failure modes, Claims vs. code); TESTING (Before any run, Change-to-check matrix, Manual checks, Environment recipes, two pitfalls); SECURITY (boundary 16, Supported versions, Secure development rules, Security verification, Incident response, report contents); CONTRIBUTING (fore-conceptions, assumptions, re-scoping, Compatibility and migrations); this file (Session owner, a shorter "Where things stand", Session 10, Session 1 moved to `docs/archive/SESSION_LOG_2026_11.md`).
+**Decisions:** none; T-001 held (store limits in STORES.md and `BookImages.LIMITS`).
+**Verified:** `python3 tools/check_docs.py` with the new checker, `python3 tools/manual.py check`, and `python3 -m unittest tools/test_manual.py`; results in the table above. `npm test` and `cargo` were not run: no code changed.
+**Not verified:** the new State and caches and Compatibility rows were read from the code (`src/store.js`, `src/app/settings.js`, `src/app/persistence.js`, `sw.js`, `src-tauri/src/epubcheck.rs`), not exercised.
+**Problems / surprises:** the session log had no entry for the work of 2026-11-06 to 2026-11-08; Session 10 now covers it from git history.
+**Corrections:** ARCHITECTURE listed `plainchant-scribe-library` as a store; it is a `BroadcastChannel` name. Four stale status claims were rewritten at the maintainer's request: ARCHITECTURE's status and "Invariants (target)" (each invariant now names its enforcement; the no-network rule is enforced only for `app.html`, `styles.css`, and the home page), fixed layout listed as unsupported, SECURITY's "Status: planned", and TESTING's count and "Planned strategy" heading. The failure mode's claim that the Problems tab names unpreviewed features had no code behind it and was dropped; Export asks before packing a book with errors rather than refusing it. TESTING's commands table was split by a blank line; it is one table again.
+**Left undone:** the roadmap phases were not archived: every phase is done and the next is not chosen, so archiving would leave an empty plan.
+**Next session should start with:** Next steps above.
+
+### Session 10: 2026-11-06 to 2026-11-08: Phases 5 to 7 and the 0.1.0 release
+
+**Contributor:** not recorded; reconstructed from git history by session 11 on 2026-11-08 (commits by the maintainer's account)
+**Goal:** Finish the roadmap and release.
+**Done:** P5-06, P5-07, P6-01, P6-02, P6-03, P3-07, P7-03, P7-04, P7-05, P7-02, P7-01; the 0.1.0 release (`bf361aa`, 2026-11-08)
+**Changed:** see each item in ROADMAP and commits `1e2d0bd` to `bf361aa`.
+**Decisions:** D-042 to D-052.
+**Verified:** the Current state table was measured at the end of this work (2026-11-08); per-item evidence is in ROADMAP.
+**Not verified:** as in Current state.
+**Problems / surprises:** no session entry was written at the time.
+**Corrections:** none.
+**Left undone:** Next steps above.
+**Next session should start with:** Next steps above.
+
 ### Session 9: 2026-11-04: OPF edits by splicing
 
 **Contributor:** Claude (Opus 5.5), with the maintainer
@@ -144,14 +172,6 @@ oldest to `docs/archive/` and leave a pointer here.
 **Changed:** new `src/xml-ast.js`, `test/xml-ast.test.js`, `test/fixtures/xml/` (`content.opf`, `nav.xhtml`, `chapter.xhtml`, `container.xml`); `test/run.js`; `ROADMAP.md`, `docs/DECISIONS.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, `docs/TESTING.md`, this file.
 **Decisions:** D-011 (offsets, error recovery, namespaces, DOCTYPE and entities, limits, splice set, fixtures), each chosen by the maintainer. The spec re-read changed one answer: internal entity declarations are allowed by EPUB 3.3 §3.9, so their names are noted and never expanded.
 **Verified:** `npm test` 106/106; expat cross-check 45/45 by hand; `check_docs.py` result in the table above.
-
-### Session 1: 2026-11-03: create the repository and the plan
-
-**Contributor:** Claude (Sonnet 5.5), with the maintainer
-**Goal:** Turn the agreed Plainchant Scribe plan into a repository that the next session can start from.
-**Done:** P0-01
-**Changed:** new repository `plainchant-scribe`: `AGENTS.md`, `CLAUDE.md`, `README.md`, `ROADMAP.md`, `LICENSE`, `docs/*`, the lineage digest in `docs/archive/`, the shared tools in `tools/`, and the 3x manual source and build.
-**Decisions:** D-001 to D-007; questions Q-001 to Q-003.
 
 ### Session 5: 2026-11-03: the manuscript look and the home page
 

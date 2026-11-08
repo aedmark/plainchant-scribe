@@ -1,6 +1,6 @@
 # Architecture
 
-**Status: mixed.** The inherited Plainchant Web code is in the repository (`P0-02`), renamed (`P0-03`), and trimmed of its web-only features (`P0-04`: Live JS and the Console, the Insert palette, breakpoints, flex and grid handles, the pseudo-state bar); the rows marked New or Adapted are planned, and each says which roadmap item delivers it. When an item ships, rewrite its row as current fact. The inherited parts are not re-documented here; their structure is described in the lineage digest and Plainchant Web's own architecture document.
+**Status: current as of `0.1.0` (2026-11-08).** Every row of the code map has shipped (ROADMAP, Phases 0 to 7). The inherited Plainchant Web code (`P0-02`) was renamed (`P0-03`) and trimmed of its web-only features (`P0-04`: Live JS and the Console, the Insert palette, breakpoints, flex and grid handles, the pseudo-state bar). The inherited parts are not re-documented here; their structure is described in the lineage digest and Plainchant Web's own architecture document.
 
 ## The shape, in one paragraph
 
@@ -92,13 +92,15 @@ Import: .epub -> Epub.read() (directory, name, size, DRM checks; capped inflate;
 | `Epub.unzip(bytes, { kind })` | `src/epub.js` | `Epub.read`, `Docx.read` | The archive checks of D-038, shared; returns `{ raw, list, skipped }` |
 | `Epub.read(bytes, { limits })` (async) | `src/epub.js` | Open file… and drag-and-drop (`src/app/import.js`) | Returns `{ entries, binaries, skipped, warnings, title, problems }`, or throws an error with a `code` and the entry's name: unsafe or duplicate names, limits, damage, ZIP encryption, DRM, not a book (D-038, SECURITY) |
 
-## Invariants (target)
+## Invariants
 
-- **The author's files are never reserialised.** A change touches only the characters it must (D-002, D-011). Enforced by the round-trip and splice tests in `test/xml-ast.test.js` (`P1-01`).
-- **The Reading Stage never changes a file by displaying it**, and reader controls (font size, theme) are overrides, not edits (`P2-02`).
-- **Every file in the manifest exists, and every content file is in the manifest.** Enforced by `Book.check()` (`P5-04`) and by Export refusing a book with errors unless the author overrides.
-- **Scripts in imported content are kept but never executed in the Studio.** Enforced in the Stage assembler (`P2-01`).
-- **No network access at runtime**, except the opt-in send-to-reader server (D-009, `P5-07`).
+Each names what enforces it; one that nothing enforces says so.
+
+- **The author's files are never reserialised.** A change touches only the characters it must (D-002, D-011). Enforced by the round-trip and splice tests in `test/xml-ast.test.js` and the exact before-and-after tests of each editing module, and on real books by `npm run roundtrip` (D-042).
+- **The Reading Stage never changes a file by displaying it**, and reader controls (font size, theme) are overrides, not edits (D-020). Enforced by `test/book-stage.test.js`, which checks the book file is unchanged after assembling the Stage copy and adding the reader style.
+- **Every file in the manifest exists, and every content file is in the manifest.** Reported as errors by the book rules in the Problems tab (`BookCheck`, D-040); Export asks before packing a book with errors and lets the author export anyway to test (`src/app/epub-export-ui.js`, D-037).
+- **Scripts in imported content are kept but never executed in the Studio.** `BookStage.assemble` strips them from the Stage copy (D-018, D-024); enforced by `test/book-stage.test.js`.
+- **No network access at runtime**, except the opt-in send-to-reader server (D-009, D-043). `test/structure.test.js` keeps `app.html`, `styles.css`, and the home page from loading anything from another site; nothing enforces it for scripts (no test looks for `fetch` to an outside host).
 
 Inherited structural invariants (global scope, line limits, offline cache list) come with the port and are enforced by `test/structure.test.js` (D-001).
 
@@ -110,9 +112,46 @@ Inherited structural invariants (global scope, line limits, offline cache list) 
 | Book content on the Reading Stage | XHTML, CSS, images, fonts | `BookStage.assemble` removes scripts, event handlers, and `javascript:` URLs, then adds the Studio's own bridge as the only script (D-024); the iframe sandbox (`allow-scripts allow-same-origin`) does not isolate on its own | Rendered, never executed |
 | Export to disk | Relative paths from the working copy | Inherited path guard | Never writes outside the chosen folder; never deletes (web D24) |
 
-## State and failure modes
+## Dependencies
 
-- **State:** working copy in IndexedDB (files, assets, tree), settings in `localStorage`, folder links per project (inherited). Every store has a Scribe name (`plainchant_scribe`, `plainchant_scribe_settings`, `plainchant_scribe_emergency`, `plainchant-scribe-library`, `plainchant-scribe-v1`), the service worker touches only `plainchant-scribe-` caches and is network first, so an update shows on the next load and the cache serves only offline (D-019), and the dev server uses port 8081, so nothing is shared with Plainchant Web (D-013). The OPF and nav are files like any other, so undo and versions cover them.
+Everything Scribe runs that it did not write. A new runtime dependency needs the maintainer's approval (AGENTS.md, Working agreement); record it here the same session.
+
+| Dependency | Version | For | Why this one (and not writing it) |
+| --- | --- | --- | --- |
+| Prism, vendored unmodified in `src/vendor/prism/` | 1.30.0 | Syntax colours in the code editor | Inherited, the one frontend exception (D-001) |
+| EB Garamond, Courier Prime, Inter in `fonts/` | as bundled, with their OFL licences | The Studio's own type (D-008) | Bundled so the app works offline; never embedded in books |
+| Tauri (`tauri`, `tauri-build`) | 2 | The desktop shell (`src-tauri/`) | Inherited from Plainchant Web |
+| `serde`, `serde_json` | 1 | Command arguments and EPUBCheck's JSON report | Standard for Tauri commands |
+| `rfd` | 0.15 | Native open and save dialogs | Inherited |
+| `tauri-plugin-single-instance` | 2 | A second launch hands its `.epub` paths to the running app (D-050) | Platform IPC (D-Bus, named mutex) is not worth writing |
+
+Test oracles (EPUBCheck, DAISY Ace, LibreOffice, ImageMagick, `qrencode`, `zbarimg`, Calibre) are installed by hand into `.tools/` or the system, run only by the test suite and `tools/roundtrip.js`, and never shipped ([TESTING.md](TESTING.md), [SECURITY.md](SECURITY.md)). The optional EPUBCheck run in the desktop app uses a jar the author chose (D-041).
+
+## State and caches
+
+Everything a run leaves behind, and what may delete it.
+
+| What | Where | Written by | Reset by | Committed? |
+| --- | --- | --- | --- | --- |
+| Working copy of every book (files, assets, tree), versions | IndexedDB `plainchant_scribe` (`src/store.js`) | The Studio | Deleting a book (to Recently deleted first); clearing the site's data | No |
+| Settings (theme, reader settings, the chosen EPUBCheck jar) | `localStorage` `plainchant_scribe_settings` (`src/app/settings.js`) | The Studio | Clearing the site's data | No |
+| Emergency copy of a save in flight | `localStorage` `plainchant_scribe_emergency` (`src/app/persistence.js`) | Every save, before the IndexedDB write | That write succeeding | No |
+| My library of saved pages (D-046) | `localStorage` `plainchant_scribe_matter` (`src/app/matter-ui.js`) | Front and back matter | Removing pages; clearing the site's data | No |
+| Offline cache | Cache Storage `plainchant-scribe-v1` (`sw.js`) | The service worker, network first (D-019) | A new `CACHE_NAME`; the worker deletes only `plainchant-scribe-` caches (D-013) | No |
+| EPUBCheck run folders | System temporary folder, `scribe-epubcheck-*` (`src-tauri/src/epubcheck.rs`) | The desktop EPUBCheck run | The run itself, afterwards | No |
+| Test oracles and the round-trip corpus | `.tools/`, `.tools/corpus/` | By hand ([TESTING.md](TESTING.md)) | By hand only; nothing in the repository deletes them | No, gitignored |
+| Build output | `src-tauri/target/`, `src-tauri/dist/` | `cargo` | `cargo clean` | No, gitignored |
+
+`plainchant-scribe-library` is a `BroadcastChannel` name that tells other open tabs the library changed; it stores nothing. The dev server uses port 8081, so no origin, storage, or cache is shared with Plainchant Web (D-013). The OPF and nav are files like any other, so undo and versions cover them.
+
+## Failure modes
+
 - **A hand-edited OPF that is not well-formed:** the Book panel is disabled with the parser's message and offset; the code editor still works.
-- **An imported book with features Scribe does not support (fixed layout, scripts, media overlays):** the files are kept and exported unchanged; the Problems tab says what is not previewed.
+- **An imported book with features Scribe does not preview (scripts, media overlays):** the files are kept and exported unchanged (D-002); the Stage strips scripts and does not play overlays. Fixed layout is supported (D-052).
 - **EPUBCheck missing:** only the built-in rules run (D-005). In the browser the Run EPUBCheck button and the EPUBCheck filter are hidden; in the desktop app a missing Java or jar is a notice saying what to install or choose, and a jar that has moved is asked for again (D-041).
+
+## Claims vs. code
+
+Places where a doc, a name or a comment says more than the code does, or less, so nobody builds on the claim. When a session encounters friction where the code contradicts a documented claim (or the reverse), record the mismatch here and ask the maintainer rather than papering over the discrepancy in code. Remove a row when the code catches up or the claim is corrected.
+
+None open. The four status claims found on 2026-11-08 (session 11) were rewritten the same day.

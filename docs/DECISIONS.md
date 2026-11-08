@@ -6,13 +6,15 @@ its status changes ("superseded by D-MMM"). An "Update, same session" note at th
 still on the working branch.
 
 Record pre-existing choices too, the first time a session has to understand them ("status: accepted, recorded
-YYYY-MM-DD"): the reason something is the way it is gets lost faster than the code.
+YYYY-MM-DD"): the reason something is the way it is gets lost faster than the code. Every constraint in the codebase is
+an answer to an earlier question or failure mode; recording that originating question here stops a future session from
+removing a fence whose purpose it forgot.
 
 Format:
 
 ```
 ## D-NNN Title  (YYYY-MM-DD, status: proposed | accepted | rejected | superseded by D-MMM)
-**Context:** why this came up (the roadmap item, the bug, the measurement).
+**Context:** the originating question, failure mode, or measurement this choice answers (and the roadmap item or bug).
 **Decision:** what we chose (numbered points if there are several).
 **Alternatives:** what else was considered, and why not (one line each). Optional, but it is what stops the
 re-litigation.
@@ -513,6 +515,36 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 - Store-specific fixed-layout rules were not read for STORES.md; Scribe checks EPUB 3.3 only.
 - `rendition:orientation` is read and checked but not written.
 **Review trigger:** authors need mixed books or per-page placement, or a store's fixed-layout rules turn out to need more than EPUB 3.3's.
+
+## Held tensions
+
+A tension is two claims that are true and do not fit together yet. It is not an open question. An open question has
+an unknown answer; a held tension has two known answers and a price. Hold it only while the price of holding is
+lower than the price of choosing badly.
+
+Each tension names an owner, a review trigger, and the cost of holding both. A tension with no owner or no trigger is
+deleted at consolidation. A tension that survives review becomes a decision, with the losing claim recorded as an
+alternative.
+
+Format:
+
+```
+### T-NNN Title  (YYYY-MM-DD, status: held | resolved by D-MMM)
+**Owner:** ...
+**Claim A:** ...
+**Claim B:** ...
+**Why both hold:** ...
+**Cost of holding both:** ...
+**Review trigger:** ...
+```
+
+### T-001 Store image limits live in two places  (2026-11-08, status: held)
+**Owner:** the maintainer.
+**Claim A:** each fact has one authoritative home ([README.md](README.md), "Style and evidence"); the stores' rules, with the date they were read and their sources, belong in [STORES.md](STORES.md).
+**Claim B:** the Problems tab needs the same numbers as code, so `BookImages.LIMITS` in `src/book-images.js` holds them too (D-051).
+**Why both hold:** STORES.md is for authors and cites each store page; the code cannot read Markdown at run time without a build step (D-001), and a generated copy would need one.
+**Cost of holding both:** the copies can drift when a store changes a limit; today only a line in D-051 and HANDOFF's next steps says to change both together, and no test compares them.
+**Review trigger:** the next re-read of the store pages, or a test that parses STORES.md's limits and compares them with `BookImages.LIMITS`.
 
 ## Open questions
 
