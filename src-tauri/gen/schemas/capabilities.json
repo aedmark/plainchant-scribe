@@ -1,1 +1,1 @@
-{}
+{"default":{"identifier":"default","description":"The studio window may listen for books opened from the desktop (P7-05). The app's own commands need no permission.","local":true,"windows":["main"],"permissions":["core:event:allow-listen","core:event:allow-unlisten"]}}

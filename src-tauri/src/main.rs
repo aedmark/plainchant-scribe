@@ -2,6 +2,7 @@
 
 use serde::Serialize;
 mod epubcheck;
+mod open_files;
 mod preview;
 
 use std::collections::BTreeMap;
@@ -476,6 +477,18 @@ fn main() {
     let preview_state = preview::PreviewState::new(root_holder.clone());
 
     tauri::Builder::default()
+        // First, so a second launch hands its .epub to this window and exits (P7-05).
+        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+            open_files::queue(app, open_files::epub_args(&argv, Path::new(&cwd)));
+            open_files::focus(app);
+        }))
+        .setup(|app| {
+            let args: Vec<String> = std::env::args().collect();
+            let cwd = std::env::current_dir().unwrap_or_default();
+            open_files::queue(app.handle(), open_files::epub_args(&args, &cwd));
+            Ok(())
+        })
+        .manage(open_files::OpenState::default())
         .manage(preview_state)
         .manage(ServerState {
             root_dir: root_holder,
@@ -487,6 +500,8 @@ fn main() {
             use_project_folder,
             save_project_folder,
             save_book_file,
+            open_files::take_opened_books,
+            open_files::read_opened_book,
             epubcheck::epubcheck_run,
             epubcheck::epubcheck_pick_jar,
             epubcheck::epubcheck_env_jar,
@@ -495,6 +510,13 @@ fn main() {
             preview::preview_stop,
             preview::preview_open
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running Plainchant Scribe Tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while running Plainchant Scribe Tauri application")
+        .run(|_app, _event| {
+            #[cfg(any(target_os = "macos", target_os = "ios"))]
+            if let tauri::RunEvent::Opened { urls } = _event {
+                let paths = urls.iter().filter_map(|u| u.to_file_path().ok()).filter(|p| p.extension().map(|e| e.eq_ignore_ascii_case("epub")).unwrap_or(false)).collect();
+                open_files::queue(_app, paths);
+            }
+        });
 }

@@ -1,6 +1,6 @@
 # Testing
 
-**Status:** the inherited Plainchant Web suites run (`npm test`, now 334 with the XML parser's, the template's, the book model's, the OPF edits', the nav's, the XHTML checker's, the Stage's, EPUBCheck's, the QR code's, the accessibility metadata's, and Ace's, and 14 Rust tests), minus the tests of the features removed in `P0-04`. The first book-format suite is the XML parser and splicer (`test/xml-ast.test.js`, `P1-01`); the rest are planned below and arrive with their roadmap items.
+**Status:** the inherited Plainchant Web suites run (`npm test`, now 335 with the XML parser's, the template's, the book model's, the OPF edits', the nav's, the XHTML checker's, the Stage's, EPUBCheck's, the QR code's, the accessibility metadata's, and Ace's, and 15 Rust tests), minus the tests of the features removed in `P0-04`. The first book-format suite is the XML parser and splicer (`test/xml-ast.test.js`, `P1-01`); the rest are planned below and arrive with their roadmap items.
 
 ## Commands
 

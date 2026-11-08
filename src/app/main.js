@@ -7,6 +7,7 @@ async function start() {
     syncElementState();
     resetHistory();
     startSafekeeping();
+    listenForDesktopBooks();
 }
 
 function whenReady() {

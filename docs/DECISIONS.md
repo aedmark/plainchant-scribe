@@ -460,6 +460,22 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 - The NCX's labels are plain text; nav labels made only of images get their alt text.
 **Review trigger:** a reader or converter in use needs an NCX feature not written here (navList, audio), or authors want to hand-edit the NCX.
 
+## D-050 Opening .epub files from the desktop  (2026-11-07, status: accepted)
+**Context:** `P7-05`. Authors expect to double-click a book, or choose Open With, and have it open in the studio. Tauri v2 declares associations in `bundle.fileAssociations`, which its bundler writes into each installer; the file then arrives as a launch argument on Windows and Linux and as `RunEvent::Opened` on macOS. The maintainer chose each point below on 2026-11-07.
+**Decision:**
+1. One window: the official `tauri-plugin-single-instance` crate (a Rust dependency, not a frontend one) passes a second launch's arguments to the running app, which takes the file and comes forward, and the second process exits. Two windows on one IndexedDB could overwrite each other's saves.
+2. `.epub` only, as role Editor and rank Alternate: Scribe is listed under Open With and never becomes the default handler, so it does not take over a reader. `.docx` stays with Word; Open file… still takes one.
+3. Every open is a new book, as Open file… is; nothing in the library is matched or replaced.
+4. The shell keeps each path until the window takes it (`take_opened_books`), and the window may read only a path it was given, once, and at most 200 MiB (`read_opened_book`, `Epub.LIMITS.total`), so the command is not a general file reader. The bytes then go through `importEpub` and its checks. The window needs `core:event:allow-listen` to hear `books-opened`, the app's first capability file.
+**Alternatives:**
+- A new window per file (rejected: two writers on one library).
+- Default handler for `.epub` (rejected: authors have readers).
+- Reuse the library copy of a book opened before (rejected: it would ignore changes made on disk since).
+**Consequences:**
+- Only the installers carry the association; `npm run tauri:dev` and `cargo build` do not, though the dev binary opens a path given to it.
+- An `.epub` exported from Scribe and opened again becomes another book in the library.
+**Review trigger:** authors ask to open a book back into the library entry it came from, or the browser build gains file handling (the web app manifest's `file_handlers`).
+
 ## Open questions
 
 Questions requiring maintainer or stakeholder input. This is their one home: HANDOFF and the roadmap refer to them by ID. Numbers are

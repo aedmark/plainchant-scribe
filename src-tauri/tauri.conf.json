@@ -22,5 +22,24 @@
     "security": {
       "csp": null
     }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/icon.png"
+    ],
+    "fileAssociations": [
+      {
+        "ext": [
+          "epub"
+        ],
+        "mimeType": "application/epub+zip",
+        "name": "EPUB book",
+        "description": "EPUB book",
+        "role": "Editor",
+        "rank": "Alternate"
+      }
+    ]
   }
 }

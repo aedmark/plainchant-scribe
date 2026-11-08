@@ -105,3 +105,23 @@ window.addEventListener('drop', (e) => {
     e.preventDefault();
     importFiles(e.dataTransfer.files);
 });
+
+// Books opened from the desktop (P7-05, D-050): an .epub double-clicked or opened with Scribe arrives in the shell,
+// which keeps the path until it is taken here. Each opens as a new book, as Open file… does.
+async function openDesktopBooks() {
+    let paths;
+    try { paths = await tauriInvoke('take_opened_books'); } catch (e) { return; }
+    for (const path of paths) {
+        const name = String(path).split(/[\\/]/).pop();
+        let bytes;
+        try { bytes = await tauriInvoke('read_opened_book', { path: path }); } catch (e) { showNotice(String(e), true); continue; }
+        await importEpub(new File([bytes], name, { type: 'application/epub+zip' }));
+    }
+}
+
+function listenForDesktopBooks() {
+    if (!hasTauri()) return;
+    const events = window.__TAURI__ && window.__TAURI__.event;
+    if (events && typeof events.listen === 'function') events.listen('books-opened', () => { whenReady().then(openDesktopBooks); });
+    openDesktopBooks();
+}

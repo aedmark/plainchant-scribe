@@ -384,3 +384,17 @@ test('structure: the features Scribe does not use are gone: flex/grid handles, b
     ['buildLayoutBridgeScript', 'insertSnippet', 'setInsertMenuOpen', 'buildLiveBridgeScript', 'consoleBridge', 'forceStates', 'withState', 'MEDIA_PRESETS', 'dropPlacement', 'SNIPPETS', 'liveJs'].forEach((needle) => assert.excludes(code, needle));
     assert.ok(html.includes('id="previewBtn"') && html.includes('data-insp="parts"'), 'the preview (send to reader) and shared parts are kept (D-009)');
 });
+
+test('desktop: .epub files are associated with the app, as an editor that is never the default, and reach one window (P7-05, D-050)', () => {
+    const conf = JSON.parse(readRoot('src-tauri/tauri.conf.json'));
+    assert.deepEqual(conf.bundle.fileAssociations.map((a) => [a.ext.join(), a.mimeType, a.role, a.rank]), [['epub', 'application/epub+zip', 'Editor', 'Alternate']]);
+    const main = readRoot('src-tauri/src/main.rs');
+    assert.ok(main.indexOf('tauri_plugin_single_instance::init') < main.indexOf('.manage('), 'the single-instance plugin is registered first');
+    ['open_files::take_opened_books,', 'open_files::read_opened_book,', 'RunEvent::Opened'].forEach((needle) => assert.includes(main, needle));
+    const shell = readRoot('src-tauri/src/open_files.rs');
+    assert.includes(shell, 'given.lock().unwrap().remove(&path)', 'the webview reads only a path the shell gave it, once');
+    assert.includes(shell, 'const MAX_BYTES: u64 = 200 * 1024 * 1024;');
+    assert.equal(Epub.LIMITS.total, 200 * 1024 * 1024, 'the shell refuses what Epub.read would');
+    assert.deepEqual(JSON.parse(readRoot('src-tauri/capabilities/default.json')).permissions, ['core:event:allow-listen', 'core:event:allow-unlisten'], 'the window may hear books-opened, and nothing more');
+    assert.includes(readRoot('src/app/main.js'), 'listenForDesktopBooks();');
+});
