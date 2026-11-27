@@ -58,7 +58,7 @@ Direct-to-`master` workflow with maintainer review in-session, as in Plainchant 
 - Default branch: `master`.
 - Working branch pattern: `feature/<topic>` when branching is requested; otherwise `master`.
 - Commit format: concise imperative summary referencing roadmap IDs when applicable.
-- Release/version scheme: SemVer in `package.json`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json` (`0.1.0`).
+- Release/version scheme: SemVer in `package.json`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json` (`0.1.1`).
 
 Never force-push, rewrite shared history, publish, or rotate/delete production data without explicit permission.
 
@@ -113,6 +113,7 @@ Things an agent must not change without explicit permission. Every rule includes
 | `fonts/`, `icons/` | Bundled fonts (EB Garamond, Courier Prime, Inter) with their licences, and app icons (still Plainchant Web's) |
 | `LICENSE` | Project licence |
 | `.gitignore` | Ignored build output and local files |
+| `.github/workflows/` | GitHub Actions CI (`ci.yml`) and cross-platform release (`release.yml`) workflows |
 | `AGENTS.md` | Canonical agent instructions |
 | `CLAUDE.md` | Imports `AGENTS.md` for Claude/agent tooling |
 | `ROADMAP.md` | Planned and completed work with stable IDs |

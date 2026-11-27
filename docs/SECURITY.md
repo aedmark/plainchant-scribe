@@ -1,6 +1,6 @@
 # Security
 
-Security model, trust boundaries, and known limitations for Plainchant Scribe. **Status: current as of `0.1.0` (2026-11-08).** The boundaries below are built, and most name the tests that hold them; Plainchant Web's boundaries (the sandboxed Stage, the loopback asset server, the opt-in preview server, folder export path checks) came with the port (`P0-02`).
+Security model, trust boundaries, and known limitations for Plainchant Scribe. **Status: current as of `0.1.1` (2026-11-27).** The boundaries below are built, and most name the tests that hold them; Plainchant Web's boundaries (the sandboxed Stage, the loopback asset server, the opt-in preview server, folder export path checks) came with the port (`P0-02`).
 
 ## Threat model and trust boundaries
 
@@ -29,9 +29,10 @@ Scribe is a local web and desktop application. It opens books the user made and 
 
 | Version / branch | Security fixes |
 | --- | --- |
-| `master` and the latest release (`0.1.0`, 2026-11-08) | Supported |
+| `master` and the latest release (`0.1.1`, 2026-11-27) | Supported |
+| `0.1.0` (2026-11-08) | Unsupported (superseded by `0.1.1`) |
 
-There are no older releases.
+Older releases are unsupported.
 
 ## Secrets and configuration
 

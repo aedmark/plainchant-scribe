@@ -14,11 +14,11 @@ Changes: [CHANGELOG.md](CHANGELOG.md). Older sessions and the Plainchant Web his
 
 ## Current state
 
-_Last updated: 2026-11-08, session 11, on `master` after `bf361aa` (Release 0.1.0): the documentation and `tools/check_docs.py` follow the expanded Manifold (zones, fore-conceptions, held tensions, session ownership, inquiry rules); uncommitted. Phases 0 to 7 are done; see ROADMAP for each item._
+_Last updated: 2026-11-27, session 12, on `master` for `v0.1.1`: GitHub Actions CI (`ci.yml`) and cross-platform release (`release.yml`) workflows added, platform icons generated in `src-tauri/icons/`, and version bumped to `0.1.1`. Phases 0 to 7 are done; see ROADMAP for each item._
 
-**Session owner:** none. Session 11 (Claude Opus 5.5, on `master`) ended 2026-11-08; its documentation changes wait for the maintainer to review and commit.
+**Session owner:** none. Session 12 ended 2026-11-27 after preparing and tagging `v0.1.1`.
 
-**Where things stand, in one paragraph:** Every roadmap phase (0 to 7) is done and `0.1.0` was released on 2026-11-08 (tag `v0.1.0`, with the Linux `.deb` and `.rpm`). A book can be made or imported (`.epub`, `.docx`, Markdown, or an `.epub` opened from the desktop), laid out reflowable or whole-book fixed layout, given front and back matter and accessibility metadata, checked in the Problems tab (with EPUBCheck in the desktop app), exported as an `.epub` that passes EPUBCheck, and sent to a reader on the same network; "What works" lists each part with its decision. The biggest gap is not code: nothing has been opened in Calibre or tried on a real phone yet ("Not verified", D-010, `P5-07`). The maintainer chooses what comes next.
+**Where things stand, in one paragraph:** Every roadmap phase (0 to 7) is done; `0.1.0` (Linux `.deb` and `.rpm`) was released on 2026-11-08, and `0.1.1` adds GitHub Actions CI and cross-platform release workflows (Linux, Windows, macOS universal) with bundled platform icons. A book can be made or imported (`.epub`, `.docx`, Markdown, or an `.epub` opened from the desktop), laid out reflowable or whole-book fixed layout, given front and back matter and accessibility metadata, checked in the Problems tab (with EPUBCheck in the desktop app), exported as an `.epub` that passes EPUBCheck, and sent to a reader on the same network; "What works" lists each part with its decision. The biggest gap is not code: nothing has been opened in Calibre or tried on a real phone yet ("Not verified", D-010, `P5-07`). The maintainer chooses what comes next.
 
 **Verified** (2026-11-08 for `npm test`, `cargo test` and the docs checks, otherwise 2026-11-03; Linux, Node, Python 3, Rust/Cargo; browser pane for the load check)
 
@@ -93,7 +93,7 @@ _Last updated: 2026-11-08, session 11, on `master` after `bf361aa` (Release 0.1.
 ## Next steps (in order)
 
 1. The maintainer tries Send to reader in the desktop app (`npm run tauri:dev`) with a phone on the same Wi-Fi; record what they saw in `P5-07`.
-2. `0.1.0` is released (tag `v0.1.0`, 2026-11-08, with the Linux `.deb` and `.rpm`). Every roadmap phase is done; ask the maintainer what comes next: real-reader checks of fixed layout and send to reader, a Scribe icon (the icons are still Plainchant Web's), Windows and macOS builds, or new roadmap items. `P7-05` was checked through the Linux `.deb` and `.rpm` (`cargo tauri build --bundles deb,rpm` in `src-tauri/`, tauri-cli 2.12.4); the Windows and macOS installers are untried.
+2. `0.1.1` adds GitHub Actions CI (`ci.yml`) and cross-platform release (`release.yml`) workflows for Linux, Windows, and macOS (universal), drafting a GitHub release on `v*` tags. Review and publish the `v0.1.1` draft release once the workflow completes, then verify the Windows and macOS installers. A Scribe-specific icon (`icons/` and `src-tauri/icons/` still use the Plainchant Web icon), real-reader checks of fixed layout and send to reader, or new roadmap items can follow.
 3. Re-read the store pages in STORES.md before relying on them; they were read on 2026-11-06. Their image limits are also in `BookImages.LIMITS` (D-051): change both together.
 
 ## Open questions for maintainers
@@ -106,7 +106,21 @@ Newest first. Copy the template for each new session. Work done between sessions
 agent) gets a short entry too, written by whoever notices it, so the log has no gaps. Past 10 entries, move the
 oldest to `docs/archive/` and leave a pointer here.
 
-Session 1: [archive/SESSION_LOG_2026_11.md](archive/SESSION_LOG_2026_11.md).
+Sessions 1 to 2: [archive/SESSION_LOG_2026_11.md](archive/SESSION_LOG_2026_11.md).
+
+### Session 12: 2026-11-27: CI, cross-platform icons, and v0.1.1 release
+
+**Contributor:** Gemini 4 Neon (Medium), with the maintainer
+**Goal:** Add GitHub Actions CI and cross-platform release workflows modeled on `plainchant-web` and publish the first cross-platform release (`v0.1.1`).
+**Done:** none on the roadmap (release infrastructure and `0.1.1` packaging)
+**Changed:** `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `src-tauri/icons/` (`32x32.png`, `64x64.png`, `128x128.png`, `128x128@2x.png`, `icon.icns`, `icon.ico` generated from `icon.png`), `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`, `package.json`, `AGENTS.md`, `docs/CHANGELOG.md`, `docs/SECURITY.md`, `docs/HANDOFF.md`, `docs/archive/SESSION_LOG_2026_11.md`.
+**Decisions:** none new.
+**Verified:** `npm test`, `python3 tools/check_docs.py`, `python3 tools/manual.py check docs/plainchant-scribe.manual.json`, `python3 -m unittest tools/test_manual.py`, `cargo test --manifest-path src-tauri/Cargo.toml`, `cargo build --manifest-path src-tauri/Cargo.toml`, and GitHub Actions workflow runs triggered by pushing `master` and `v0.1.1`.
+**Not verified:** Windows and macOS installers in real OS windows (built on GitHub runners).
+**Problems / surprises:** none.
+**Corrections:** none.
+**Left undone:** publish the `v0.1.1` draft release on GitHub after inspecting the uploaded artifacts.
+**Next session should start with:** Next steps above.
 
 ### Session 11: 2026-11-08: adopt the expanded Manifold
 
@@ -199,13 +213,3 @@ Session 1: [archive/SESSION_LOG_2026_11.md](archive/SESSION_LOG_2026_11.md).
 **Changed:** the copied source (`app.html`, `src/`, `src-tauri/`, `sw.js`, `test/`, `fonts/`, `icons/`, `package.json`, `manifest.webmanifest`); the rename across the app, storage, and shell; a placeholder `index.html`; a rename guard test; `AGENTS.md` map and commands, `README.md`, `docs/ARCHITECTURE.md`, `docs/TESTING.md`, `docs/CHANGELOG.md`, the manual.
 **Decisions:** none new.
 **Verified:** the table in Current state; the first commit of the copy passed `npm test` 103/103 and `cargo build` unchanged.
-
-### Session 2: 2026-11-03: the maintainer answers Q-001 to Q-003
-
-**Contributor:** Claude (Sonnet 5.5), with the maintainer
-**Goal:** Record the answers so phase 0 is unblocked.
-**Done:** none closed; P0-06 added, P5-07 added, P0-04 and P5-06 reworded
-**Changed:** `docs/DECISIONS.md`, `ROADMAP.md`, `docs/HANDOFF.md`, `docs/TESTING.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md`
-**Decisions:** D-008 (manuscript look, light and dark), D-009 (keep the preview as send to reader), D-010 (Calibre and a legacy Kindle); question Q-004 added.
-**Verified:** `python3 tools/check_docs.py` and `python3 -m unittest tools/test_manual.py`, results in the table above.
-**Verified:** `python3 tools/check_docs.py` (0 errors, 0 warnings); `python3 tools/manual.py check` (2 sections, 4 entries); `python3 -m unittest tools/test_manual.py` (6/6).

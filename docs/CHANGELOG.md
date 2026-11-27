@@ -6,6 +6,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-27
+
+Cross-platform desktop release packaging and GitHub Actions automation.
+
+### Added
+
+- **GitHub Actions CI and release workflows**: `.github/workflows/ci.yml` runs the Node tests, documentation checks, manual checks, and Linux Rust/Tauri build on pushes and pull requests to `master`; `.github/workflows/release.yml` runs the verification suite and builds draft release bundles for Linux, Windows, and macOS (universal) on `v*` tags.
+- **Cross-platform desktop icons**: generated `32x32.png`, `64x64.png`, `128x128.png`, `128x128@2x.png`, `icon.icns`, and `icon.ico` in `src-tauri/icons/` from `icon.png` and wired them into `src-tauri/tauri.conf.json`.
+
 ## [0.1.0] - 2026-11-08
 
 The first release: make, import, lay out, check, and export EPUB 3.3 books, reflowable or fixed layout, in the browser or the desktop app.
@@ -65,5 +74,6 @@ The first release: make, import, lay out, check, and export EPUB 3.3 books, refl
 - **In-app dialogs for names and paths**: New file, New folder, renaming files, folders, and images, and Make shared part now ask in a Studio dialog that checks the name as you go, instead of the browser's prompt box.
 - **Plainchant Scribe**: the studio is spun off from Plainchant Web, with its own name, bundle id (`io.plainchant.scribe`), and browser storage, and its web-page features replaced by book ones ([ROADMAP.md](../ROADMAP.md)).
 
-[Unreleased]: https://github.com/aedmark/plainchant-scribe/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/aedmark/plainchant-scribe/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/aedmark/plainchant-scribe/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/aedmark/plainchant-scribe/releases/tag/v0.1.0
