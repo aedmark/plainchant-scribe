@@ -125,6 +125,7 @@ function loadProjectIntoEditor(rawOrFiles, options = {}) {
     if (typeof resetHistory === 'function') resetHistory();
     if (typeof adoptProjectAssets === 'function') adoptProjectAssets(options.assets);
     if (typeof markFilesSaved === 'function') markFilesSaved();
+    if (typeof stopPreviewIfDifferent === 'function') stopPreviewIfDifferent();
 }
 
 function renderFileTabs() {
@@ -188,7 +189,7 @@ function openFileInEditor(filePath) {
     const switchedHtml = isPagePath(filePath) && filePath !== activeHtmlFile;
     if (isPagePath(filePath)) {
         activeHtmlFile = filePath;
-        selectedPcId = null;
+        if (switchedHtml) selectedPcId = null;
     }
     syncMirrors();
     editor.value = projectFiles.entries[activeFile] || '';
@@ -334,14 +335,17 @@ function applyHtmlTransform(newHtml, keepSelectId, options = {}) {
     }
     projectFiles.entries[activeHtmlFile] = newHtml;
     projectFiles.html = newHtml;
+    if (keepSelectId !== undefined) selectedPcId = keepSelectId;
 
     if (options.skipStageRender) {
         if (activeFile === activeHtmlFile) {
+            const prevScroll = editor.scrollTop;
             editor.value = newHtml;
+            editor.scrollTop = prevScroll;
+            if (typeof shadeLayer !== 'undefined' && shadeLayer) shadeLayer.scrollTop = prevScroll;
         }
         currentHtmlAst = HtmlAst.parse(projectFiles.html);
         drawShade();
-        if (keepSelectId !== undefined) selectedPcId = keepSelectId;
         const node = selectedPcId ? HtmlAst.findById(currentHtmlAst, selectedPcId) : null;
         if (node && activeFile === activeHtmlFile) {
             const blockLines = editor.value.slice(node.start, node.end).split('\n').length;
@@ -362,25 +366,28 @@ function applyHtmlTransform(newHtml, keepSelectId, options = {}) {
         scheduleAutoSave();
     }
     if (keepSelectId !== undefined) {
-        selectedPcId = keepSelectId;
         refreshInspector();
         updateBreadcrumbs();
     }
     if (typeof syncLatestHistoryState === 'function') syncLatestHistoryState();
 }
 
-function applyCssTransform(newCss) {
+function applyCssTransform(newCss, options = {}) {
     ensureEntries();
     syncMirrors();
     if (newCss === projectFiles.css) return;
-    if (typeof pushUndoState === 'function') pushUndoState();
+    if (options.coalesceHistory && typeof recordHistoryBurst === 'function') {
+        recordHistoryBurst();
+    } else if (typeof pushUndoState === 'function') {
+        pushUndoState();
+    }
     projectFiles.entries[activeCssFile] = newCss;
     projectFiles.css = newCss;
     if (activeFile === activeCssFile) {
         const edit = Editing.diffEdit(editor.value, newCss, editor.selectionStart, editor.selectionEnd);
-        applyEdit(edit, { keepFocus: true, skipHistory: true });
+        applyEdit(edit, { keepFocus: true, skipHistory: true, cssOnly: true });
     } else {
-        render(false);
+        render(false, { cssOnly: true });
         scheduleAutoSave();
     }
     if (typeof syncLatestHistoryState === 'function') syncLatestHistoryState();
@@ -394,13 +401,15 @@ function scheduleAutoSave() {
     if (typeof refreshDirtyMarks === 'function') refreshDirtyMarks();
 }
 
-function render(typed) {
+function render(typed, options = {}) {
     syncBufferFromEditor();
-    if (typeof propagatePartEdits === 'function') propagatePartEdits();
+    if (!options.skipPartSync && typeof propagatePartEdits === 'function') propagatePartEdits();
     currentHtmlAst = HtmlAst.parse(projectFiles.html);
     currentCssAst = CssAst.parse(projectFiles.css);
     drawShade();
-    scheduleStageRender(typed);
+    if (!(options.cssOnly && typeof patchStageCss === 'function' && patchStageCss())) {
+        scheduleStageRender(typed);
+    }
     if (selectedPcId && !HtmlAst.findById(currentHtmlAst, selectedPcId)) {
         selectedPcId = null;
     }
@@ -429,25 +438,32 @@ if (explorerFilter) {
 
 if (newFileBtn) {
     newFileBtn.addEventListener('click', async () => {
+        ensureEntries();
+        const taken = Object.assign({}, projectFiles.entries);
+        Object.keys(projectAssets || {}).forEach((p) => { if (!(p in taken)) taken[p] = ''; });
         const name = await askText({
             title: 'New file',
             hint: 'File name (e.g. about.html, theme.css, utils.js)',
             value: 'page.html',
             confirm: 'Create',
-            validate: (text) => (text.replace(/^\/+/, '') ? '' : 'Enter a file name.')
+            validate: (text) => Project.validateFilePath(text, taken).error || ''
         });
         if (!name) return;
-        const clean = name.trim().replace(/^\/+/, '');
-        ensureEntries();
-        if (!(clean in projectFiles.entries)) {
-            projectFiles.entries[clean] = clean.endsWith('.html')
+        const clean = Project.validateFilePath(name, taken).path;
+        if (!clean) return;
+        const next = Object.assign({}, projectFiles.entries, {
+            [clean]: clean.endsWith('.html')
                 ? Project.blank().html
-                : (clean.endsWith('.css') ? '/* ' + clean + ' */\n' : '// ' + clean + '\n');
-            if (Array.isArray(projectFiles.tree)) {
-                projectFiles.tree.push({ path: clean, kind: 'file', is_text: true });
-            }
+                : (clean.endsWith('.css') ? '/* ' + clean + ' */\n' : '// ' + clean + '\n')
+        });
+        const tree = Array.isArray(projectFiles.tree) ? Project.treeAfter(projectFiles.tree, { type: 'add', path: clean }) : projectFiles.tree;
+        if (typeof commitFileChange === 'function') {
+            commitFileChange(next, { tree: tree, openTabs: openTabs.concat(clean), activeFile: clean, activeHtmlFile: isPagePath(clean) ? clean : activeHtmlFile });
+        } else {
+            projectFiles.entries = next;
+            projectFiles.tree = tree;
+            openFileInEditor(clean);
+            scheduleAutoSave();
         }
-        openFileInEditor(clean);
-        scheduleAutoSave();
     });
 }

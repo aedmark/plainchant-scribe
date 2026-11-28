@@ -12,6 +12,7 @@ use std::net::TcpListener;
 use std::path::{Component, Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::time::Duration;
 
 #[derive(Serialize, Clone)]
 struct FileEntry {
@@ -110,6 +111,7 @@ fn spawn_asset_server(root_holder: Arc<Mutex<Option<PathBuf>>>) -> u16 {
             let root_opt = root_holder.lock().ok().and_then(|g| g.clone());
             thread::spawn(move || {
                 let mut stream = stream;
+                let _ = stream.set_read_timeout(Some(Duration::from_secs(5)));
                 let mut buf = [0u8; 4096];
                 let n = match stream.read(&mut buf) {
                     Ok(n) if n > 0 => n,
@@ -140,7 +142,16 @@ fn spawn_asset_server(root_holder: Arc<Mutex<Option<PathBuf>>>) -> u16 {
                     root.join(rel)
                 };
 
-                match fs::read(&full) {
+                let (Ok(canon_root), Ok(canon_full)) = (fs::canonicalize(&root), fs::canonicalize(&full)) else {
+                    let _ = stream.write_all(b"HTTP/1.1 404 Not Found\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+                    return;
+                };
+                if !canon_full.starts_with(&canon_root) {
+                    let _ = stream.write_all(b"HTTP/1.1 403 Forbidden\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+                    return;
+                }
+
+                match fs::read(&canon_full) {
                     Ok(bytes) => {
                         let mime = mime_for_path(&full);
                         let header = format!(
@@ -371,7 +382,7 @@ fn save_project_folder(
             }
             let bytes = decode_base64(&data).ok_or_else(|| format!("{}: invalid image data", rel_path))?;
             let target = dir.join(rel);
-            if fs::metadata(&target).map(|m| m.len() == bytes.len() as u64).unwrap_or(false) {
+            if fs::read(&target).ok().as_deref() == Some(bytes.as_slice()) {
                 continue;
             }
             if let Some(parent) = target.parent() {
@@ -380,7 +391,8 @@ fn save_project_folder(
             fs::write(&target, bytes).map_err(|e| format!("{}: {}", rel_path, e))?;
         }
     }
-    Ok(Some(dir.to_string_lossy().into_owned()))
+    let out = canonical_dir(dir)?;
+    Ok(Some(out.to_string_lossy().into_owned()))
 }
 
 // A file name for the Save dialog: no folders, no control or reserved characters, ending in .epub.

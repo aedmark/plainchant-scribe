@@ -6,6 +6,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): `Added`
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-27
+
+EPUB-aware RTF formatting toolbar above the Stage, click-to-select and live CSS patching on both books and web pages, and studio-wide parser, modal, and Tauri backend hardening.
+
+### Added
+
+- **EPUB-aware Stage formatting toolbar**: an RTF-style formatting strip above the Stage (`src/app/style-bar.js`, `src/typography.js`) with rule target switcher, font family (listing the book's embedded `@font-face` fonts first), font size presets and stepper (`em`/`%` by default in reflowable books), bold/italic/underline/strikethrough, left/center/right/justify alignment, line height, letter spacing, and text/background colour pickers synced with the CSS Designer (`D-053`).
+
+### Changed
+
+- **Stage interaction and live CSS patching**: single-click on the Stage selects cleanly, double-click edits leaf text with `Escape` revert, CSS edits patch inlined stylesheets live on both EPUB chapters and web pages without reloading the Stage or resetting scroll/page position, and Properties / CSS Designer split Alt Text / Title and Width / Max Width (`D-054`).
+- **Studio dialogs and hardening**: dynamic modal stacking and drag-close guard in `src/app/dialogs.js`, replaced the last `window.confirm` in Assets with an in-app confirmation dialog, stopped sharing automatically when switching projects, hardened Tauri localhost asset server timeout/symlink containment and preview SVG asset retention, and ported CSS/HTML parser, formatter, and linter hardening from Plainchant Web.
+
 ## [0.1.1] - 2026-11-27
 
 Cross-platform desktop release packaging and GitHub Actions automation.
@@ -74,6 +87,7 @@ The first release: make, import, lay out, check, and export EPUB 3.3 books, refl
 - **In-app dialogs for names and paths**: New file, New folder, renaming files, folders, and images, and Make shared part now ask in a Studio dialog that checks the name as you go, instead of the browser's prompt box.
 - **Plainchant Scribe**: the studio is spun off from Plainchant Web, with its own name, bundle id (`io.plainchant.scribe`), and browser storage, and its web-page features replaced by book ones ([ROADMAP.md](../ROADMAP.md)).
 
-[Unreleased]: https://github.com/aedmark/plainchant-scribe/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/aedmark/plainchant-scribe/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/aedmark/plainchant-scribe/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/aedmark/plainchant-scribe/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/aedmark/plainchant-scribe/releases/tag/v0.1.0

@@ -1,15 +1,16 @@
 (function (root, factory) {
-    if (typeof module === 'object' && module.exports) module.exports = factory(require('./html-ast.js'));
-    else root.Hints = factory(root.HtmlAst);
-})(typeof self !== 'undefined' ? self : this, function (HtmlAst) {
+    if (typeof module === 'object' && module.exports) module.exports = factory(require('./html-ast.js'), require('./parts.js'));
+    else root.Hints = factory(root.HtmlAst, root.Parts);
+})(typeof self !== 'undefined' ? self : this, function (HtmlAst, Parts) {
     'use strict';
 
     const OPTIONAL_END = new Set(['p', 'li', 'dt', 'dd', 'tr', 'td', 'th', 'thead', 'tbody', 'tfoot', 'colgroup', 'caption', 'option', 'optgroup', 'rt', 'rp', 'html', 'head', 'body']);
     const OBSOLETE = new Set(['center', 'font', 'marquee', 'blink', 'big', 'strike', 'tt', 'frame', 'frameset', 'noframes', 'acronym', 'applet', 'basefont', 'dir', 'isindex', 'nobr']);
     const UNLABELLED_TYPES = /^(hidden|submit|reset|button|image)$/i;
     const HEADING = /^h([1-6])$/;
-    const OPEN_TAG = /^<\s*([a-zA-Z][a-zA-Z0-9:-]*)((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>/;
+    const OPEN_TAG = /^<\s*([a-zA-Z][a-zA-Z0-9:-]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/;
     const CLOSE_TAG = /^<\/\s*([a-zA-Z][a-zA-Z0-9:-]*)\s*>/;
+    const RAW_HINT_TAGS = new Set(['script', 'style', 'textarea', 'title']);
 
     function lineIndex(text) {
         const starts = [0];
@@ -53,8 +54,9 @@
             const tag = opening[1].toLowerCase();
             const end = lt + opening[0].length;
             pos = end;
-            if (opening[3] === '/' || HtmlAst.VOID_TAGS[tag]) continue;
-            if (tag === 'script' || tag === 'style') {
+            const trimmedAttr = (opening[2] || '').replace(/\s+$/, '');
+            if (/(?:^|[\s"'])\/$/.test(trimmedAttr) || HtmlAst.VOID_TAGS[tag]) continue;
+            if (RAW_HINT_TAGS.has(tag)) {
                 const raw = new RegExp('<\\/\\s*' + tag + '\\s*>', 'i').exec(text.slice(end));
                 if (!raw) { events.push({ type: 'open', tag: tag, start: lt, end: end }); pos = text.length; continue; }
                 events.push({ type: 'open', tag: tag, start: lt, end: end });
@@ -147,7 +149,7 @@
                 const n = Number(level[1]);
                 if (previousHeading && n > previousHeading + 1) add('accessibility', 'warning', span[0], span[1], 'Heading jumps from h' + previousHeading + ' to h' + n + ' (skips h' + (previousHeading + 1) + ').');
                 previousHeading = n;
-                if (!textOf(el).trim() && !a['aria-label']) add('accessibility', 'warning', span[0], span[1], 'Empty <' + el.tag + '> heading.');
+                if (!named(el)) add('accessibility', 'warning', span[0], span[1], 'Empty <' + el.tag + '> heading.');
             }
             if (el.tag === 'a' && a.href != null && !named(el)) add('accessibility', 'warning', span[0], span[1], 'Link has no text. Add text, an aria-label, or an image with alt.');
             if (el.tag === 'button' && !named(el)) add('accessibility', 'warning', span[0], span[1], 'Button has no text or aria-label.');
@@ -174,6 +176,7 @@
             const order = Object.keys(entries);
             order.forEach((file) => {
                 if (!/\.html?$/i.test(file)) return;
+                if (Parts && Parts.isPart && Parts.isPart(entries, file)) return;
                 const text = String(entries[file]);
                 let hit = cache.get(file);
                 if (!hit || hit.text !== text) { hit = { text: text, problems: checkHtml(text) }; cache.set(file, hit); }

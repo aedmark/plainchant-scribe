@@ -86,6 +86,10 @@ async function openExistingFolderProject(id, meta, disk) {
     selectedPcId = null;
     linkedFolder = meta;
     loadProjectIntoEditor(script.content, { baseUrl: meta.baseUrl || '' });
+    if (!projectFiles.tree && Array.isArray(disk.tree) && disk.tree.length) {
+        projectFiles.tree = disk.tree;
+        renderExplorer();
+    }
     if (fileExplorer) {
         fileExplorer.hidden = false;
         if (toggleExplorerBtn) toggleExplorerBtn.setAttribute('aria-pressed', 'true');
@@ -114,6 +118,7 @@ function reloadFolderFromDisk() {
     if (!tabs.includes(active)) tabs.push(active);
     const count = pendingDisk.diff.count;
     commitFileChange(next, { tree: pendingDisk.tree, openTabs: tabs, activeFile: active, activeHtmlFile: page });
+    if (typeof markFilesSaved === 'function') markFilesSaved(next);
     markLinkSynced();
     showNotice('Reloaded ' + count + (count === 1 ? ' file' : ' files') + ' from disk. Press Ctrl/Cmd+Z to undo.');
 }

@@ -158,7 +158,8 @@
     }
 
     function keepVersion(versions, version, rules, now) {
-        if (version) versions.put(version);
+        if (!version) return;
+        versions.put(version);
         const all = versions.index(BY_SCRIPT).getAll(ofScript(version.scriptId));
         all.onsuccess = () => rules.prune(all.result, now).forEach((id) => versions.delete(id));
     }

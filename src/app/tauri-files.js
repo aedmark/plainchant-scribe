@@ -60,18 +60,20 @@ async function scanBrowserDir(dirHandle, prefix, files, tree, depth, assets) {
             tree.push({ path: relPath, kind: 'dir', is_text: false });
             await scanBrowserDir(handle, relPath, files, tree, depth + 1, assets);
         } else if (handle.kind === 'file') {
-            const isText = Importing.accept(name) || /\.(svg|md|xml|webmanifest)$/i.test(name);
+            const isText = Importing.accept(name) || /\.(mjs|svg|md|xml|webmanifest)$/i.test(name);
+            let loadedText = false;
             if (isText) {
                 try {
                     const file = await handle.getFile();
                     if (file.size <= 2 * 1024 * 1024) {
                         files[relPath] = await file.text();
+                        loadedText = true;
                     }
                 } catch (e) {
                 }
             }
             if (!isText && assets) await collectBrowserAsset(handle, relPath, assets);
-            tree.push({ path: relPath, kind: 'file', is_text: isText });
+            tree.push({ path: relPath, kind: 'file', is_text: loadedText });
         }
     }
 }
@@ -110,6 +112,7 @@ async function writeBrowserDirEntries(rootHandle, entriesMap, assetMap, dirList)
     }
     for (const [relPath, blob] of Object.entries(assetMap || {})) {
         const parts = String(relPath || '').split('/').filter(Boolean);
+        if (!parts.length) continue;
         let dir = rootHandle;
         for (let i = 0; i < parts.length - 1; i++) {
             dir = await dir.getDirectoryHandle(parts[i], { create: true });
@@ -117,7 +120,11 @@ async function writeBrowserDirEntries(rootHandle, entriesMap, assetMap, dirList)
         const fileName = parts[parts.length - 1];
         let existing = null;
         try { existing = await (await dir.getFileHandle(fileName)).getFile(); } catch (e) { existing = null; }
-        if (existing && existing.size === blob.size) continue;
+        if (existing && existing.size === blob.size) {
+            const a = new Uint8Array(await existing.arrayBuffer());
+            const b = new Uint8Array(await blob.arrayBuffer());
+            if (a.length === b.length && a.every((v, i) => v === b[i])) continue;
+        }
         const writable = await (await dir.getFileHandle(fileName, { create: true })).createWritable();
         await writable.write(blob);
         await writable.close();
@@ -216,7 +223,12 @@ async function exportProjectToFolder(forceNewFolder = false) {
                 dirs: projectFolderPaths()
             });
             if (!savedPath) return;
-            await adoptExportFolder({ kind: 'Tauri disk', name: savedPath, path: savedPath, baseUrl: projectBaseUrl || '' });
+            let baseUrl = projectBaseUrl || '';
+            if (!linkedFolder) {
+                baseUrl = await tauriInvoke('use_project_folder', { path: savedPath }).catch(() => baseUrl);
+                if (baseUrl) projectBaseUrl = baseUrl;
+            }
+            await adoptExportFolder({ kind: 'Tauri disk', name: savedPath, path: savedPath, baseUrl: baseUrl });
             if (typeof refreshExportModal === 'function') refreshExportModal();
             markFilesSaved();
             if (linkedFolder) markLinkSynced();

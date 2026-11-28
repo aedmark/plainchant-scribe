@@ -8,12 +8,12 @@ function lineIndentOf(text, offset) {
     return /^[ \t]*/.exec(text.slice(lineStart))[0];
 }
 
-function commitPartEntries(next) {
+function commitPartEntries(next, options) {
     pushUndoState();
     projectFiles.entries = next;
     editor.value = next[activeFile] != null ? next[activeFile] : editor.value;
     syncMirrors();
-    render(false);
+    render(false, options);
     scheduleAutoSave();
     if (typeof syncLatestHistoryState === 'function') syncLatestHistoryState();
 }
@@ -136,9 +136,9 @@ async function makePartFromSelection() {
     const path = answer.replace(/^\/+/, '');
     const outer = html.slice(node.start, node.end);
     const region = Parts.wrap(Parts.relPath(activeHtmlFile, path), outer, lineIndentOf(html, node.start));
-    applyHtmlTransform(html.slice(0, node.start) + region + html.slice(node.end), null);
     projectFiles.entries[path] = outer + '\n';
-    if (Array.isArray(projectFiles.tree)) projectFiles.tree.push({ path: path, kind: 'file', is_text: true });
+    if (Array.isArray(projectFiles.tree)) projectFiles.tree = Project.treeAfter(projectFiles.tree, { type: 'add', path: path });
+    applyHtmlTransform(html.slice(0, node.start) + region + html.slice(node.end), null);
     renderExplorer();
     refreshPartsUi();
     scheduleAutoSave();

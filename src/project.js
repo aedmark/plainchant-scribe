@@ -244,8 +244,31 @@
         return target && Object.prototype.hasOwnProperty.call(urls, target) ? urls[target] : null;
     }
 
+    function parseSrcset(raw) {
+        const s = String(raw || '');
+        const items = [];
+        let start = 0;
+        let inDataComma = false;
+        for (let i = 0; i <= s.length; i++) {
+            const ch = s[i];
+            if (i === s.length || ch === ',') {
+                const head = s.slice(start, i).trimStart();
+                if (i < s.length && !inDataComma && /^data:/i.test(head)) {
+                    inDataComma = true;
+                    continue;
+                }
+                const seg = s.slice(start, i).trim();
+                if (seg) items.push(seg);
+                start = i + 1;
+                inDataComma = false;
+            }
+        }
+        return items;
+    }
+
     function rewriteCssUrls(css, fromFile, urls) {
-        return String(css).replace(/url\(\s*(['"]?)([^'")]*?)\1\s*\)/gi, (full, quote, raw) => {
+        return String(css).replace(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^)\s'"]*))\s*\)/gi, (full, dq, sq, uq) => {
+            const raw = dq != null ? dq : (sq != null ? sq : (uq || ''));
             const hit = assetUrlFor(urls, fromFile, raw);
             return hit ? 'url("' + hit + '")' : full;
         });
@@ -260,10 +283,10 @@
                 if (attr === 'href' && !isLink) return full;
                 const value = dq != null ? dq : sq;
                 const next = attr === 'srcset'
-                    ? value.split(',').map((candidate) => {
-                        const parts = candidate.trim().split(/\s+/);
+                    ? parseSrcset(value).map((candidate) => {
+                        const parts = candidate.split(/\s+/);
                         const hit = assetUrlFor(urls, fromFile, parts[0]);
-                        return hit ? [hit].concat(parts.slice(1)).join(' ') : candidate.trim();
+                        return hit ? [hit].concat(parts.slice(1)).join(' ') : candidate;
                     }).join(', ')
                     : (assetUrlFor(urls, fromFile, value) || value);
                 return space + name + eq + '"' + next + '"';
@@ -306,7 +329,8 @@
             const next = visit(dq != null ? dq : sq);
             return next == null ? full : head + (dq != null ? '"' + next + '"' : "'" + next + "'");
         });
-        return out.replace(/url\(\s*(['"]?)([^'")]*?)\1\s*\)/gi, (full, quote, raw) => {
+        return out.replace(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^)\s'"]*))\s*\)/gi, (full, dq, sq, uq) => {
+            const raw = dq != null ? dq : (sq != null ? sq : (uq || ''));
             const next = visit(raw);
             return next == null ? full : 'url("' + next + '")';
         });
@@ -706,8 +730,17 @@
     function setTitle(rawOrFiles, title) {
         const isStr = typeof rawOrFiles === 'string';
         const files = isStr ? unpack(rawOrFiles) : Object.assign({}, rawOrFiles);
-        files.html = HtmlAst.setTitle(files.html || '', title);
-        if (files.entries) files.entries['index.html'] = files.html;
+        const entries = files.entries ? Object.assign({}, files.entries) : null;
+        const page = entries
+            ? (('index.html' in entries) ? 'index.html' : (Object.keys(entries).find((k) => /\.html?$/i.test(k)) || 'index.html'))
+            : 'index.html';
+        const prev = entries && entries[page] != null ? entries[page] : (files.html || '');
+        const next = HtmlAst.setTitle(prev, title);
+        if (entries) {
+            entries[page] = next;
+            files.entries = entries;
+        }
+        if (!entries || page === 'index.html' || files.html === prev) files.html = next;
         return isStr ? pack(files) : files;
     }
 
@@ -733,15 +766,14 @@
                 inlinedCssPaths.add(lnk.path);
                 html = html.replace(
                     lnk.fullMatch,
-                    '<style id="pc-project-css" data-pc-href="' + lnk.path + '">\n' + (assetUrls ? rewriteCssUrls(entries[lnk.path], lnk.path, assetUrls) : entries[lnk.path]) + '\n</style>'
+                    () => '<style id="pc-project-css" data-pc-href="' + lnk.path + '">\n' + buildPreviewCss(f, lnk.path, opts) + '\n</style>'
                 );
             }
         });
 
-        const fallbackCss = f.css != null ? f.css : (entries['styles.css'] || entries['style.css'] || '');
         const hasInjectedStyle = html.indexOf('id="pc-project-css"') !== -1;
         const styleBlock = !hasInjectedStyle
-            ? '<style id="pc-project-css">\n' + (assetUrls ? rewriteCssUrls(fallbackCss, primaryCssFile(f, activeHtmlPath), assetUrls) : String(fallbackCss)) + '\n</style>'
+            ? '<style id="pc-project-css">\n' + buildPreviewCss(f, primaryCssFile(f, activeHtmlPath), opts) + '\n</style>'
             : '';
 
         // Scripts are never run in the Studio (D-004): every <script> is dropped from the preview.
@@ -763,7 +795,7 @@
 
         if (headBottom) {
             if (/<\/head>/i.test(html)) {
-                html = html.replace(/<\/head>/i, headBottom + '\n</head>');
+                html = html.replace(/<\/head>/i, () => headBottom + '\n</head>');
             } else {
                 html = headBottom + '\n' + html;
             }
@@ -776,7 +808,7 @@
 
         if (tailInsert) {
             if (/<\/body>/i.test(html)) {
-                html = html.replace(/<\/body>/i, tailInsert + '\n</body>');
+                html = html.replace(/<\/body>/i, () => tailInsert + '\n</body>');
             } else {
                 html = html + '\n' + tailInsert;
             }
@@ -784,31 +816,51 @@
         return html;
     }
 
+    function buildPreviewCss(files, cssPath, opts) {
+        const f = typeof files === 'string' ? unpack(files) : (files || {});
+        const entries = normalizeEntries(f);
+        const raw = (cssPath && entries[cssPath] != null)
+            ? entries[cssPath]
+            : (f.css != null ? f.css : (entries['styles.css'] || entries['style.css'] || ''));
+        const assetUrls = opts && opts.assetUrls && Object.keys(opts.assetUrls).length ? opts.assetUrls : null;
+        return assetUrls ? rewriteCssUrls(raw, cssPath || primaryCssFile(f), assetUrls) : String(raw);
+    }
+
     function exportSingleHtml(files) {
         const f = typeof files === 'string' ? unpack(files) : (files || {});
         const entries = normalizeEntries(f);
-        let html = String(f.html || entries['index.html'] || '');
-        const cssFile = primaryCssFile(f, 'index.html');
+        const htmlFile = f.activeHtml || (('index.html' in entries) ? 'index.html' : (Object.keys(entries).find((k) => /\.html?$/i.test(k)) || 'index.html'));
+        let html = String(f.html != null ? f.html : (entries[htmlFile] || ''));
+        const cssFile = primaryCssFile(f, htmlFile);
         const css = String(f.css != null ? f.css : (entries[cssFile] || '')).trim();
         const js = String(f.js != null ? f.js : (entries['script.js'] || '')).trim();
 
         if (css) {
             const styleTag = '<style>\n' + css + '\n  </style>';
-            const links = linkedStylesheets(html, entries, 'index.html');
+            const links = linkedStylesheets(html, entries, htmlFile);
             if (links.length) {
-                html = html.replace(links[0].fullMatch, styleTag);
+                html = html.replace(links[0].fullMatch, () => styleTag);
             } else if (/<\/head>/i.test(html)) {
-                html = html.replace(/<\/head>/i, '  ' + styleTag + '\n</head>');
+                html = html.replace(/<\/head>/i, () => '  ' + styleTag + '\n</head>');
             } else {
                 html = styleTag + '\n' + html;
             }
         }
-        if (js) {
-            const scriptTag = '<script>\n' + js + '\n  <\/script>';
-            if (/<script\b[^>]*src=["'][^"']+["'][^>]*>\s*<\/script>/i.test(html)) {
-                html = html.replace(/<script\b[^>]*src=["'][^"']+["'][^>]*>\s*<\/script>/i, scriptTag);
-            } else if (/<\/body>/i.test(html)) {
-                html = html.replace(/<\/body>/i, '  ' + scriptTag + '\n</body>');
+        let inlinedJs = false;
+        html = html.replace(/<script\b([^>]*)\bsrc\s*=\s*(?:"([^"]+)"|'([^']+)')([^>]*)>\s*<\/script>/gi, (full, pre, s1, s2) => {
+            const srcPath = resolveRelPath(htmlFile, s1 || s2);
+            if (srcPath && entries[srcPath] != null) {
+                inlinedJs = true;
+                const safe = String(entries[srcPath]).replace(/<\/(script)/gi, '<\\/$1');
+                return '<script>\n' + safe + '\n  <\/script>';
+            }
+            return full;
+        });
+        if (!inlinedJs && js) {
+            const safeJs = js.replace(/<\/(script)/gi, '<\\/$1');
+            const scriptTag = '<script>\n' + safeJs + '\n  <\/script>';
+            if (/<\/body>/i.test(html)) {
+                html = html.replace(/<\/body>/i, () => '  ' + scriptTag + '\n</body>');
             } else {
                 html = html + '\n' + scriptTag;
             }
@@ -854,6 +906,7 @@
         deleteFile: deleteFile,
         treeAfter: treeAfter,
         mimeFor: mimeFor,
+        parseSrcset: parseSrcset,
         rewriteAssetUrls: rewriteAssetUrls,
         rewriteCssUrls: rewriteCssUrls,
         normalizeEntries: normalizeEntries,
@@ -865,6 +918,7 @@
         unpack: unpack,
         extractTitle: extractTitle,
         setTitle: setTitle,
+        buildPreviewCss: buildPreviewCss,
         assemblePreview: assemblePreview,
         exportSingleHtml: exportSingleHtml,
         stats: stats

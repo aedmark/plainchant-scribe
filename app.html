@@ -220,6 +220,72 @@
         </div>
     </div>
 
+    <div id="styleToolbar" class="style-toolbar" role="toolbar" aria-label="Text and CSS formatting">
+        <div class="tb-group tb-target-group">
+            <select id="tbCssTarget" class="tb-select tb-target" aria-label="Target CSS rule or inline style" title="Rule or inline style edited by these controls"></select>
+        </div>
+        <span class="tb-sep" aria-hidden="true"></span>
+        <div class="tb-group">
+            <select id="tbFontFamily" class="tb-select tb-font" aria-label="Font family" title="Font family">
+                <option value="">(inherit)</option>
+            </select>
+            <div class="tb-stepper">
+                <button type="button" id="tbFontDec" class="tb-btn tb-step" title="Decrease font size" aria-label="Decrease font size">&minus;</button>
+                <input type="text" id="tbFontSize" class="tb-input tb-size" list="fontSizePresets" placeholder="size" aria-label="Font size" title="Font size (em, %, rem, px)" autocomplete="off">
+                <button type="button" id="tbFontInc" class="tb-btn tb-step" title="Increase font size" aria-label="Increase font size">+</button>
+            </div>
+        </div>
+        <span class="tb-sep" aria-hidden="true"></span>
+        <div class="tb-group" role="group" aria-label="Font style">
+            <button type="button" id="tbBold" class="tb-btn tb-b" aria-pressed="false" title="Bold (font-weight)">B</button>
+            <button type="button" id="tbItalic" class="tb-btn tb-i" aria-pressed="false" title="Italic (font-style)">I</button>
+            <button type="button" id="tbUnderline" class="tb-btn tb-u" aria-pressed="false" title="Underline (text-decoration)">U</button>
+            <button type="button" id="tbStrike" class="tb-btn tb-s" aria-pressed="false" title="Strikethrough (text-decoration)">S</button>
+        </div>
+        <span class="tb-sep" aria-hidden="true"></span>
+        <div class="tb-group" role="group" aria-label="Text alignment">
+            <button type="button" class="tb-btn tb-align" data-align="left" aria-pressed="false" title="Align left" aria-label="Align left">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="1" y="2" width="12" height="1.5"/><rect x="1" y="5.5" width="8" height="1.5"/><rect x="1" y="9" width="11" height="1.5"/><rect x="1" y="12" width="7" height="1.2"/></svg>
+            </button>
+            <button type="button" class="tb-btn tb-align" data-align="center" aria-pressed="false" title="Align center" aria-label="Align center">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="1" y="2" width="12" height="1.5"/><rect x="3" y="5.5" width="8" height="1.5"/><rect x="1.5" y="9" width="11" height="1.5"/><rect x="3.5" y="12" width="7" height="1.2"/></svg>
+            </button>
+            <button type="button" class="tb-btn tb-align" data-align="right" aria-pressed="false" title="Align right" aria-label="Align right">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="1" y="2" width="12" height="1.5"/><rect x="5" y="5.5" width="8" height="1.5"/><rect x="2" y="9" width="11" height="1.5"/><rect x="6" y="12" width="7" height="1.2"/></svg>
+            </button>
+            <button type="button" class="tb-btn tb-align" data-align="justify" aria-pressed="false" title="Justify" aria-label="Justify">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="1" y="2" width="12" height="1.5"/><rect x="1" y="5.5" width="12" height="1.5"/><rect x="1" y="9" width="12" height="1.5"/><rect x="1" y="12" width="12" height="1.2"/></svg>
+            </button>
+        </div>
+        <span class="tb-sep" aria-hidden="true"></span>
+        <div class="tb-group tb-metrics">
+            <label class="tb-metric" title="Line height (line-height)">
+                <span aria-hidden="true">&#8597;</span>
+                <input type="text" id="tbLineHeight" class="tb-input tb-mini-input" list="lineHeightPresets" placeholder="line" aria-label="Line height" autocomplete="off">
+            </label>
+            <label class="tb-metric" title="Letter spacing (letter-spacing)">
+                <span aria-hidden="true">AV</span>
+                <input type="text" id="tbLetterSpacing" class="tb-input tb-mini-input" list="letterSpacingPresets" placeholder="0em" aria-label="Letter spacing" autocomplete="off">
+            </label>
+        </div>
+        <span class="tb-sep" aria-hidden="true"></span>
+        <div class="tb-group">
+            <label class="tb-color" title="Text color (color)">
+                <span class="tb-color-glyph" aria-hidden="true">A</span>
+                <span id="tbColorBar" class="tb-color-bar" aria-hidden="true"></span>
+                <input type="color" id="tbColor" value="#14110d" aria-label="Text color">
+            </label>
+            <label class="tb-color" title="Background color (background-color)">
+                <span class="tb-color-glyph tb-bg-glyph" aria-hidden="true">bg</span>
+                <span id="tbBgBar" class="tb-color-bar" aria-hidden="true"></span>
+                <input type="color" id="tbBgColor" value="#ffffff" aria-label="Background color">
+            </label>
+        </div>
+        <datalist id="fontSizePresets"></datalist>
+        <datalist id="lineHeightPresets"></datalist>
+        <datalist id="letterSpacingPresets"></datalist>
+    </div>
+
     <div id="canvasBody" class="canvas-body" data-dock="bottom">
     <div id="render-target" class="stage-viewport">
         <aside id="contentsPanel" class="contents-panel" aria-labelledby="contentsTitle" hidden>
@@ -289,8 +355,12 @@
                     <button type="button" class="mini" id="propSrcBrowseBtn" title="Choose from the project's images" disabled>Browse&hellip;</button>
                 </label>
                 <label class="insp-field" id="propAltWrap">
-                    <span>Alt / Title</span>
+                    <span>Alt Text</span>
                     <input type="text" id="propAlt" placeholder="Accessible description" autocomplete="off" disabled>
+                </label>
+                <label class="insp-field" id="propTitleWrap">
+                    <span>Title (tooltip)</span>
+                    <input type="text" id="propTitle" placeholder="Tooltip text" autocomplete="off" disabled>
                 </label>
             </div>
         </div>
@@ -332,13 +402,32 @@
                     <input type="text" id="cssGap" placeholder="e.g. 1rem">
                 </label>
                 <label class="insp-field">
-                    <span>Width / Max-W</span>
-                    <input type="text" id="cssWidth" placeholder="e.g. 100% or 760px">
+                    <span>Width</span>
+                    <input type="text" id="cssWidth" placeholder="e.g. 100% or auto">
+                </label>
+                <label class="insp-field">
+                    <span>Max Width</span>
+                    <input type="text" id="cssMaxWidth" placeholder="e.g. 42em or 760px">
+                </label>
+                <label class="insp-field">
+                    <span>Font Family</span>
+                    <select id="cssFontFamily">
+                        <option value="">(inherit)</option>
+                    </select>
                 </label>
                 <label class="insp-field">
                     <span>Font Size</span>
-                    <input type="text" id="cssFontSize" placeholder="e.g. 1.25rem">
+                    <input type="text" id="cssFontSize" list="fontSizePresets" placeholder="e.g. 1.25em">
                 </label>
+                <div class="insp-field">
+                    <span>Font Style</span>
+                    <div id="cssStyleToggles" class="insp-toggle-row" role="group" aria-label="Font weight, italic, and decoration">
+                        <button type="button" class="tb-btn tb-b" data-style-cmd="bold" aria-pressed="false" title="Bold (font-weight)">B</button>
+                        <button type="button" class="tb-btn tb-i" data-style-cmd="italic" aria-pressed="false" title="Italic (font-style)">I</button>
+                        <button type="button" class="tb-btn tb-u" data-style-cmd="underline" aria-pressed="false" title="Underline (text-decoration)">U</button>
+                        <button type="button" class="tb-btn tb-s" data-style-cmd="strike" aria-pressed="false" title="Strikethrough (text-decoration)">S</button>
+                    </div>
+                </div>
                 <label class="insp-field">
                     <span>Text Align</span>
                     <select id="cssTextAlign">
@@ -346,7 +435,16 @@
                         <option value="left">left</option>
                         <option value="center">center</option>
                         <option value="right">right</option>
+                        <option value="justify">justify</option>
                     </select>
+                </label>
+                <label class="insp-field">
+                    <span>Line Height</span>
+                    <input type="text" id="cssLineHeight" list="lineHeightPresets" placeholder="e.g. 1.5">
+                </label>
+                <label class="insp-field">
+                    <span>Letter Spacing</span>
+                    <input type="text" id="cssLetterSpacing" list="letterSpacingPresets" placeholder="e.g. 0.03em">
                 </label>
                 <label class="insp-field">
                     <span>Radius</span>
@@ -1120,6 +1218,7 @@
 <script src="src/docx.js"></script>
 <script src="src/docx-import.js"></script>
 <script src="src/book-page.js"></script>
+<script src="src/typography.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/app/core.js"></script>
 <script src="src/app/layout.js"></script>
@@ -1154,6 +1253,7 @@
 <script src="src/app/notes-ui.js"></script>
 <script src="src/app/blocks-ui.js"></script>
 <script src="src/app/inspector-ui.js"></script>
+<script src="src/app/style-bar.js"></script>
 <script src="src/app/parts-ui.js"></script>
 <script src="src/app/problems-ui.js"></script>
 <script src="src/app/outline-ui.js"></script>

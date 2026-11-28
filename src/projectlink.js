@@ -5,7 +5,8 @@
     'use strict';
 
     function normalizePath(path) {
-        const text = String(path || '').replace(/\\/g, '/').replace(/\/+$/, '');
+        const raw = String(path || '').replace(/\\/g, '/');
+        const text = raw.replace(/\/+$/, '') || (raw.startsWith('/') ? '/' : '');
         return /^([A-Za-z]:|\/\/)/.test(text) ? text.toLowerCase() : text;
     }
 

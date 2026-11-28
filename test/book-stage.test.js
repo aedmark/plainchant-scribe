@@ -56,7 +56,7 @@ test('book-stage: a prefixed XHTML link keeps its prefix, a missing stylesheet i
     files[BS_CH] = '<?xml version="1.0" encoding="UTF-8"?>\n<h:html xmlns:h="http://www.w3.org/1999/xhtml"><h:head><h:title>T</h:title><h:link rel="Stylesheet" href="../css/book.css" media="screen"/><h:link rel="stylesheet" href="../css/gone.css"/></h:head><h:body><h:p>x</h:p></h:body></h:html>\n';
     const r = BookStage.assemble(files, BS_CH, {});
     assert.ok(r.ok);
-    assert.ok(/<h:style media="screen">[\s\S]*text-indent[\s\S]*<\/h:style><\/h:head>/.test(r.xhtml), r.xhtml);
+    assert.ok(/<h:style data-pc-href="OEBPS\/css\/book\.css" media="screen">[\s\S]*text-indent[\s\S]*<\/h:style><\/h:head>/.test(r.xhtml), r.xhtml);
     const broken = BookStage.assemble(Object.assign({}, files, { [BS_CH]: '<html><p></html>' }), BS_CH, {});
     assert.equal(broken.ok, false);
     assert.ok(broken.errors.length && typeof broken.errors[0].line === 'number');

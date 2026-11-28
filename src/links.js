@@ -25,18 +25,22 @@
     function cssRefs(css, baseOffset, lineOf, wholeSpan) {
         const blanked = css.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '));
         const refs = [];
-        const place = (m, raw, kind) => {
-            const at = baseOffset + m.index + m[0].indexOf(raw);
+        const place = (m, raw, kind, searchFrom) => {
+            const idx = raw ? m[0].indexOf(raw, searchFrom || 0) : 0;
+            const at = baseOffset + m.index + (idx === -1 ? 0 : idx);
             refs.push({ kind: kind, raw: raw, start: wholeSpan ? wholeSpan.start : at, end: wholeSpan ? wholeSpan.end : at + raw.length, line: lineOf(wholeSpan ? wholeSpan.start : at) });
         };
         let m;
-        const urlRe = /url\(\s*(['"]?)([^'")]*?)\1\s*\)/gi;
+        const urlRe = /url\(\s*(?:"([^"]*)"|'([^']*)'|([^)\s'"]*))\s*\)/gi;
         while ((m = urlRe.exec(blanked)) !== null) {
-            if (/^\s*@import\s+$/i.test(blanked.slice(Math.max(0, m.index - 12), m.index))) place(m, m[2], 'stylesheet');
-            else place(m, m[2], 'asset');
+            const raw = m[1] != null ? m[1] : (m[2] != null ? m[2] : (m[3] || ''));
+            const afterParen = m[0].indexOf('(') + 1;
+            const head = blanked.slice(Math.max(0, m.index - 200), m.index);
+            if (/(?:^|[;{}]|[\s\n])@import\s+$/i.test(head) || /^\s*@import\s+$/i.test(head)) place(m, raw, 'stylesheet', afterParen);
+            else place(m, raw, 'asset', afterParen);
         }
         const importRe = /@import\s+(['"])([^'"]+)\1/gi;
-        while ((m = importRe.exec(blanked)) !== null) place(m, m[2], 'stylesheet');
+        while ((m = importRe.exec(blanked)) !== null) place(m, m[2], 'stylesheet', m[0].indexOf(m[1]) + 1);
         return refs;
     }
 
@@ -65,8 +69,8 @@
             } else if (tag === 'input' && /^image$/i.test(a.type || '') && a.src != null) add(el, 'src', 'image', a.src);
             if (a.poster != null) add(el, 'poster', 'image', a.poster);
             if ((tag === 'img' || tag === 'source') && a.srcset != null) {
-                a.srcset.split(',').forEach((candidate) => {
-                    const url = candidate.trim().split(/\s+/)[0];
+                Project.parseSrcset(a.srcset).forEach((candidate) => {
+                    const url = candidate.split(/\s+/)[0];
                     if (url) add(el, 'srcset', 'image', url);
                 });
             }

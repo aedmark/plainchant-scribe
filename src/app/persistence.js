@@ -35,7 +35,8 @@ function clearEmergency(id, upTo) {
 
 function track(promise) {
     pendingWrites.add(promise);
-    promise.then(() => pendingWrites.delete(promise));
+    const done = () => pendingWrites.delete(promise);
+    promise.then(done, done);
     return promise;
 }
 
@@ -61,6 +62,7 @@ function putScripts(next) {
     const before = library;
     const change = Store.diff(before, next);
     library = next;
+    change.remove.forEach((id) => { if (typeof projectLinks === 'object' && projectLinks) delete projectLinks[id]; });
     return persist(change).then((ok) => {
         if (ok) return true;
         const back = Object.assign({}, library);
@@ -122,18 +124,22 @@ async function restoreLastScript(factory) {
     const scripts = getScripts();
 
     let script = pointer ? scripts[pointer] : null;
-    const pointerDeleted = !!(script && script.deletedAt);
-    if (pointerDeleted) script = null;
-    if (!pointer) script = Library.active(scripts)[0] || null;
+    if (script && script.deletedAt) script = null;
+    if (!script) script = Library.active(scripts)[0] || null;
+    if (!script && storageMode === 'none') {
+        const emer = Object.values(readEmergency()).filter((e) => e && typeof e.content === 'string')
+            .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))[0];
+        if (emer) script = emer;
+    }
 
     if (script) {
         currentScriptId = script.id;
         loadProjectIntoEditor(script.content);
+        rememberCurrent();
     } else {
         loadProjectIntoEditor(bookProjectFiles(ExampleBook.create()));
     }
-    rememberCurrent();
-    restoreProjectLink(currentScriptId);
+    await restoreProjectLink(currentScriptId);
 }
 
 function purgeTrash() {
@@ -166,7 +172,8 @@ function loadStarterProject() {
 function flushSave() {
     clearTimeout(autoSaveTimer);
     syncBufferFromEditor();
-    if (projectFiles.html.trim() || projectFiles.css.trim() || projectFiles.js.trim()) {
+    const hasText = Object.values(projectFiles.entries || {}).some((v) => String(v || '').trim());
+    if (hasText || (currentScriptId in getScripts())) {
         saveScript(true);
     }
 }
@@ -193,7 +200,8 @@ function saveScript(isAuto = false) {
     if (storageMode === 'none') { finish(false); return; }
 
     const scripts = getScripts();
-    if (scripts[currentScriptId] && scripts[currentScriptId].deletedAt) currentScriptId = newId();
+    const wasDeletedId = scripts[currentScriptId] && scripts[currentScriptId].deletedAt ? currentScriptId : null;
+    if (wasDeletedId) currentScriptId = newId();
     const record = Object.assign({}, scripts[currentScriptId], {
         id: currentScriptId,
         title: title,
@@ -201,6 +209,7 @@ function saveScript(isAuto = false) {
         updatedAt: Date.now()
     });
     library = Object.assign({}, scripts, { [record.id]: record });
+    if (wasDeletedId && typeof saveProjectAssets === 'function') saveProjectAssets();
 
     const entries = readEmergency();
     entries[record.id] = { id: record.id, title: record.title, content: record.content, updatedAt: record.updatedAt };
@@ -214,6 +223,7 @@ function saveScript(isAuto = false) {
         if (deleted) {
             library = Object.assign({}, library, { [deleted.id]: deleted, [stored.id]: stored });
             if (currentScriptId === record.id) currentScriptId = stored.id;
+            if (typeof saveProjectAssets === 'function') saveProjectAssets();
         }
         announce({ put: [stored] });
         if (!isAuto && typeof markFilesSaved === 'function') markFilesSaved(savedCopy);
@@ -225,6 +235,7 @@ function saveScript(isAuto = false) {
         }
     }, () => {
         finish(false);
+        if (isAuto) showNotice('Auto-save failed; changes are buffered locally.', true);
     }));
 }
 

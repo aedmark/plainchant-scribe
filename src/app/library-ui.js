@@ -115,7 +115,12 @@ function renderLibrary() {
             purgeBtn.type = 'button';
             purgeBtn.className = 'mini danger-mini';
             purgeBtn.textContent = 'Delete forever';
-            purgeBtn.addEventListener('click', () => {
+            purgeBtn.addEventListener('click', async () => {
+                if (!await askConfirm({
+                    title: 'Delete permanently?',
+                    text: 'Permanently delete "' + (script.title || 'Untitled Book') + '", its snapshots, and its images? This cannot be undone.',
+                    confirm: 'Delete forever'
+                })) return;
                 putScripts(Library.removeForever(getScripts(), script.id));
                 renderLibrary();
             });
@@ -152,6 +157,19 @@ function renderLibrary() {
             delBtn.textContent = 'Delete';
             delBtn.addEventListener('click', () => {
                 putScripts(Library.softDelete(getScripts(), script.id, Date.now()));
+                if (script.id === currentScriptId) {
+                    const nextActive = Library.active(getScripts())[0];
+                    if (nextActive) {
+                        currentScriptId = nextActive.id;
+                        selectedPcId = null;
+                        if (typeof clearLinkedFolder === 'function') clearLinkedFolder();
+                        loadProjectIntoEditor(nextActive.content);
+                        rememberCurrent();
+                        render(false);
+                    } else {
+                        startNewScript();
+                    }
+                }
                 renderLibrary();
             });
             actions.append(renBtn, verBtn, dupBtn, delBtn);

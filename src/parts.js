@@ -39,6 +39,15 @@
         return String(text == null ? '' : text).replace(/^\s+/, '').replace(/\s+$/, '');
     }
 
+    function normalizeCompare(text) {
+        return String(text == null ? '' : text)
+            .replace(/\r\n?/g, '\n')
+            .split('\n')
+            .map((line) => line.trim())
+            .join('\n')
+            .trim();
+    }
+
     function regionText(html, region) {
         return trimEnd(html.slice(region.openEnd, region.closeStart));
     }
@@ -59,15 +68,20 @@
             res.invalid.forEach((bad) => invalid.push({ page: page, src: bad.src }));
         });
         const partPaths = new Set(found.map((f) => f.path).filter(Boolean));
-        const regions = found.filter((f) => !partPaths.has(f.page)).map((f) => {
+        const regions = [];
+        found.forEach((f) => {
+            if (partPaths.has(f.page)) {
+                invalid.push({ page: f.page, src: f.region.src, nested: true });
+                return;
+            }
             let state = 'missing';
             if (f.path && typeof entries[f.path] === 'string') {
-                state = regionText(entries[f.page], f.region) === trimEnd(entries[f.path]) ? 'synced' : 'differs';
+                state = normalizeCompare(regionText(entries[f.page], f.region)) === normalizeCompare(entries[f.path]) ? 'synced' : 'differs';
             }
             if (f.path) parts[f.path] = (parts[f.path] || 0) + 1;
-            return { page: f.page, index: f.index, src: f.region.src, path: f.path, state: state };
+            regions.push({ page: f.page, index: f.index, src: f.region.src, path: f.path, state: state });
         });
-        return { regions: regions, parts: parts, invalid: invalid.filter((b) => !partPaths.has(b.page)) };
+        return { regions: regions, parts: parts, invalid: invalid };
     }
 
     function isPart(entries, path) {

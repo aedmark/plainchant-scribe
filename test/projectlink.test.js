@@ -9,6 +9,7 @@ test('ProjectLink: one folder maps to one live project, whatever the path spelli
     assert.equal(ProjectLink.findByPath(links, scripts, '/home/me/site', 'a'), null, 'a project is not its own duplicate');
     assert.equal(ProjectLink.findByPath(links, scripts, ''), null);
     assert.equal(ProjectLink.findByPath({}, {}, '/x'), null);
+    assert.equal(ProjectLink.normalizePath('/'), '/');
 });
 
 test('ProjectLink: disk changes are measured against the last sync, not against unexported Studio edits', () => {

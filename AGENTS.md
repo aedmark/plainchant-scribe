@@ -58,7 +58,7 @@ Direct-to-`master` workflow with maintainer review in-session, as in Plainchant 
 - Default branch: `master`.
 - Working branch pattern: `feature/<topic>` when branching is requested; otherwise `master`.
 - Commit format: concise imperative summary referencing roadmap IDs when applicable.
-- Release/version scheme: SemVer in `package.json`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json` (`0.1.1`).
+- Release/version scheme: SemVer in `package.json`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json` (`0.2.0`).
 
 Never force-push, rewrite shared history, publish, or rotate/delete production data without explicit permission.
 

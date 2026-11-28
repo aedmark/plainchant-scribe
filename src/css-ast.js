@@ -22,6 +22,52 @@
         return Math.max(0, hi);
     }
 
+    function isEscaped(text, idx) {
+        let bs = 0;
+        for (let k = idx - 1; k >= 0 && text[k] === '\\'; k--) bs++;
+        return bs % 2 === 1;
+    }
+
+    function stripComments(raw) {
+        let out = '';
+        let quote = null;
+        for (let i = 0; i < raw.length; i++) {
+            const ch = raw[i];
+            if (quote) {
+                out += ch;
+                if (ch === quote && !isEscaped(raw, i)) quote = null;
+            } else if (ch === '"' || ch === "'") {
+                quote = ch;
+                out += ch;
+            } else if (ch === '/' && raw[i + 1] === '*') {
+                const endC = raw.indexOf('*/', i + 2);
+                i = endC === -1 ? raw.length : endC + 1;
+                out += ' ';
+            } else {
+                out += ch;
+            }
+        }
+        return out.replace(/\s+/g, ' ').trim();
+    }
+
+    function hasInnerRuleBrace(raw) {
+        let quote = null;
+        for (let i = 0; i < raw.length; i++) {
+            const ch = raw[i];
+            if (quote) {
+                if (ch === quote && !isEscaped(raw, i)) quote = null;
+            } else if (ch === '"' || ch === "'") {
+                quote = ch;
+            } else if (ch === '/' && raw[i + 1] === '*') {
+                const endC = raw.indexOf('*/', i + 2);
+                i = endC === -1 ? raw.length : endC + 1;
+            } else if (ch === '{') {
+                return true;
+            }
+        }
+        return false;
+    }
+
     function parseDeclarations(rawBody, bodyOffset) {
         const decls = [];
         let i = 0;
@@ -29,7 +75,7 @@
         while (i < len) {
             while (i < len && /\s/.test(rawBody[i])) i++;
             if (i >= len) break;
-            if (rawBody.slice(i, i + 2) === '/*') {
+            if (rawBody[i] === '/' && rawBody[i + 1] === '*') {
                 const endC = rawBody.indexOf('*/', i + 2);
                 i = endC === -1 ? len : endC + 2;
                 continue;
@@ -42,7 +88,11 @@
             while (i < len) {
                 const ch = rawBody[i];
                 if (quote) {
-                    if (ch === quote && rawBody[i - 1] !== '\\') quote = null;
+                    if (ch === quote && !isEscaped(rawBody, i)) quote = null;
+                } else if (ch === '/' && rawBody[i + 1] === '*') {
+                    const endC = rawBody.indexOf('*/', i + 2);
+                    i = endC === -1 ? len : endC + 2;
+                    continue;
                 } else if (ch === '"' || ch === "'") {
                     quote = ch;
                 } else if (ch === '(') {
@@ -60,20 +110,27 @@
             }
             const end = semi !== -1 ? semi + 1 : i;
             if (colon !== -1) {
-                const prop = rawBody.slice(start, colon).trim().toLowerCase();
+                const prop = stripComments(rawBody.slice(start, colon)).toLowerCase();
                 const valSliceEnd = semi !== -1 ? semi : i;
                 const rawVal = rawBody.slice(colon + 1, valSliceEnd);
                 const trimLead = rawVal.match(/^\s*/)[0].length;
                 const trimTrail = rawVal.match(/\s*$/)[0].length;
-                const value = rawVal.trim();
+                const value = stripComments(rawVal);
+                const valTrimmed = rawVal.trim();
+                const valueStart = valTrimmed
+                    ? bodyOffset + colon + 1 + trimLead
+                    : Math.min(bodyOffset + valSliceEnd, bodyOffset + colon + 1 + (trimLead ? 1 : 0));
+                const valueEnd = valTrimmed
+                    ? bodyOffset + valSliceEnd - trimTrail
+                    : bodyOffset + valSliceEnd;
                 if (prop) {
                     decls.push({
                         prop: prop,
                         value: value,
                         start: bodyOffset + start,
                         end: bodyOffset + end,
-                        valueStart: bodyOffset + colon + 1 + trimLead,
-                        valueEnd: bodyOffset + valSliceEnd - trimTrail
+                        valueStart: valueStart,
+                        valueEnd: Math.max(valueStart, valueEnd)
                     });
                 }
             }
@@ -92,22 +149,53 @@
         while (i < len) {
             while (i < len && /\s/.test(text[i])) i++;
             if (i >= len) break;
-            if (text.slice(i, i + 2) === '/*') {
+            if (text[i] === '/' && text[i + 1] === '*') {
                 const endC = text.indexOf('*/', i + 2);
                 i = endC === -1 ? len : endC + 2;
                 continue;
             }
             const selStart = i;
-            const openBrace = text.indexOf('{', i);
+            let p = i;
+            let selQuote = null;
+            let selDepth = 0;
+            let openBrace = -1;
+            let semiTop = -1;
+            while (p < len) {
+                const ch = text[p];
+                if (selQuote) {
+                    if (ch === selQuote && !isEscaped(text, p)) selQuote = null;
+                } else if (ch === '"' || ch === "'") {
+                    selQuote = ch;
+                } else if (ch === '/' && text[p + 1] === '*') {
+                    const endC = text.indexOf('*/', p + 2);
+                    p = endC === -1 ? len : endC + 2;
+                    continue;
+                } else if (ch === '(' || ch === '[') {
+                    selDepth++;
+                } else if (ch === ')' || ch === ']') {
+                    if (selDepth > 0) selDepth--;
+                } else if (ch === ';' && selDepth === 0) {
+                    semiTop = p;
+                    break;
+                } else if (ch === '{' && selDepth === 0) {
+                    openBrace = p;
+                    break;
+                }
+                p++;
+            }
+            if (semiTop !== -1) {
+                i = semiTop + 1;
+                continue;
+            }
             if (openBrace === -1) break;
-            const rawSel = text.slice(selStart, openBrace).trim();
+            const rawSel = stripComments(text.slice(selStart, openBrace));
             let depth = 1;
             let j = openBrace + 1;
             let quote = null;
             while (j < len && depth > 0) {
                 const ch = text[j];
                 if (quote) {
-                    if (ch === quote && text[j - 1] !== '\\') quote = null;
+                    if (ch === quote && !isEscaped(text, j)) quote = null;
                 } else if (ch === '"' || ch === "'") {
                     quote = ch;
                 } else if (ch === '/' && text[j + 1] === '*') {
@@ -124,13 +212,21 @@
             const bodyStart = openBrace + 1;
             const bodyEnd = closeBrace;
 
-            if (rawSel.startsWith('@') && text.slice(bodyStart, bodyEnd).indexOf('{') !== -1) {
+            if (/^@(?:-[a-z-]+-)?keyframes\b|^@font-face\b|^@property\b|^@page\b/i.test(rawSel)) {
+                i = j;
+                continue;
+            }
+
+            const isMedia = /^@media\b/i.test(rawSel);
+            if (isMedia || (rawSel.startsWith('@') && hasInnerRuleBrace(text.slice(bodyStart, bodyEnd)))) {
                 const inner = parse(text.slice(bodyStart, bodyEnd));
-                blocks.push({ media: rawSel, start: selStart, end: j, bodyStart: bodyStart, bodyEnd: bodyEnd });
+                if (isMedia) {
+                    blocks.push({ media: rawSel, start: selStart, end: j, bodyStart: bodyStart, bodyEnd: bodyEnd });
+                }
                 inner.rules.forEach((r) => {
                     rules.push({
                         selector: r.selector,
-                        media: rawSel,
+                        media: r.media || rawSel,
                         start: bodyStart + r.start,
                         end: bodyStart + r.end,
                         selectorStart: bodyStart + r.selectorStart,
@@ -148,9 +244,9 @@
                         }))
                     });
                 });
-            } else if (!rawSel.startsWith('@keyframes') && !rawSel.startsWith('@font-face')) {
+            } else if (rawSel && !rawSel.startsWith('@')) {
                 rules.push({
-                    selector: rawSel.replace(/\s+/g, ' '),
+                    selector: rawSel,
                     media: null,
                     start: selStart,
                     end: j,
@@ -181,20 +277,104 @@
         return m ? parseFloat(m[1]) : null;
     }
 
+    function splitTopLevel(selector) {
+        const parts = [];
+        let depth = 0;
+        let quote = null;
+        let from = 0;
+        const text = String(selector || '');
+        for (let i = 0; i < text.length; i++) {
+            const ch = text[i];
+            if (quote) {
+                if (ch === quote && !isEscaped(text, i)) quote = null;
+            } else if (ch === '"' || ch === "'") quote = ch;
+            else if (ch === '(' || ch === '[') depth++;
+            else if (ch === ')' || ch === ']') depth = Math.max(0, depth - 1);
+            else if (ch === ',' && depth === 0) {
+                parts.push(text.slice(from, i));
+                from = i + 1;
+            }
+        }
+        parts.push(text.slice(from));
+        return parts.map((p) => p.trim()).filter(Boolean);
+    }
+
+    function splitTopCombinators(part) {
+        const out = [];
+        let buf = '';
+        let quote = null;
+        let bracket = 0;
+        let paren = 0;
+        for (let i = 0; i < part.length; i++) {
+            const ch = part[i];
+            if (quote) {
+                buf += ch;
+                if (ch === quote && !isEscaped(part, i)) quote = null;
+            } else if (ch === '"' || ch === "'") {
+                quote = ch;
+                buf += ch;
+            } else if (ch === '[') { bracket++; buf += ch; }
+            else if (ch === ']') { bracket = Math.max(0, bracket - 1); buf += ch; }
+            else if (ch === '(') { paren++; buf += ch; }
+            else if (ch === ')') { paren = Math.max(0, paren - 1); buf += ch; }
+            else if (bracket === 0 && paren === 0 && /[\s>+~]/.test(ch)) {
+                if (buf) { out.push(buf); buf = ''; }
+            } else {
+                buf += ch;
+            }
+        }
+        if (buf) out.push(buf);
+        return out;
+    }
+
+    function stripPseudoAndAttr(sel) {
+        let out = '';
+        let quote = null;
+        for (let i = 0; i < sel.length; i++) {
+            const ch = sel[i];
+            if (ch === '[') {
+                i++;
+                while (i < sel.length && (quote || sel[i] !== ']')) {
+                    if (quote) { if (sel[i] === quote && !isEscaped(sel, i)) quote = null; }
+                    else if (sel[i] === '"' || sel[i] === "'") quote = sel[i];
+                    i++;
+                }
+                quote = null;
+                continue;
+            }
+            if (ch === ':') {
+                while (i + 1 < sel.length && (sel[i + 1] === ':' || /[a-zA-Z0-9_-]/.test(sel[i + 1]))) i++;
+                if (sel[i + 1] === '(') {
+                    let depth = 0;
+                    i++;
+                    while (i < sel.length) {
+                        if (quote) { if (sel[i] === quote && !isEscaped(sel, i)) quote = null; }
+                        else if (sel[i] === '"' || sel[i] === "'") quote = sel[i];
+                        else if (sel[i] === '(') depth++;
+                        else if (sel[i] === ')') { depth--; if (depth === 0) break; }
+                        i++;
+                    }
+                    quote = null;
+                }
+                continue;
+            }
+            out += ch;
+        }
+        return out;
+    }
+
     function selectorMatchesElement(selector, el) {
         if (!el || el.type !== 'element') return false;
-        const parts = String(selector || '').split(',').map((s) => s.trim()).filter(Boolean);
+        const parts = splitTopLevel(selector);
         const tag = el.tag;
         const id = (el.attrs && el.attrs.id) || '';
         const classes = ((el.attrs && el.attrs.class) || '').trim().split(/\s+/).filter(Boolean);
 
         return parts.some((part) => {
-            if (part.indexOf(' ') !== -1 || part.indexOf('>') !== -1 || part.indexOf(':') !== -1) {
-                const tokens = part.split(/[\s>+~]+/).filter(Boolean);
-                const last = tokens[tokens.length - 1].replace(/:[a-zA-Z-]+/g, '');
-                return simpleMatch(last, tag, id, classes);
-            }
-            return simpleMatch(part, tag, id, classes);
+            const tokens = splitTopCombinators(part);
+            if (!tokens.length) return false;
+            const last = stripPseudoAndAttr(tokens[tokens.length - 1]);
+            return simpleMatch(last, tag, id, classes);
         });
     }
 
@@ -318,7 +498,8 @@
                 const lineStart = text.lastIndexOf('\n', from - 1);
                 if (lineStart >= targetRule.bodyStart && /^[ \t]*$/.test(text.slice(lineStart + 1, from))) {
                     from = lineStart + 1;
-                    if (text[to] === '\n') to++;
+                    if (text[to] === '\r' && text[to + 1] === '\n') to += 2;
+                    else if (text[to] === '\n') to++;
                 }
                 return text.slice(0, from) + text.slice(to);
             }
@@ -360,6 +541,27 @@
         return parts.join('; ');
     }
 
+    function stripAttrBrackets(sel) {
+        let out = '';
+        let quote = null;
+        let bracket = 0;
+        for (let i = 0; i < sel.length; i++) {
+            const ch = sel[i];
+            if (quote) {
+                if (ch === quote && !isEscaped(sel, i)) quote = null;
+            } else if (ch === '"' || ch === "'") {
+                quote = ch;
+            } else if (ch === '[') {
+                bracket++;
+            } else if (ch === ']') {
+                bracket = Math.max(0, bracket - 1);
+            } else if (bracket === 0) {
+                out += ch;
+            }
+        }
+        return out;
+    }
+
     function listSelectors(css, htmlAst) {
         const ast = typeof css === 'string' ? parse(css) : css;
         const classes = new Set();
@@ -367,9 +569,10 @@
         const rules = [];
         (ast && ast.rules ? ast.rules : []).forEach((r) => {
             if (!r.media && rules.indexOf(r.selector) === -1) rules.push(r.selector);
-            const cm = r.selector.match(/\.([a-zA-Z0-9_-]+)/g) || [];
+            const cleanSel = stripAttrBrackets(r.selector);
+            const cm = cleanSel.match(/\.([a-zA-Z0-9_-]+)/g) || [];
             cm.forEach((c) => classes.add(c.slice(1)));
-            const im = r.selector.match(/#([a-zA-Z0-9_-]+)/g) || [];
+            const im = cleanSel.match(/#([a-zA-Z0-9_-]+)/g) || [];
             im.forEach((id) => ids.add(id.slice(1)));
         });
         if (htmlAst && htmlAst.elements) {

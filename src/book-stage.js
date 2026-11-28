@@ -204,7 +204,7 @@
                     const css = rewriteCss(entries[r.path], r.path, entries, urls, new Set([r.path]), 0);
                     const name = el.prefix ? el.prefix + ':style' : 'style';
                     const media = XmlAst.getAttr(el, 'media');
-                    edits.push({ start: el.start, end: el.end, text: '<' + name + (media ? ' media="' + XmlAst.escapeAttr(media) + '"' : '') + '>' + XmlAst.escapeText(css) + '</' + name + '>' });
+                    edits.push({ start: el.start, end: el.end, text: '<' + name + ' data-pc-href="' + XmlAst.escapeAttr(r.path) + '"' + (media ? ' media="' + XmlAst.escapeAttr(media) + '"' : '') + '>' + XmlAst.escapeText(css) + '</' + name + '>' });
                 } else edits.push({ start: el.start, end: el.end, text: '' });
                 return;
             }

@@ -11,10 +11,11 @@ test('Preview: URLs carry the token, the entry page follows the active page, and
     assert.equal(Preview.entryFor('', { 'b.html': '', 'a.html': '' }), 'a.html');
     assert.equal(Preview.entryFor('', { 'x.css': '' }), '');
 
-    const a = { 'images/a.png': { size: 10 }, 'b.png': { size: 5 } };
+    const a = { 'images/a.png': { size: 10, lastModified: 1 }, 'b.png': { size: 5, lastModified: 2 } };
     const sig = Preview.assetSignature(a);
-    assert.equal(sig, Preview.assetSignature({ 'b.png': { size: 5 }, 'images/a.png': { size: 10 } }));
-    assert.ok(sig !== Preview.assetSignature({ 'images/a.png': { size: 11 }, 'b.png': { size: 5 } }));
+    assert.equal(sig, Preview.assetSignature({ 'b.png': { size: 5, lastModified: 2 }, 'images/a.png': { size: 10, lastModified: 1 } }));
+    assert.ok(sig !== Preview.assetSignature({ 'images/a.png': { size: 10, lastModified: 3 }, 'b.png': { size: 5, lastModified: 2 } }));
+    assert.ok(sig !== Preview.assetSignature({ 'images/a.png': { size: 11, lastModified: 1 }, 'b.png': { size: 5, lastModified: 2 } }));
     assert.equal(Preview.assetSignature({}), '');
 });
 

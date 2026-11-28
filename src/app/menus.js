@@ -19,7 +19,10 @@ appMenus.forEach((menu) => {
         const open = menu.panel.hidden;
         closeAppMenus(menu);
         setAppMenu(menu, open);
-        if (open) menu.panel.querySelector('.menu-item:not(:disabled)').focus({ preventScroll: true });
+        if (open) {
+            const first = menu.panel.querySelector('.menu-item:not(:disabled)');
+            if (first) first.focus({ preventScroll: true });
+        }
     });
     menu.panel.addEventListener('click', () => setAppMenu(menu, false));
     menu.wrap.addEventListener('keydown', (e) => {
@@ -44,3 +47,82 @@ document.addEventListener('click', (e) => {
 document.getElementById('menuFindBtn').addEventListener('click', () => openFind(false));
 document.getElementById('menuReplaceBtn').addEventListener('click', () => openFind(true));
 document.getElementById('menuFindProjectBtn').addEventListener('click', () => openFind(false, true));
+
+const contextMenu = document.getElementById('contextMenu');
+const ctxHeaderLabel = document.getElementById('ctxHeaderLabel');
+
+function closeContextMenu() {
+    if (!contextMenu || contextMenu.hidden) return;
+    contextMenu.hidden = true;
+}
+
+function openContextMenuAt(clientX, clientY) {
+    if (!contextMenu) return;
+    const node = selectedPcId ? HtmlAst.findById(currentHtmlAst, selectedPcId) : null;
+    const hasNode = Boolean(node && node.tag !== 'html' && node.tag !== 'head');
+    const isMovable = Boolean(hasNode && node.tag !== 'body');
+
+    if (ctxHeaderLabel) {
+        ctxHeaderLabel.textContent = hasNode ? '<' + DomOutline.formatLabel(node) + '>' : '<body>';
+    }
+
+    contextMenu.querySelectorAll('[data-ctx-cmd]').forEach((btn) => {
+        const cmd = btn.dataset.ctxCmd;
+        if (cmd === 'move-up' || cmd === 'move-down' || cmd === 'duplicate' || cmd === 'wrap' || cmd === 'delete') {
+            btn.disabled = !isMovable;
+        } else if (cmd === 'undo') {
+            btn.disabled = Boolean(undoBtn && undoBtn.disabled);
+        } else if (cmd === 'redo') {
+            btn.disabled = Boolean(redoBtn && redoBtn.disabled);
+        }
+    });
+
+    contextMenu.hidden = false;
+    const menuWidth = contextMenu.offsetWidth || 220;
+    const menuHeight = contextMenu.offsetHeight || 290;
+    const maxX = Math.max(8, window.innerWidth - menuWidth - 8);
+    const maxY = Math.max(8, window.innerHeight - menuHeight - 8);
+    const x = Math.max(8, Math.min(clientX, maxX));
+    const y = Math.max(8, Math.min(clientY, maxY));
+
+    contextMenu.style.left = x + 'px';
+    contextMenu.style.top = y + 'px';
+    contextMenu.classList.toggle('flip-left', x + menuWidth + 260 > window.innerWidth);
+}
+
+if (contextMenu) {
+    contextMenu.addEventListener('click', (e) => {
+        const act = e.target.closest('[data-ctx-cmd]');
+        if (!act || act.disabled) return;
+        const cmd = act.dataset.ctxCmd;
+        closeContextMenu();
+        if (cmd === 'move-up') moveSelectedElement('up');
+        else if (cmd === 'move-down') moveSelectedElement('down');
+        else if (cmd === 'duplicate') duplicateSelectedElement();
+        else if (cmd === 'wrap' && selectedPcId) {
+            applyHtmlTransform(HtmlAst.wrapElement(projectFiles.html, selectedPcId, 'div', { class: 'wrapper' }), selectedPcId);
+        } else if (cmd === 'inspect-css') {
+            switchInspectorTab('css', { forceOpen: true });
+            jumpToActiveCssRule();
+        } else if (cmd === 'undo') performUndo();
+        else if (cmd === 'redo') performRedo();
+        else if (cmd === 'delete') deleteSelectedElement();
+    });
+}
+
+editor.addEventListener('contextmenu', (e) => {
+    if (activeTab !== 'html') return;
+    e.preventDefault();
+    syncElementState();
+    openContextMenuAt(e.clientX, e.clientY);
+});
+
+document.addEventListener('click', (e) => {
+    if (contextMenu && !contextMenu.hidden && !contextMenu.contains(e.target)) {
+        closeContextMenu();
+    }
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeContextMenu();
+});

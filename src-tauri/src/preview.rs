@@ -10,7 +10,7 @@
 //! book's or page's scripts never run on the reader (previews drop scripts, D-004).
 
 use serde::Serialize;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream, UdpSocket};
@@ -27,6 +27,7 @@ const VERSION_PATH: &str = "__pc_version";
 #[derive(Default)]
 struct Content {
     files: HashMap<String, Vec<u8>>,
+    asset_keys: HashSet<String>,
     entry: String,
     version: u64,
     // For a book: the .epub's path under the token, and its bytes.
@@ -104,6 +105,7 @@ fn set_content(
     book: Option<BookShare>,
 ) -> Result<(), String> {
     let mut next: HashMap<String, Vec<u8>> = HashMap::new();
+    let mut next_asset_keys: HashSet<String> = HashSet::new();
     let mut guard = content.lock().map_err(|_| "preview state is unavailable".to_string())?;
     let next_book = match book {
         None => None,
@@ -131,12 +133,14 @@ fn set_content(
                     return Err(format!("unsafe preview path: {}", path));
                 }
                 let bytes = decode_base64(&b64).ok_or_else(|| format!("could not decode {}", path))?;
+                next_asset_keys.insert(path.clone());
                 next.insert(path, bytes);
             }
         }
         None => {
             for (path, bytes) in guard.files.iter() {
-                if !next.contains_key(path) && !is_text_ext(Path::new(path)) {
+                if !next.contains_key(path) && (guard.asset_keys.contains(path) || !is_text_ext(Path::new(path))) {
+                    next_asset_keys.insert(path.clone());
                     next.insert(path.clone(), bytes.clone());
                 }
             }
@@ -145,9 +149,12 @@ fn set_content(
     let strict = next_book.is_some();
     if guard.files != next || guard.entry != entry || guard.book != next_book {
         guard.files = next;
+        guard.asset_keys = next_asset_keys;
         guard.entry = entry;
         guard.book = next_book;
         guard.version += 1;
+    } else {
+        guard.asset_keys = next_asset_keys;
     }
     guard.strict = strict;
     Ok(())

@@ -20,7 +20,10 @@
     }
 
     function assetSignature(assets) {
-        return Object.keys(assets || {}).sort().map((p) => p + ':' + assets[p].size).join('|');
+        return Object.keys(assets || {}).sort().map((p) => {
+            const a = assets[p];
+            return p + ':' + a.size + ':' + (a.lastModified || '');
+        }).join('|');
     }
 
     // Whether two byte arrays hold the same bytes (send to reader skips sending an unchanged .epub).

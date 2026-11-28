@@ -127,7 +127,7 @@ function replaceAcrossProject() {
     if (!chosen.length) return;
     const res = Finding.replaceInFiles(projectSearchEntries(), findInput.value, replaceInput.value, Object.assign(findOptions(), { paths: chosen }));
     if (!res.count) return;
-    commitPartEntries(res.entries);
+    commitPartEntries(res.entries, { skipPartSync: true });
     runProjectSearch();
     showNotice('Replaced ' + res.count + (res.count === 1 ? ' match' : ' matches') + ' in ' + res.files.length + (res.files.length === 1 ? ' file' : ' files') + '. Press Ctrl/Cmd+Z to undo.');
 }

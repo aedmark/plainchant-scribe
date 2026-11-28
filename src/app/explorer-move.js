@@ -66,8 +66,13 @@ async function moveProjectFolderTo(src, to) {
     syncBufferFromEditor();
     const files = projectFilePaths();
     const diskOnly = Project.pathsUnder(files, src).filter((p) => !(p in projectFiles.entries) && !(p in projectAssets));
+    const bad = diskOnly.find((p) => !ImageLib.isImage(p));
+    if (bad) {
+        showNotice('Cannot move ' + src + ': ' + bad + ' exists only on disk and cannot be loaded into the studio.', true);
+        return false;
+    }
     for (const p of diskOnly) {
-        if (!ImageLib.isImage(p) || !(await adoptDiskImage({ path: p, source: 'file' }))) {
+        if (!(await adoptDiskImage({ path: p, source: 'file' }))) {
             showNotice('Cannot move ' + src + ': ' + p + ' exists only on disk and cannot be loaded into the studio.', true);
             return false;
         }
@@ -143,10 +148,12 @@ function clearDropMarks() {
     explorerTree.querySelectorAll('.drop-into').forEach((n) => n.classList.remove('drop-into'));
 }
 
+const escAttrVal = (v) => (typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(v) : String(v).replace(/(["\\])/g, '\\$1'));
+
 function markDrop(dir) {
     clearDropMarks();
     if (dir === '') { explorerTree.classList.add('drop-root'); return; }
-    const row = explorerTree.querySelector('.explorer-dir[data-path="' + dir.replace(/"/g, '\\"') + '"]');
+    const row = explorerTree.querySelector('.explorer-dir[data-path="' + escAttrVal(dir) + '"]');
     if (row) row.classList.add('drop-into');
 }
 
@@ -227,7 +234,7 @@ document.addEventListener('pointermove', (e) => {
     if (!tabDrag.active) {
         if (Math.abs(e.clientX - tabDrag.x) < MOVE_DRAG_PX) return;
         tabDrag.active = true;
-        const dragged = fileTabsBox.querySelector('.file-tab[data-file="' + tabDrag.file.replace(/"/g, '\\"') + '"]');
+        const dragged = fileTabsBox.querySelector('.file-tab[data-file="' + escAttrVal(tabDrag.file) + '"]');
         if (dragged) dragged.classList.add('tab-dragging');
     }
     tabDrag.index = tabInsertIndex(e.clientX);
@@ -252,7 +259,6 @@ document.addEventListener('pointerup', () => {
     if (next.join('\n') === openTabs.join('\n')) return;
     openTabs = next;
     renderFileTabs();
-    scheduleAutoSave();
 });
 
 fileTabsBox.addEventListener('click', (e) => {

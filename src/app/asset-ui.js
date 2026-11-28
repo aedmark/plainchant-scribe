@@ -59,9 +59,9 @@ function diskNote() {
     return linkedFolder ? ' Files already on disk are never changed or deleted by export.' : '';
 }
 
-function deleteAssetItem(item, uses) {
-    const message = 'Delete ' + item.path + '?' + (uses ? '\nIt is used in ' + uses + (uses === 1 ? ' place' : ' places') + ', and those links will break.' : '') + '\nYou can undo this with Ctrl/Cmd+Z.' + diskNote();
-    if (!window.confirm(message)) return;
+async function deleteAssetItem(item, uses) {
+    const message = 'Delete ' + item.path + '?' + (uses ? ' It is used in ' + uses + (uses === 1 ? ' place' : ' places') + ', and those links will break.' : '') + ' You can undo this with Ctrl/Cmd+Z.' + diskNote();
+    if (!await askConfirm({ title: 'Delete image', text: message, confirm: 'Delete' })) return;
     if (item.source === 'text') { deleteProjectFile(item.path); renderAssets(); return; }
     beginAssetChange();
     removeProjectAsset(item.path);
@@ -78,7 +78,7 @@ async function adoptDiskImage(item) {
         const res = await fetch(projectBaseUrl.replace(/\/?$/, '/') + item.path.split('/').map(encodeURIComponent).join('/'));
         if (!res.ok) return false;
         const blob = await res.blob();
-        if (blob.size > ASSET_MAX_FILE_BYTES) return false;
+        if (blob.size > ASSET_MAX_FILE_BYTES || projectAssetBytes() + blob.size > ASSET_MAX_TOTAL_BYTES) return false;
         addProjectAsset(item.path, blob.type ? blob : new Blob([blob], { type: Project.mimeFor(item.path) }));
         return true;
     } catch (e) {
@@ -258,7 +258,8 @@ document.getElementById('cssBgImageBrowseBtn').addEventListener('click', () => {
     if (!selectedPcId) { showNotice('Select an element first.', true); return; }
     openAssetManager({
         pick: (item) => {
-            const value = 'url("' + Project.relativePath(activeCssFile || activeHtmlFile, item.path) + '")';
+            const baseFile = activeCssTarget === 'inline' ? activeHtmlFile : (activeCssFile || activeHtmlFile);
+            const value = 'url("' + Project.relativePath(baseFile, item.path) + '")';
             cssInputs['background-image'].value = value;
             applyCssPropertyChange('background-image', value);
         }

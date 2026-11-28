@@ -34,7 +34,8 @@ function refreshDirtyMarks() {
 }
 
 function knownTreePaths() {
-    return Array.isArray(projectFiles.tree) ? projectFiles.tree.filter((i) => i.kind === 'file').map((i) => i.path) : [];
+    const tree = Array.isArray(projectFiles.tree) ? projectFiles.tree.filter((i) => i.kind === 'file').map((i) => i.path) : [];
+    return Array.from(new Set(tree.concat(Object.keys(projectAssets || {}))));
 }
 
 function commitFileChange(next, change) {

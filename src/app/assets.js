@@ -80,6 +80,7 @@ function restoreProjectAssets(wanted) {
 
 function moveProjectAsset(from, to) {
     const blob = projectAssets[from];
+    if (!blob) return;
     removeProjectAsset(from);
     addProjectAsset(to, blob);
 }

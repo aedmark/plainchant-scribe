@@ -99,4 +99,11 @@ test('Format.byPath picks the formatter by extension and detectIndent reads the 
     assert.equal(Format.detectIndent('a\n\tb\n'), '\t');
     assert.equal(Format.detectIndent('a\n        b\n'), '    ');
     assert.equal(Format.detectIndent('flat'), '    ');
+    assert.equal(Format.detectIndent('/**\n * doc\n */\nfunction f() {\n  return 1;\n}\n'), '  ');
+    assert.includes(Format.formatCss('a { color: red; /* note */ }'), 'color: red; /* note */');
+    assert.equal(Format.formatJs('const x = `a ${\n{ b: 1 }\n} c`;'), 'const x = `a ${\n    { b: 1 }\n} c`;\n');
+    const divJs = Format.formatJs('if (fn()) /a"b/.test(s) && {\nx: 1\n}\nconst q = a++ / 2 + obj.in / 3;');
+    assert.includes(divJs, '    x: 1');
+    const svgOut = Format.formatHtml('<div>\n  <svg viewBox="0 0 24 24">\n    <style>.a{color:red}</style>\n    <path d="M0"/>\n  </svg>\n</div>', '  ');
+    assert.equal(svgOut, '<div>\n  <svg viewBox="0 0 24 24">\n    <style>\n      .a {\n        color: red;\n      }\n    </style>\n    <path d="M0"/>\n  </svg>\n</div>\n');
 });

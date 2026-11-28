@@ -10,6 +10,7 @@ const previewUrlsBox = document.getElementById('previewUrls');
 const previewQrBox = document.getElementById('previewQr');
 
 let previewInfo = null;
+let previewScriptId = null;
 let previewAssetSig = '';
 let previewTimer = null;
 let previewTabUrl = '';
@@ -122,14 +123,23 @@ async function startPreview() {
     const assets = await encodePreviewAssets(p.assetPaths);
     const book = await previewBookShare(p.book, true);
     previewInfo = await tauriInvoke('preview_start', { files: p.files, assets: assets, entry: p.entry, book: book });
+    previewScriptId = currentScriptId;
     previewAssetSig = Preview.assetSignature(previewAssets(p.assetPaths));
 }
 
 async function stopPreview() {
     clearTimeout(previewTimer);
     previewInfo = null;
+    previewScriptId = null;
     previewBookBytes = null;
     await tauriInvoke('preview_stop', {});
+}
+
+function stopPreviewIfDifferent() {
+    if (!previewInfo || previewScriptId === currentScriptId) return;
+    stopPreview().catch(() => {});
+    renderPreviewPanel();
+    showNotice('Stopped sharing because you switched projects.');
 }
 
 async function pushPreview() {

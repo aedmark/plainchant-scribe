@@ -102,3 +102,33 @@ test('css: setProperty creates media blocks and rules in cascade order', () => {
     assert.ok(baseAfter.indexOf('.d {') < baseAfter.indexOf('@media'), 'a new base rule goes before the first media block so it cannot override it');
     assert.equal(CssAst.setProperty(base, '.b', 'padding', '', '(max-width: 768px)'), base, 'clearing a value that was never set creates nothing');
 });
+
+test('css-ast: handles inline comments, escaped backslashes, @import/@keyframes, empty media, combinators, :not(), and [attr] selectors', () => {
+    const withComment = '.a { color: /* ; */ red; }';
+    assert.equal(CssAst.getDeclarations(withComment, '.a').color, 'red');
+    assert.equal(CssAst.setProperty(withComment, '.a', 'color', 'blue'), '.a { color: blue; }');
+
+    const withEsc = '.a { content: "\\\\"; color: red; } .b { margin: 0; }';
+    const escAst = CssAst.parse(withEsc);
+    assert.equal(escAst.rules.length, 2);
+    assert.equal(CssAst.getDeclarations(escAst, '.b').margin, '0');
+
+    const withAt = '@import "a.css";\n.a /* { */ { color: red; }\n@keyframes spin { from { opacity: 0; } to { opacity: 1; } }\n.btn { padding: 4px; }';
+    const atAst = CssAst.parse(withAt);
+    assert.deepEqual(atAst.rules.map((r) => r.selector), ['.a', '.btn']);
+    assert.equal(atAst.blocks.length, 0, '@keyframes is not treated as a @media block');
+
+    const emptyMedia = CssAst.setProperty('@media (max-width: 768px) {}', '.a', 'color', 'red', '(max-width: 768px)');
+    assert.equal((emptyMedia.match(/@media/g) || []).length, 1, 'reuses empty @media block without duplicating it');
+
+    const emptyVal = CssAst.setProperty('.a { color:   }', '.a', 'color', 'red');
+    assert.equal(emptyVal, '.a { color: red}');
+
+    const pEl = { type: 'element', tag: 'p', attrs: {} };
+    const btnEl = { type: 'element', tag: 'button', attrs: { class: 'btn' } };
+    assert.equal(CssAst.findRulesForElement('h1+p { color: red; }', pEl).length, 1);
+    assert.equal(CssAst.findRulesForElement('.btn:not(.disabled) { color: red; }', btnEl).length, 1);
+
+    const sel = CssAst.listSelectors('a[href="https://example.com"] { color: red; }', null);
+    assert.ok(!sel.classes.includes('com'), 'attribute URLs do not create fake CSS classes');
+});

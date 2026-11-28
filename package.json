@@ -1,6 +1,6 @@
 {
   "name": "plainchant-scribe",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "An EPUB studio with non-destructive round-trip editing and Tauri desktop support.",
   "main": "index.html",
   "scripts": {

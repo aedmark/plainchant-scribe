@@ -40,6 +40,15 @@
         return escapeHtml(str).replace(/"/g, '&quot;');
     }
 
+    function unescapeHtml(str) {
+        return String(str == null ? '' : str)
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&amp;/g, '&');
+    }
+
     function parseAttributes(raw, baseOffset) {
         const attrs = {};
         const spans = {};
@@ -132,7 +141,7 @@
                 continue;
             }
 
-            const openMatch = text.slice(lt).match(/^<\s*([a-zA-Z][a-zA-Z0-9:-]*)((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>/);
+            const openMatch = text.slice(lt).match(/^<\s*([a-zA-Z][a-zA-Z0-9:-]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/);
             if (!openMatch) {
                 stack[stack.length - 1].children.push({
                     type: 'text', start: lt, end: lt + 1,
@@ -144,8 +153,11 @@
 
             const rawTag = openMatch[1];
             const tag = rawTag.toLowerCase();
-            const attrRaw = openMatch[2] || '';
-            const selfClose = openMatch[3] === '/' || !!VOID_TAGS[tag];
+            let attrRaw = openMatch[2] || '';
+            const trimmedAttr = attrRaw.replace(/\s+$/, '');
+            const hasExplicitSelfClose = /(?:^|[\s"'])\/$/.test(trimmedAttr);
+            if (hasExplicitSelfClose) attrRaw = trimmedAttr.slice(0, -1);
+            const selfClose = hasExplicitSelfClose || !!VOID_TAGS[tag];
             const openEnd = lt + openMatch[0].length;
             const attrBase = lt + 1 + rawTag.length;
             const parsedAttrs = parseAttributes(attrRaw, attrBase);
@@ -415,12 +427,32 @@
         }
         const indent = lineIndentAt(ast.text, el.start);
         let cloneCode = ast.text.slice(el.start, el.end);
-        if (el.attrs && el.attrs.id) {
-            cloneCode = cloneCode.replace(
-                new RegExp('(\\bid\\s*=\\s*["\'])' + el.attrs.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(["\'])', 'i'),
-                '$1' + el.attrs.id + '-copy$2'
-            );
-        }
+        const usedIds = new Set();
+        ast.elements.forEach((n) => {
+            if (n.attrs && n.attrs.id) usedIds.add(n.attrs.id);
+        });
+        const cloneAst = parse(cloneCode);
+        const idMap = {};
+        const splices = [];
+        cloneAst.elements.forEach((n) => {
+            if (n.attrs && n.attrs.id && n.attrSpans && n.attrSpans.id) {
+                const base = n.attrs.id;
+                let cand = base + '-copy';
+                for (let k = 2; usedIds.has(cand); k++) cand = base + '-copy-' + k;
+                usedIds.add(cand);
+                idMap[base] = cand;
+                splices.push({ start: n.attrSpans.id.start, end: n.attrSpans.id.end, rep: n.attrSpans.id.name + '="' + escapeAttr(cand) + '"' });
+            }
+        });
+        cloneAst.elements.forEach((n) => {
+            if (n.attrs && n.attrs.for && n.attrSpans && n.attrSpans.for && Object.prototype.hasOwnProperty.call(idMap, n.attrs.for)) {
+                splices.push({ start: n.attrSpans.for.start, end: n.attrSpans.for.end, rep: n.attrSpans.for.name + '="' + escapeAttr(idMap[n.attrs.for]) + '"' });
+            }
+        });
+        splices.sort((a, b) => b.start - a.start);
+        splices.forEach((sp) => {
+            cloneCode = cloneCode.slice(0, sp.start) + sp.rep + cloneCode.slice(sp.end);
+        });
         const insertOffset = el.end + 1 + indent.length;
         const nextHtml = ast.text.slice(0, el.end) + '\n' + indent + cloneCode + ast.text.slice(el.end);
         const nextAst = parse(nextHtml);
@@ -570,6 +602,7 @@
         extractTitle: extractTitle,
         setTitle: setTitle,
         escapeHtml: escapeHtml,
+        unescapeHtml: unescapeHtml,
         escapeAttr: escapeAttr
     };
 });

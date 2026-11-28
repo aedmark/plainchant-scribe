@@ -53,9 +53,16 @@ async function renderVersions() {
         restoreBtn.className = 'mini';
         restoreBtn.textContent = 'Restore';
         restoreBtn.addEventListener('click', () => {
+            if (versionScriptId !== currentScriptId) {
+                flushSave();
+                selectedPcId = null;
+                if (typeof clearLinkedFolder === 'function') clearLinkedFolder();
+            }
             currentScriptId = versionScriptId;
             loadProjectIntoEditor(v.content);
-            saveScript(false);
+            rememberCurrent();
+            if (typeof restoreProjectLink === 'function') restoreProjectLink(currentScriptId);
+            saveScript(true);
             render(false);
             closeModal(versionsModal);
             closeModal(libraryModal);
@@ -67,8 +74,12 @@ async function renderVersions() {
         delBtn.className = 'mini danger-mini';
         delBtn.textContent = 'Delete';
         delBtn.addEventListener('click', async () => {
-            await Store.removeVersion(scriptDb, v.id);
-            renderVersions();
+            try {
+                await Store.removeVersion(scriptDb, v.id);
+                renderVersions();
+            } catch (e) {
+                showNotice('Could not delete snapshot.', true);
+            }
         });
 
         actions.append(restoreBtn, delBtn);
@@ -80,12 +91,17 @@ async function renderVersions() {
 versionForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!scriptDb || !versionScriptId) return;
+    if (versionScriptId === currentScriptId) saveScript(true);
     const script = getScripts()[versionScriptId];
     if (!script) return;
     const now = Date.now();
     const v = Versions.make(script, newId(), now, { name: versionName.value.trim() || 'Manual snapshot' });
-    await Store.addVersion(scriptDb, v, Versions, now);
-    versionName.value = '';
-    versionsStatus.textContent = 'Snapshot saved.';
-    renderVersions();
+    try {
+        await Store.addVersion(scriptDb, v, Versions, now);
+        versionName.value = '';
+        versionsStatus.textContent = 'Snapshot saved.';
+        renderVersions();
+    } catch (e) {
+        showNotice('Could not save snapshot.', true);
+    }
 });

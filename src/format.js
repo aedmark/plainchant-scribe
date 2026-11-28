@@ -11,9 +11,9 @@
         return String(text == null ? '' : text).replace(/\r\n?/g, '\n');
     }
 
-    function detectIndent(text) {
-        const m = /^( +|\t+)\S/m.exec(normalizeNewlines(text));
-        if (!m) return DEFAULT_INDENT;
+    function detectIndent(text, fallback) {
+        const m = /^( +|\t+)(?!\*)\S/m.exec(normalizeNewlines(text));
+        if (!m) return fallback || DEFAULT_INDENT;
         if (m[1][0] === '\t') return '\t';
         return m[1].length === 2 ? '  ' : DEFAULT_INDENT;
     }
@@ -81,6 +81,10 @@
                 const comment = s.slice(i, end);
                 i = end - 1;
                 if (buf.trim()) { buf += comment; continue; }
+                if (gap === 0 && out.length && comment.indexOf('\n') === -1 && /[;{]$/.test(out[out.length - 1])) {
+                    out[out.length - 1] += ' ' + comment;
+                    continue;
+                }
                 const lines = comment.split('\n');
                 emit(lines[0]);
                 lines.slice(1).forEach((l) => {
@@ -119,6 +123,7 @@
     }
 
     const REGEX_AFTER_WORD = new Set(['return', 'typeof', 'case', 'do', 'else', 'in', 'of', 'delete', 'void', 'throw', 'new', 'instanceof', 'yield', 'await']);
+    const CTRL_PARENS = new Set(['if', 'while', 'for', 'with']);
 
     function formatJsLines(text, indent) {
         const unit = indent || DEFAULT_INDENT;
@@ -128,6 +133,7 @@
         let mode = 'code';
         let quote = '';
         const tpl = [];
+        const parens = [];
         let prev = '';
         let word = '';
 
@@ -157,6 +163,7 @@
                     if (i >= line.length) return;
                     if (line[i] === '`') { mode = 'code'; i++; prev = '"'; continue; }
                     tpl.push(0);
+                    depth++;
                     mode = 'code';
                     i += 2;
                     prev = '{';
@@ -167,7 +174,7 @@
                     let j = i;
                     while (j < line.length && /[A-Za-z0-9_$]/.test(line[j])) j++;
                     word = line.slice(i, j);
-                    prev = 'a';
+                    prev = prev === '.' ? 'prop' : 'a';
                     i = j;
                     continue;
                 }
@@ -181,7 +188,7 @@
                 }
                 if (c === '`') { mode = 'tpl'; i++; continue; }
                 if (c === '/') {
-                    const regexOk = prev === '' || '(,=:[!&|?{};+-*%<>~^'.indexOf(prev) !== -1 || (prev === 'a' && REGEX_AFTER_WORD.has(word));
+                    const regexOk = prev === '' || '(,=:[!&|?{};*%<>~^+-'.indexOf(prev) !== -1 || prev === 'ctrl)' || (prev === 'a' && REGEX_AFTER_WORD.has(word));
                     if (regexOk) {
                         let j = i + 1;
                         let cls = false;
@@ -197,18 +204,32 @@
                     i++;
                     continue;
                 }
+                if ((c === '+' && line[i + 1] === '+') || (c === '-' && line[i + 1] === '-')) {
+                    prev = 'inc';
+                    i += 2;
+                    continue;
+                }
                 if (c === '{' || c === '(' || c === '[') {
+                    if (c === '(') parens.push(prev === 'a' && CTRL_PARENS.has(word) ? 'ctrl' : 'call');
                     if (c === '{' && tpl.length) tpl[tpl.length - 1]++;
                     depth++;
                 } else if (c === '}' || c === ')' || c === ']') {
                     if (c === '}' && tpl.length && tpl[tpl.length - 1] === 0) {
                         tpl.pop();
                         mode = 'tpl';
+                        depth = Math.max(0, depth - 1);
                         i++;
+                        prev = '}';
                         continue;
                     }
                     if (c === '}' && tpl.length) tpl[tpl.length - 1]--;
                     depth = Math.max(0, depth - 1);
+                    if (c === ')') {
+                        const kind = parens.pop();
+                        prev = kind === 'ctrl' ? 'ctrl)' : ')';
+                        i++;
+                        continue;
+                    }
                 }
                 prev = c;
                 i++;
@@ -248,7 +269,8 @@
 
     const BLOCK = new Set(('html head body title meta link base style script div section article aside nav header footer main address ' +
         'h1 h2 h3 h4 h5 h6 p ul ol li dl dt dd table caption colgroup col thead tbody tfoot tr td th form fieldset legend figure figcaption ' +
-        'blockquote details summary hr pre noscript dialog menu').split(' '));
+        'blockquote details summary hr pre noscript dialog menu svg g defs symbol clippath mask pattern marker lineargradient radialgradient filter ' +
+        'path circle rect line polygon polyline ellipse use video audio picture').split(' '));
     const VOID = new Set('area base br col embed hr img input link meta param source track wbr'.split(' '));
     const CLOSES = {
         li: ['li'], dt: ['dt', 'dd'], dd: ['dt', 'dd'], td: ['td', 'th'], th: ['td', 'th'], tr: ['td', 'th', 'tr'],

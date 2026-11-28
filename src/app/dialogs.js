@@ -8,6 +8,7 @@ function focusableIn(el) {
 function openModal(overlay, options = {}) {
     if (openModals.some((m) => m.overlay === overlay)) return;
     openModals.push({ overlay: overlay, opener: document.activeElement, onClose: options.onClose });
+    overlay.style.zIndex = String(1000 + openModals.length);
     overlay.classList.add('active');
     const target = (options.focus && overlay.querySelector(options.focus)) || focusableIn(overlay)[0];
     if (target) target.focus({ preventScroll: true });
@@ -18,6 +19,7 @@ function closeModal(overlay) {
     if (i === -1) return;
     const entry = openModals.splice(i, 1)[0];
     overlay.classList.remove('active');
+    overlay.style.zIndex = '';
     if (entry.onClose) entry.onClose();
     const visible = (el) => el && el !== document.body && document.contains(el) && el.getClientRects().length > 0;
     const back = [entry.opener, menuBtn, editor].find(visible);
@@ -43,8 +45,17 @@ document.addEventListener('keydown', (e) => {
     }
 }, true);
 
+let mouseDownOnOverlay = false;
+document.addEventListener('mousedown', (e) => {
+    mouseDownOnOverlay = Boolean(e.target.classList && e.target.classList.contains('modal-overlay'));
+});
 document.addEventListener('click', (e) => {
-    if (e.target.classList && e.target.classList.contains('modal-overlay')) { closeModal(e.target); return; }
+    if (mouseDownOnOverlay && e.target.classList && e.target.classList.contains('modal-overlay')) {
+        mouseDownOnOverlay = false;
+        closeModal(e.target);
+        return;
+    }
+    mouseDownOnOverlay = false;
     const closer = e.target.closest('[data-close]');
     if (closer) closeModal(closer.closest('.modal-overlay'));
 });
@@ -53,6 +64,7 @@ document.addEventListener('click', (e) => {
 // `validate(text)` may return an error string to keep the dialog open.
 function askText(options) {
     const overlay = document.getElementById('ask-modal');
+    if (openModals.some((m) => m.overlay === overlay)) closeModal(overlay);
     const form = document.getElementById('askForm');
     const input = document.getElementById('askInput');
     const error = document.getElementById('askError');
@@ -80,6 +92,7 @@ function askText(options) {
 // Modal replacement for window.confirm, in the same style as askText. Resolves to true, or false when cancelled.
 function askConfirm(options) {
     const overlay = document.getElementById('confirm-modal');
+    if (openModals.some((m) => m.overlay === overlay)) closeModal(overlay);
     const form = document.getElementById('confirmForm');
     return new Promise((resolve) => {
         let answer = false;

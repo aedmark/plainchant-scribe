@@ -516,6 +516,34 @@ Plainchant Web's own decisions are not repeated here. The ones that still shape 
 - `rendition:orientation` is read and checked but not written.
 **Review trigger:** authors need mixed books or per-page placement, or a store's fixed-layout rules turn out to need more than EPUB 3.3's.
 
+## D-053 EPUB-aware Stage formatting toolbar and CSS Designer typography  (2026-11-27, status: accepted)
+**Context:** Plainchant Web added an RTF-style formatting strip above the Stage (`#styleToolbar`, `src/typography.js`, `src/app/style-bar.js`) mirrored into the CSS Designer. In Scribe, reflowable books have embedded `@font-face` fonts (`BookFonts`, D-033) and `CssLint` warns when `font-size` uses `px` or `pt` (D-036). The maintainer asked to port the toolbar with EPUB-aware defaults on 2026-11-27.
+**Decision:**
+1. Add `#styleToolbar` above `#canvasBody` (`src/typography.js`, `src/app/style-bar.js`) with target rule switcher (`#tbCssTarget`), font family, font size presets and stepper, `B`/`I`/`U`/`S` toggles, left/center/right/justify alignment, line height, letter spacing, and text/background colour pickers, mirrored into `#inspCssPane`. All edits target the active CSS rule or inline style via `applyCssPropertyChange()`, with `coalesceHistory` on colour-picker drags so drags become one undo step.
+2. Adapt for books: when a book is open, list its embedded `@font-face` families (`BookFonts.list`) ahead of book-safe stacks (`Typography.BOOK_FONT_PRESETS`). For reflowable books, offer relative size presets (`em`/`%`) and step undeclared sizes in `0.125em` increments instead of `px`, avoiding `CssLint` warnings; fixed-layout books and web projects keep `px` presets and stepping.
+3. Omit Web's breakpoint/pseudo-state scope pill (`#tbScopeBadge`), since Scribe intentionally removed breakpoints and pseudo-states (`P0-04`).
+**Alternatives:**
+- Copying Web's `px`-first presets and web font stacks verbatim (rejected: stepping an undeclared paragraph size in a reflowable book would emit `px` and immediately trigger `css-font-size` warnings).
+- Forcing toolbar edits to inline `style="..."` only (rejected: breaks stylesheet-first CSS editing and `CssLint` running-text checks).
+**Consequences:**
+- Authors can format typography in one click from Split or Design view without opening the Inspector.
+- All toolbar styling uses Scribe's existing theme variables (`test/theme.test.js` contrast and zero-hardcoded-colour invariants still hold).
+**Review trigger:** authors want inline `<strong>`/`<em>` wrapping of partial text selections on the Stage rather than rule/element CSS edits.
+
+## D-054 Click-to-select, double-click inline editing, and live CSS patching on the Stage  (2026-11-27, status: accepted; extends D-024)
+**Context:** Porting the RTF-style toolbar and Plainchant Web's WYSIWYG fixes highlighted two friction points inherited from Plainchant Web: single-click inline editing trapped `Delete`, `Alt+Up/Down`, and drag reordering on leaf elements while `Escape` did not revert streamed `pc-inline-input` edits, and every CSS change reloaded the Stage iframe (resetting scroll/page position and swallowing rapid colour-picker drags). The maintainer confirmed porting both click-to-select/dblclick edit and live CSS patching for both web pages and EPUB chapters on 2026-11-27.
+**Decision:**
+1. Single-click on the Stage selects the element cleanly without entering `contenteditable`; double-clicking a text-editable leaf enters inline editing, captures its baseline text so `Escape` reverts via `pc-inline-cancel`, and reads `textContent` when no line-break markup is present so CSS `text-transform` never mutates source.
+2. `BookStage.assemble` stamps `data-pc-href` on each inlined stylesheet `<style>`, and `Project.buildPreviewCss` builds rewritten CSS for web projects. `patchStageCss()` (`src/app/stage-links.js`) patches the matching `<style>` in place via `pc-patch-css` without reloading the Stage iframe or losing scroll/page position (re-running `goToPage(stagePage.index)` in paged book mode, and falling back to full redraw when a fixed-layout facing spread is open).
+3. Parent `message` handling verifies `e.source === stageFrame.contentWindow`, Properties and CSS Designer split `Alt Text`/`Title` and `Width`/`Max Width`, and `#contextMenu` moves to `src/app/menus.js` so `src/app/inspector-ui.js` stays under the 500-line cap (D-001).
+**Alternatives:**
+- Live CSS patching on web pages only (rejected: book authors using the formatting toolbar benefit most from keeping their chapter and page position).
+- Keeping single-click inline editing (rejected: traps keyboard shortcuts and drag handles on leaf elements).
+**Consequences:**
+- CSS edits from the toolbar, CSS Designer, and code editor update the Stage live on both reflowable chapters and web pages.
+- Fixed-layout two-page spreads still do a full redraw so both facing iframes stay consistent.
+**Review trigger:** a book uses nested `@import` chains edited via a secondary stylesheet file rather than `activeCssFile`, where full redraw is still needed.
+
 ## Held tensions
 
 A tension is two claims that are true and do not fit together yet. It is not an open question. An open question has

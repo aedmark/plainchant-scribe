@@ -64,4 +64,12 @@ test('hints: the checker covers only .html files, sorts by file then position, a
     assert.equal(first.errors, 1);
     assert.deepEqual(checker.check(entries).problems, first.problems);
     assert.equal(checker.check({ 'a.html': '<img src="x.png" alt="">' }).problems.length, 0);
+
+    const doc = (body) => '<!doctype html><html lang="en"><head><title>T</title></head><body>' + body + '</body></html>';
+    assert.deepEqual(Hints.checkHtml(doc('<a href=/>Home</a><textarea aria-label="x"><div>raw</textarea><h2 aria-labelledby="t"></h2>')), [], 'handles unquoted /, RCDATA textarea, and aria-labelledby headings');
+    const withPart = checker.check({
+        'index.html': doc('<label for="f">N</label><!-- pc:part src="parts/f.html" --><input id="f"><!-- /pc:part -->'),
+        'parts/f.html': '<input id="f">'
+    });
+    assert.equal(withPart.problems.length, 0, 'part fragments are skipped by Hints');
 });

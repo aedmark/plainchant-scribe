@@ -14,9 +14,9 @@ Changes: [CHANGELOG.md](CHANGELOG.md). Older sessions and the Plainchant Web his
 
 ## Current state
 
-_Last updated: 2026-11-27, session 12, on `master` for `v0.1.1`: GitHub Actions CI (`ci.yml`) and cross-platform release (`release.yml`) workflows added, platform icons generated in `src-tauri/icons/`, and version bumped to `0.1.1`. Phases 0 to 7 are done; see ROADMAP for each item._
+_Last updated: 2026-11-27, session 12, on `master` for `v0.2.0`: ported the EPUB-aware RTF Stage formatting toolbar (`D-053`), Stage click-to-select / dblclick edit / live CSS patching (`D-054`), and Plainchant Web Batch 2/3 hardening, and released `v0.2.0`. Phases 0 to 7 are done; see ROADMAP for each item._
 
-**Session owner:** none. Session 12 ended 2026-11-27 after preparing and tagging `v0.1.1`.
+**Session owner:** none. Session 12 ended 2026-11-27 after releasing `v0.1.1` and `v0.2.0`.
 
 **Where things stand, in one paragraph:** Every roadmap phase (0 to 7) is done; `0.1.0` (Linux `.deb` and `.rpm`) was released on 2026-11-08, and `0.1.1` adds GitHub Actions CI and cross-platform release workflows (Linux, Windows, macOS universal) with bundled platform icons. A book can be made or imported (`.epub`, `.docx`, Markdown, or an `.epub` opened from the desktop), laid out reflowable or whole-book fixed layout, given front and back matter and accessibility metadata, checked in the Problems tab (with EPUBCheck in the desktop app), exported as an `.epub` that passes EPUBCheck, and sent to a reader on the same network; "What works" lists each part with its decision. The biggest gap is not code: nothing has been opened in Calibre or tried on a real phone yet ("Not verified", D-010, `P5-07`). The maintainer chooses what comes next.
 
@@ -75,7 +75,7 @@ _Last updated: 2026-11-27, session 12, on `master` for `v0.1.1`: GitHub Actions 
 - `OpfEdit` ops are for one fresh model each: apply the edits, `Book.read` again, then run the next op. Only `touchModified` changes `dcterms:modified`, so whatever saves or exports must call it. `setItemPath` changes the href only; the file and the links to it are not moved.
 - A project is a book when it has `META-INF/container.xml` (`Project.isBookEntries`); books and old web projects take two paths through `core.js`, `stage.js` (`drawStageNow`), and `Project.pack`/`unpack`. `isPagePath` in `core.js` counts `.xhtml` as a page.
 - `src/app/layout-ui.js` is a name the structure test reserves as removed (Plainchant Web's flex and grid handles), so the Layout tab's script is `style-ui.js`.
-- For text input in new UI, use the maintainer's `askText` dialog (`src/app/dialogs.js`), not `window.prompt`. For yes/no questions, use `askConfirm` (added beside it for `P3-02`). One `window.confirm` is left, in `src/app/asset-ui.js`, and could move to `askConfirm`. The ask and confirm dialogs come before most other dialogs in `app.html`, so a dialog that asks a question must close itself first and reopen after (see `src/app/matter-ui.js`): `openModal` stacks, but the later overlay draws on top.
+- For text input in new UI, use the maintainer's `askText` dialog (`src/app/dialogs.js`), not `window.prompt`. For yes/no questions, use `askConfirm` (added beside it for `P3-02`). `openModal` now assigns dynamic `z-index` values (`1000 + openModals.length`), and the last `window.confirm` in `src/app/asset-ui.js` has moved to `askConfirm`.
 - The Design bridge's tag checks must use `tagName.toUpperCase()`: XHTML documents keep tag names in lower case. The Assets dialog's image insert writes `<img ...>`, which the chapter guard refuses.
 - With a device preset, the Stage frame is absolutely positioned, sized, and scaled by `layoutDevice`; `stageFrameWrap.dataset.device` marks it. Books always use `data-vp="full"`; the inherited viewport switch is hidden for them.
 - In paged mode, the page number is `scrollLeft / innerWidth` of the Stage copy. Anything that scrolls it must go through `goToPage`, or the scroll listener snaps it. The `#scribe-page-end` marker exists only in the Stage copy.
@@ -108,18 +108,18 @@ oldest to `docs/archive/` and leave a pointer here.
 
 Sessions 1 to 2: [archive/SESSION_LOG_2026_11.md](archive/SESSION_LOG_2026_11.md).
 
-### Session 12: 2026-11-27: CI, cross-platform icons, and v0.1.1 release
+### Session 12: 2026-11-27: CI, v0.1.1 release, RTF Stage toolbar, and v0.2.0 release
 
-**Contributor:** Gemini 4 Neon (Medium), with the maintainer
-**Goal:** Add GitHub Actions CI and cross-platform release workflows modeled on `plainchant-web` and publish the first cross-platform release (`v0.1.1`).
-**Done:** none on the roadmap (release infrastructure and `0.1.1` packaging)
-**Changed:** `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `src-tauri/icons/` (`32x32.png`, `64x64.png`, `128x128.png`, `128x128@2x.png`, `icon.icns`, `icon.ico` generated from `icon.png`), `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`, `package.json`, `AGENTS.md`, `docs/CHANGELOG.md`, `docs/SECURITY.md`, `docs/HANDOFF.md`, `docs/archive/SESSION_LOG_2026_11.md`.
-**Decisions:** none new.
-**Verified:** `npm test`, `python3 tools/check_docs.py`, `python3 tools/manual.py check docs/plainchant-scribe.manual.json`, `python3 -m unittest tools/test_manual.py`, `cargo test --manifest-path src-tauri/Cargo.toml`, `cargo build --manifest-path src-tauri/Cargo.toml`, and GitHub Actions workflow runs triggered by pushing `master` and `v0.1.1`.
-**Not verified:** Windows and macOS installers in real OS windows (built on GitHub runners).
+**Contributor:** Gemini 4 Neon (High/Medium), with the maintainer
+**Goal:** Add GitHub Actions CI and cross-platform release workflows, publish `v0.1.1`, port recent Plainchant Web (`f36ef12`) improvements (EPUB-aware RTF Stage toolbar, Stage click-to-select/live CSS patching, Batch 2 and Batch 3 hardening), and publish `v0.2.0`.
+**Done:** none on the roadmap (release infrastructure, `v0.1.1` and `v0.2.0` cross-platform releases, and cross-stream ports)
+**Changed:** Published `v0.1.1` (`ead53a5`). Added `src/typography.js`, `src/app/style-bar.js`, `test/typography.test.js`; updated `app.html`, `src/styles.css`, `sw.js`, `src/app/stage.js`, `src/app/stage-links.js`, `src/book-stage.js`, `src/app/inspector-ui.js`, `src/app/menus.js`, `src/app/panes.js`, `src/app/core.js`, `src/app/typing.js`, `src/app/dialogs.js`, `src/app/asset-ui.js`, `src/app/assets.js`, `src/app/explorer-move.js`, `src/app/explorer-ui.js`, `src/app/find-project.js`, `src/app/import.js`, `src/app/library-ui.js`, `src/app/parts-ui.js`, `src/app/persistence.js`, `src/app/preview-ui.js`, `src/app/project-links.js`, `src/app/tauri-files.js`, `src/app/versions-ui.js`, `src/css-ast.js`, `src/html-ast.js`, `src/editing.js`, `src/format.js`, `src/hints.js`, `src/links.js`, `src/parts.js`, `src/project.js`, `src/suggest.js`, `src/filesync.js`, `src/preview.js`, `src/projectlink.js`, `src/store.js`, `src/zip.js`, `src-tauri/src/main.rs`, `src-tauri/src/preview.rs`, `package.json`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`, `src-tauri/tauri.conf.json`, tests, `AGENTS.md`, `docs/DECISIONS.md`, `docs/CHANGELOG.md`, `docs/SECURITY.md`, `docs/HANDOFF.md`.
+**Decisions:** D-053 (EPUB-aware Stage formatting toolbar), D-054 (click-to-select, dblclick edit, live CSS patching on books and web pages).
+**Verified:** `npm test` 355/355 (including EPUBCheck, Ace, LibreOffice, ImageMagick, qrencode, ZBar), `cargo test` 15/15, `cargo build`, `python3 tools/check_docs.py` (0 errors, 0 warnings), `manual.py check` + `test_manual.py` (6/6), and GitHub Actions cross-platform release build for `v0.2.0`.
+**Not verified:** Windows and macOS installers and the new Stage toolbar in a real Tauri desktop window.
 **Problems / surprises:** none.
 **Corrections:** none.
-**Left undone:** publish the `v0.1.1` draft release on GitHub after inspecting the uploaded artifacts.
+**Left undone:** none.
 **Next session should start with:** Next steps above.
 
 ### Session 11: 2026-11-08: adopt the expanded Manifold

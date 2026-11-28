@@ -141,3 +141,20 @@ test('html-ast: insertElementAt reports where the snippet landed and which eleme
     assert.equal(noBody.html, '<p>x</p>');
     assert.equal(noBody.offset, 0);
 });
+
+test('html-ast: unquoted trailing slash does not self-close, duplicateElement deduplicates descendant IDs, and unescapeHtml decodes entities', () => {
+    const ast = HtmlAst.parse('<a href=/>Home</a>');
+    const link = ast.elements.find((e) => e.tag === 'a');
+    assert.ok(link && !link.selfClosing, '<a href=/> is not self-closing');
+    assert.equal(link.attrs.href, '/');
+    assert.equal(HtmlAst.innerText(ast, link.id), 'Home');
+
+    const form = '<body>\n  <div id="row"><label for="name">Name</label><input id="name"/></div>\n</body>';
+    const row = HtmlAst.parse(form).elements.find((e) => e.attrs.id === 'row');
+    const dup = HtmlAst.duplicateElement(form, row.id);
+    assert.includes(dup.html, 'id="row-copy"');
+    assert.includes(dup.html, 'id="name-copy"');
+    assert.includes(dup.html, 'for="name-copy"');
+
+    assert.equal(HtmlAst.unescapeHtml('A &amp; B &lt;C&gt; &quot;D&quot; &#39;E&#39;'), 'A & B <C> "D" \'E\'');
+});

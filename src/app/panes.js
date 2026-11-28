@@ -78,6 +78,8 @@ function setInspectorDock(dock, remember) {
     if (!inspectorFloating) {
         inspectorPanel.style.left = '';
         inspectorPanel.style.top = '';
+        inspectorPanel.style.right = '';
+        inspectorPanel.style.bottom = '';
     } else if (inspectorCollapsed) {
         setInspectorCollapsed(false);
     }
@@ -112,11 +114,20 @@ if (inspectorHeader) {
         if (!floatDrag) return;
         const left = Math.max(8, Math.min(window.innerWidth - 260, floatDrag.origLeft + (e.clientX - floatDrag.startX)));
         const top = Math.max(8, Math.min(window.innerHeight - 80, floatDrag.origTop + (e.clientY - floatDrag.startY)));
+        inspectorPanel.style.right = 'auto';
+        inspectorPanel.style.bottom = 'auto';
         inspectorPanel.style.left = left + 'px';
         inspectorPanel.style.top = top + 'px';
     });
     ['pointerup', 'pointercancel'].forEach((ev) => {
         inspectorHeader.addEventListener(ev, () => { floatDrag = null; });
+    });
+    window.addEventListener('resize', () => {
+        if (!inspectorFloating || !inspectorPanel.style.left) return;
+        const left = Math.max(8, Math.min(window.innerWidth - 260, parseFloat(inspectorPanel.style.left) || 8));
+        const top = Math.max(8, Math.min(window.innerHeight - 80, parseFloat(inspectorPanel.style.top) || 8));
+        inspectorPanel.style.left = left + 'px';
+        inspectorPanel.style.top = top + 'px';
     });
 }
 

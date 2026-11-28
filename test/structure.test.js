@@ -20,7 +20,7 @@ test('structure: the app scripts are loaded after the src/ modules they use, and
         'src/html-ast.js', 'src/css-ast.js', 'src/code-shade.js', 'src/dom-outline.js',
         'src/project.js', 'src/editing.js', 'src/suggest.js', 'src/library.js',
         'src/store.js', 'src/versions.js', 'src/filesync.js', 'src/importing.js',
-        'src/xml-ast.js', 'src/book-template.js', 'src/book.js', 'src/opf-edit.js', 'src/nav.js', 'src/book-stage.js', 'src/example-book.js', 'src/book-meta.js', 'src/book-chapters.js', 'src/book-contents.js', 'src/book-cover.js', 'src/book-style.js', 'src/font-info.js', 'src/book-fonts.js', 'src/book-notes.js', 'src/book-blocks.js', 'src/css-lint.js', 'src/book-export.js', 'src/epub.js', 'src/markdown-import.js', 'src/xhtml.js', 'src/book-check.js', 'src/epubcheck-report.js', 'src/qr.js', 'src/book-page.js', 'src/book-a11y.js', 'src/book-roles.js', 'src/book-pages.js', 'src/book-lang.js', 'src/book-alt.js', 'src/book-order.js', 'src/book-matter.js', 'src/book-ncx.js', 'src/book-images.js', 'src/book-layout.js', 'src/docx.js', 'src/docx-import.js'
+        'src/xml-ast.js', 'src/book-template.js', 'src/book.js', 'src/opf-edit.js', 'src/nav.js', 'src/book-stage.js', 'src/example-book.js', 'src/book-meta.js', 'src/book-chapters.js', 'src/book-contents.js', 'src/book-cover.js', 'src/book-style.js', 'src/font-info.js', 'src/book-fonts.js', 'src/book-notes.js', 'src/book-blocks.js', 'src/css-lint.js', 'src/book-export.js', 'src/epub.js', 'src/markdown-import.js', 'src/xhtml.js', 'src/book-check.js', 'src/epubcheck-report.js', 'src/qr.js', 'src/book-page.js', 'src/book-a11y.js', 'src/book-roles.js', 'src/book-pages.js', 'src/book-lang.js', 'src/book-alt.js', 'src/book-order.js', 'src/book-matter.js', 'src/book-ncx.js', 'src/book-images.js', 'src/book-layout.js', 'src/docx.js', 'src/docx-import.js', 'src/typography.js'
     ].forEach((m) => {
         assert.ok(order.indexOf(m) !== -1 && order.indexOf(m) < order.indexOf('src/app/core.js'), m + ' must load before the app scripts');
     });
@@ -407,4 +407,25 @@ test('book images: the Images filter, Save as JPEG, and the cover save command a
     assert.includes(readRoot('src-tauri/src/main.rs'), '            save_cover_file,');
     assert.includes(readRoot('src/app/problems-ui.js'), 'BookImages.rows(model, infos)');
     assert.includes(readRoot('src/app/asset-ui.js'), 'if (isBookProject()) addBookImages(added);');
+});
+
+test('structure: the EPUB-aware Stage formatting toolbar, Typography module, and style-bar.js are wired in (D-053)', () => {
+    ['id="styleToolbar"', 'id="tbCssTarget"', 'id="tbFontFamily"', 'id="tbFontSize"', 'id="tbFontDec"', 'id="tbFontInc"', 'id="tbBold"', 'id="tbItalic"', 'id="tbUnderline"', 'id="tbStrike"', 'id="tbLineHeight"', 'id="tbLetterSpacing"', 'id="tbColor"', 'id="tbBgColor"', 'id="cssFontFamily"', 'id="cssStyleToggles"', 'id="cssLineHeight"', 'id="cssLetterSpacing"'].forEach((needle) => assert.includes(html, needle));
+    const order = Array.from(html.matchAll(/<script src="([^"]+)"><\/script>/g)).map((m) => m[1]);
+    assert.ok(order.indexOf('src/typography.js') !== -1 && order.indexOf('src/typography.js') < order.indexOf('src/app/core.js'), 'typography.js loads before the app scripts');
+    assert.ok(listed.indexOf('style-bar.js') > listed.indexOf('inspector-ui.js'), 'style-bar.js loads after inspector-ui.js');
+    assert.includes(readRoot('src/app/inspector-ui.js'), 'refreshStyleToolbar(');
+    assert.includes(readRoot('src/app/inspector-ui.js'), 'refreshStyleToolbarTargets(');
+    assert.ok(!readRoot('src/app/asset-ui.js').includes('window.confirm'), 'the last window.confirm in asset-ui.js is replaced by askConfirm');
+});
+
+test('structure: Stage click-to-select, dblclick leaf edit, live CSS patching on books and pages, and split Inspector fields (D-054)', () => {
+    ['id="propTitle"', 'id="cssMaxWidth"'].forEach((needle) => assert.includes(html, needle));
+    const stage = readRoot('src/app/stage.js');
+    assert.includes(stage, 'pc-patch-css');
+    assert.includes(stage, 'pc-inline-cancel');
+    assert.includes(stage, 'e.source !== stageFrame.contentWindow');
+    assert.includes(readRoot('src/app/stage-links.js'), 'function patchStageCss(');
+    assert.includes(readRoot('src/book-stage.js'), 'data-pc-href=');
+    assert.includes(readRoot('src/app/menus.js'), 'function openContextMenuAt(');
 });
